@@ -1,0 +1,2313 @@
+{
+    "Difficulties": ["Normal", "Hard"],
+    "Global": [
+        {
+            "name": "Abyss",
+            "description": "Black hole that grows over time",
+            "type": "Global",
+            "report": "RMB → \"Abyss\""
+        },
+        {
+            "name": "Rift",
+            "description": "Translucent distortion that grows",
+            "type": "Global",
+            "report": "RMB → \"Rift\""
+        },
+        {
+            "name": "Camera Malfunction",
+            "description": "Room disappears from rotation (count your rooms!)",
+            "type": "Global",
+            "report": "RMB → \"Camera Malfunction\""
+        },
+        {
+            "name": "Steam/Smoke/Fog",
+            "description": "Entire screen becomes cloudy",
+            "type": "Global",
+            "report": "RMB → \"Steam/Smoke/Fog\""
+        }
+    ],
+    "Maps": {
+        "Ranch": {
+            "Rooms": {
+                "Front Porch": [
+                    {
+                        "name": "Wall color",
+                        "type": "Object Replacement",
+                        "description": "Green walls turn light blue"
+                    },
+                    {
+                        "name": "Tree leaves",
+                        "type": "Object Replacement",
+                        "description": "Missing leaves in middle of tree above bench swing"
+                    },
+                    {
+                        "name": "Door",
+                        "type": "Door Anomaly",
+                        "description": "Door changes to solid one"
+                    },
+                    {
+                        "name": "Lanterns",
+                        "type": "Light Anomaly",
+                        "description": "See-through lights with bulbs → yellow lanterns"
+                    },
+                    {
+                        "name": "Curtains",
+                        "type": "Object Movement",
+                        "description": "Left window curtains sway/move"
+                    },
+                    {
+                        "name": "Ground under swing",
+                        "type": "Object Movement",
+                        "description": "Ground moves"
+                    },
+                    {
+                        "name": "Dog",
+                        "type": "Weird Animal",
+                        "description": "Dog grows giraffe neck and yells at camera"
+                    },
+                    {
+                        "name": "Garbage bags",
+                        "type": "Hold LMB",
+                        "description": "3 bags appear, collect all, man with bag on head appears"
+                    },
+                    {
+                        "name": "Farmer",
+                        "type": "INTRUDER",
+                        "description": "Appears on chair with shotgun - report fast or die"
+                    }
+                ],
+                "Entrance": [
+                    {
+                        "name": "Windmill",
+                        "type": "Object Movement",
+                        "description": "Rotates clockwise instead of counter-clockwise"
+                    },
+                    {
+                        "name": "Blue cart",
+                        "type": "Extra Object",
+                        "description": "Wheels in from back road, stops by jeep"
+                    },
+                    {
+                        "name": "Pumpkin",
+                        "type": "Object Replacement",
+                        "description": "Turns into jack-o'-lantern"
+                    },
+                    {
+                        "name": "Shovel",
+                        "type": "Missing Object",
+                        "description": "Disappears from left tree"
+                    },
+                    {
+                        "name": "Jeep lights",
+                        "type": "Light Anomaly",
+                        "description": "Lights start blinking (hard to spot)"
+                    },
+                    {
+                        "name": "Hole",
+                        "type": "Hole",
+                        "description": "Appears near windmill, camera distorts, creepy music"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Appears near shovel/tree (2 locations possible)"
+                    },
+                    {
+                        "name": "Fly-man",
+                        "type": "INTRUDER",
+                        "description": "At gate. REQUIRES 2 REPORTS! First fails, pulls you to throat, report again or die"
+                    },
+                    {
+                        "name": "Hidden intruder",
+                        "type": "INTRUDER",
+                        "description": "Appears behind jeep peering at camera"
+                    }
+                ],
+                "Kitchen": [
+                    {
+                        "name": "Fruits",
+                        "type": "Object Movement",
+                        "description": "Weird music + fruits levitate from bowl"
+                    },
+                    {
+                        "name": "Calendar",
+                        "type": "Image Anomaly",
+                        "description": "Image changes"
+                    },
+                    {
+                        "name": "Third plate",
+                        "type": "Missing Object",
+                        "description": "Third plate from left in strainer disappears"
+                    },
+                    {
+                        "name": "Counter drawers",
+                        "type": "Object Replacement",
+                        "description": "Counter near fridge has more drawers"
+                    },
+                    {
+                        "name": "Clock",
+                        "type": "Object Manipulation",
+                        "description": "Clock runs backwards (tricky!)"
+                    },
+                    {
+                        "name": "Hat in strainer",
+                        "type": "Object Replacement",
+                        "description": "Hat appears in strainer (far left)"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Appears in hallway or inside fridge"
+                    },
+                    {
+                        "name": "Jello cube",
+                        "type": "Forbidden Snack",
+                        "description": "Crackling jello on table"
+                    },
+                    {
+                        "name": "Bananas",
+                        "type": "Hold LMB",
+                        "description": "4 bananas appear, collect all, banana jumpscare"
+                    },
+                    {
+                        "name": "Hallway Walker",
+                        "type": "INTRUDER",
+                        "description": "Walks into kitchen from hallway. HOLD LMB immediately (reporting too slow)"
+                    }
+                ],
+                "Living Room": [
+                    {
+                        "name": "Left magazine",
+                        "type": "Image Anomaly",
+                        "description": "Cover changes"
+                    },
+                    {
+                        "name": "Right magazine",
+                        "type": "Missing Object",
+                        "description": "Disappears from coffee table"
+                    },
+                    {
+                        "name": "Couch stains",
+                        "type": "Stains",
+                        "description": "Sweat stains on left couch"
+                    },
+                    {
+                        "name": "Book under TV",
+                        "type": "Extra Object",
+                        "description": "Book appears in open cabinet slot"
+                    },
+                    {
+                        "name": "Candles",
+                        "type": "Object Replacement",
+                        "description": "Tea candles → larger candles"
+                    },
+                    {
+                        "name": "Left painting",
+                        "type": "Image Anomaly",
+                        "description": "Field painting gains a cow"
+                    },
+                    {
+                        "name": "Floor",
+                        "type": "Object Replacement",
+                        "description": "Dusty brown → HD wood texture"
+                    },
+                    {
+                        "name": "TV screen",
+                        "type": "Image Anomaly",
+                        "description": "Red eyeball appears"
+                    },
+                    {
+                        "name": "Goat skeleton photo",
+                        "type": "Image Anomaly",
+                        "description": "Changes to different photo"
+                    },
+                    {
+                        "name": "Book stack",
+                        "type": "Missing Object",
+                        "description": "Books disappear from bottom stack"
+                    },
+                    {
+                        "name": "Naked cowboy",
+                        "type": "INTRUDER",
+                        "description": "Appears on left couch, throws tantrum"
+                    }
+                ],
+                "Stable": [
+                    {
+                        "name": "Saddle",
+                        "type": "Extra Object",
+                        "description": "Appears on front top post"
+                    },
+                    {
+                        "name": "\"The Stable\" sign",
+                        "type": "Extra Object",
+                        "description": "Text appears on front top post"
+                    },
+                    {
+                        "name": "Cowboys",
+                        "type": "Extra Object",
+                        "description": "Appear in stable"
+                    },
+                    {
+                        "name": "Extra sacks",
+                        "type": "Extra Object",
+                        "description": "Behind two blue bins"
+                    },
+                    {
+                        "name": "Blue crates",
+                        "type": "Missing Object",
+                        "description": "2 blue crates near desk disappear"
+                    },
+                    {
+                        "name": "Shovel",
+                        "type": "Object Replacement",
+                        "description": "Replaced with pitchfork"
+                    },
+                    {
+                        "name": "Room length",
+                        "type": "Room Manipulation",
+                        "description": "Stable gets longer"
+                    },
+                    {
+                        "name": "Both horses staring",
+                        "type": "Weird Animal",
+                        "description": "Both horses stare at camera"
+                    },
+                    {
+                        "name": "Horse neck",
+                        "type": "Weird Animal",
+                        "description": "Horse's neck grows very long"
+                    },
+                    {
+                        "name": "Demon goat",
+                        "type": "Weird Animal",
+                        "description": "Appears in middle, strange music"
+                    },
+                    {
+                        "name": "Grandma",
+                        "type": "INTRUDER",
+                        "description": "Throws stones at camera! HOLD LMB immediately (slow report)"
+                    }
+                ],
+                "Backyard": [
+                    {
+                        "name": "Scarecrow",
+                        "type": "Object Replacement",
+                        "description": "Changed to one with more limbs"
+                    },
+                    {
+                        "name": "Shed light",
+                        "type": "Light Anomaly",
+                        "description": "Light behind goats flickers"
+                    },
+                    {
+                        "name": "Tree",
+                        "type": "Object Movement",
+                        "description": "Middle tree moves left toward rock formation"
+                    },
+                    {
+                        "name": "Shed",
+                        "type": "Missing Object",
+                        "description": "Shed beside tractor disappears"
+                    },
+                    {
+                        "name": "Fence post",
+                        "type": "Missing Object",
+                        "description": "Middle post disappears"
+                    },
+                    {
+                        "name": "Tires",
+                        "type": "Extra Object",
+                        "description": "Appear beside goats"
+                    },
+                    {
+                        "name": "Special goats",
+                        "type": "Hold LMB",
+                        "description": "4 special goats appear, collect all"
+                    },
+                    {
+                        "name": "Man behind shed",
+                        "type": "INTRUDER",
+                        "description": "Appears behind enclosure shed"
+                    }
+                ]
+            }
+        },
+        "Airplane": {
+            "Rooms": {
+                "Gate": [
+                    {
+                        "name": "Wall decor",
+                        "type": "Missing Object",
+                        "description": "Under flight boards disappears"
+                    },
+                    {
+                        "name": "Plant (left)",
+                        "type": "Missing Object",
+                        "description": "Left plant disappears"
+                    },
+                    {
+                        "name": "Extra plant",
+                        "type": "Extra Object",
+                        "description": "Appears in front of reception desk"
+                    },
+                    {
+                        "name": "Extra chairs",
+                        "type": "Extra Object",
+                        "description": "On right seat rack, taking aisle space"
+                    },
+                    {
+                        "name": "Extra seats",
+                        "type": "Extra Object",
+                        "description": "On row going towards gate"
+                    },
+                    {
+                        "name": "Backpack",
+                        "type": "Object Replacement",
+                        "description": "Red → brown"
+                    },
+                    {
+                        "name": "Vent smoke",
+                        "type": "Smoke",
+                        "description": "Comes out of vent at boarding desk"
+                    },
+                    {
+                        "name": "UFO sign",
+                        "type": "Image Anomaly",
+                        "description": "Far right sign shows UFO"
+                    },
+                    {
+                        "name": "Flights board",
+                        "type": "Image Anomaly",
+                        "description": "All destinations \"Rome\" or \"Cancelled\""
+                    },
+                    {
+                        "name": "Seagull poster",
+                        "type": "Image Anomaly",
+                        "description": "Poster beside do-not-enter changes"
+                    },
+                    {
+                        "name": "Gate symbols",
+                        "type": "Image Anomaly",
+                        "description": "Exit/enter symbols change (red → green)"
+                    },
+                    {
+                        "name": "\"Gate 2\" sign",
+                        "type": "Image Anomaly",
+                        "description": "Sign changes (2 → 3)"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Appears in gate area"
+                    },
+                    {
+                        "name": "Rift",
+                        "type": "Rift",
+                        "description": "Can appear in gate area"
+                    },
+                    {
+                        "name": "Gate intruder",
+                        "type": "INTRUDER",
+                        "description": "Appears at gates to plane"
+                    }
+                ],
+                "Plane Entrance": [
+                    {
+                        "name": "Caution bars",
+                        "type": "Image Anomaly",
+                        "description": "\"Caution\" text → thin bars"
+                    },
+                    {
+                        "name": "Green sign",
+                        "type": "Image Anomaly",
+                        "description": "Arrow direction changes"
+                    },
+                    {
+                        "name": "Blue sign",
+                        "type": "Image Anomaly",
+                        "description": "Blue → orange"
+                    },
+                    {
+                        "name": "Briefcase",
+                        "type": "Object Movement",
+                        "description": "Moves from left to right side"
+                    },
+                    {
+                        "name": "Floor pattern",
+                        "type": "Object Replacement",
+                        "description": "Pattern grows larger"
+                    },
+                    {
+                        "name": "Hallway length",
+                        "type": "Room Manipulation",
+                        "description": "Gets longer by one segment"
+                    },
+                    {
+                        "name": "Handprint",
+                        "type": "Handprint",
+                        "description": "Appears on left and/or right of door"
+                    },
+                    {
+                        "name": "Door",
+                        "type": "Door Anomaly",
+                        "description": "Gate to plane closes"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "In hallway against briefcase"
+                    },
+                    {
+                        "name": "Abyss",
+                        "type": "Abyss",
+                        "description": "Can appear at end of hallway"
+                    },
+                    {
+                        "name": "Wheelchair man",
+                        "type": "INTRUDER",
+                        "description": "Man with bag on head wheels lady. SLOW report + CAPTCHA (select worms). If he gets too close = death"
+                    }
+                ],
+                "Economy Class": [
+                    {
+                        "name": "Bottle",
+                        "type": "Object Movement",
+                        "description": "Closest bottle turns/moves on cart"
+                    },
+                    {
+                        "name": "Single tray",
+                        "type": "Object Movement",
+                        "description": "One tray table closes"
+                    },
+                    {
+                        "name": "Overhead bins",
+                        "type": "Object Movement",
+                        "description": "Overhead compartments close (can be any)"
+                    },
+                    {
+                        "name": "Bulkhead door",
+                        "type": "Object Movement",
+                        "description": "Left side closes slightly"
+                    },
+                    {
+                        "name": "Red bottle",
+                        "type": "Object Replacement",
+                        "description": "Turns green"
+                    },
+                    {
+                        "name": "Safety pamphlet",
+                        "type": "Missing Object",
+                        "description": "2nd row, 2nd chair pamphlet disappears"
+                    },
+                    {
+                        "name": "All trays",
+                        "type": "Missing Object",
+                        "description": "All cabin trays disappear"
+                    },
+                    {
+                        "name": "Cup/tray",
+                        "type": "Missing Object",
+                        "description": "Cup missing, tray closed (scary face when reporting)"
+                    },
+                    {
+                        "name": "Window",
+                        "type": "Light Anomaly",
+                        "description": "Right window opens, lets light in"
+                    },
+                    {
+                        "name": "Monitor video",
+                        "type": "Image Anomaly",
+                        "description": "Plays cursed safety video or dark image"
+                    },
+                    {
+                        "name": "Monitor face",
+                        "type": "Image Anomaly",
+                        "description": "Scary grey face appears"
+                    },
+                    {
+                        "name": "Behind cart",
+                        "type": "INTRUDER",
+                        "description": "Appears behind beverage cart"
+                    },
+                    {
+                        "name": "Teeth grinder",
+                        "type": "INTRUDER",
+                        "description": "Grinding teeth in camera"
+                    },
+                    {
+                        "name": "Over seat",
+                        "type": "INTRUDER",
+                        "description": "Looking over right seat, smiling"
+                    }
+                ],
+                "Business Class": [
+                    {
+                        "name": "Secret item",
+                        "type": "Special Object",
+                        "description": "Just click it! (collectible)"
+                    },
+                    {
+                        "name": "Wall sign",
+                        "type": "Extra Object",
+                        "description": "Extra sign on right wall"
+                    },
+                    {
+                        "name": "Cup",
+                        "type": "Object Replacement",
+                        "description": "Left tray cup → wine bottle"
+                    },
+                    {
+                        "name": "Exit sign",
+                        "type": "Image Anomaly",
+                        "description": "\"Exit\" → \"Enter\""
+                    },
+                    {
+                        "name": "Cabin doors",
+                        "type": "Object Movement",
+                        "description": "Either of 2 cabin doors can close"
+                    },
+                    {
+                        "name": "Purse",
+                        "type": "Missing Object",
+                        "description": "Left seat purse disappears"
+                    },
+                    {
+                        "name": "Shoes",
+                        "type": "Missing Object",
+                        "description": "Under right seat shoes disappear"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Appears in cabin"
+                    },
+                    {
+                        "name": "Cabin flood",
+                        "type": "Water Anomaly",
+                        "description": "Water fills cabin"
+                    },
+                    {
+                        "name": "Rift",
+                        "type": "Rift",
+                        "description": "Can appear in cabin"
+                    },
+                    {
+                        "name": "Fog",
+                        "type": "Steam/Smoke/Fog",
+                        "description": "Cabin fills with fog"
+                    },
+                    {
+                        "name": "Handprints",
+                        "type": "Hold LMB",
+                        "description": "3 handprints around cabin. **Very hard to see** - may need multiple monitors!"
+                    },
+                    {
+                        "name": "Intercom",
+                        "type": "Strange Broadcast",
+                        "description": "Red light blinks, weird message plays"
+                    },
+                    {
+                        "name": "Flight attendant",
+                        "type": "INTRUDER",
+                        "description": "Walks with cart asking what's served. **Correct answer: WATER** (coffee/juice = rescan needed)"
+                    }
+                ],
+                "Cockpit": [
+                    {
+                        "name": "Fabric",
+                        "type": "Object Movement",
+                        "description": "Moves from behind right chair to left"
+                    },
+                    {
+                        "name": "Chair arm",
+                        "type": "Object Movement",
+                        "description": "Left chair arm lifts up"
+                    },
+                    {
+                        "name": "Shoulder straps",
+                        "type": "Object Movement",
+                        "description": "Left seat straps shift (right lower than left)"
+                    },
+                    {
+                        "name": "Handles",
+                        "type": "Object Movement",
+                        "description": "Center handles move"
+                    },
+                    {
+                        "name": "Red cup",
+                        "type": "Object Movement",
+                        "description": "Right side cup appears upside-down"
+                    },
+                    {
+                        "name": "Chairs",
+                        "type": "Object Replacement",
+                        "description": "Worn → vibrant new-looking"
+                    },
+                    {
+                        "name": "Banana",
+                        "type": "Missing Object",
+                        "description": "Right side banana disappears"
+                    },
+                    {
+                        "name": "Orange vest",
+                        "type": "Missing Object",
+                        "description": "Disappears"
+                    },
+                    {
+                        "name": "Right straps",
+                        "type": "Missing Object",
+                        "description": "Right seat straps disappear"
+                    },
+                    {
+                        "name": "Game controllers",
+                        "type": "Extra Object",
+                        "description": "Appear on pilot seats"
+                    },
+                    {
+                        "name": "Banana pile",
+                        "type": "Extra Object",
+                        "description": "Behind pilot seats"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Pilot appears on seat"
+                    },
+                    {
+                        "name": "Door peeker",
+                        "type": "INTRUDER",
+                        "description": "Peeks through door behind chairs"
+                    }
+                ],
+                "Toilet": [
+                    {
+                        "name": "Magazine",
+                        "type": "Image Anomaly",
+                        "description": "Cover changes"
+                    },
+                    {
+                        "name": "Blue sign",
+                        "type": "Image Anomaly",
+                        "description": "\"Keep toilet clean\" → \"Don't Flush Human\""
+                    },
+                    {
+                        "name": "No alcohol sign",
+                        "type": "Image Anomaly",
+                        "description": "Changes to no mask sign"
+                    },
+                    {
+                        "name": "Small sign",
+                        "type": "Image Anomaly",
+                        "description": "Man squatting over toilet → in toilet"
+                    },
+                    {
+                        "name": "Extra soap",
+                        "type": "Extra Object",
+                        "description": "Extra bottle on left of sink"
+                    },
+                    {
+                        "name": "Tourist hat",
+                        "type": "Extra Object",
+                        "description": "Appears in toilet"
+                    },
+                    {
+                        "name": "Worms",
+                        "type": "Extra Object",
+                        "description": "Appear in toilet"
+                    },
+                    {
+                        "name": "Toilet paper",
+                        "type": "Object Replacement",
+                        "description": "Replaced with roll with less paper"
+                    },
+                    {
+                        "name": "Door lock",
+                        "type": "Object Movement",
+                        "description": "Moves left to right"
+                    },
+                    {
+                        "name": "Room size",
+                        "type": "Room Manipulation",
+                        "description": "Bathroom shrinks, second mirror removed"
+                    },
+                    {
+                        "name": "Window",
+                        "type": "Light Anomaly",
+                        "description": "Opens and flashbangs you"
+                    },
+                    {
+                        "name": "Handprint",
+                        "type": "Handprint",
+                        "description": "Red handprint on right mirror"
+                    },
+                    {
+                        "name": "Toilet woman",
+                        "type": "INTRUDER",
+                        "description": "HOLD LMB immediately! Slow report. Fail = death"
+                    }
+                ]
+            }
+        },
+        "Fashion Venue": {
+            "Rooms": {
+                "Lobby": [
+                    {
+                        "name": "Lower railing",
+                        "type": "Missing Object",
+                        "description": "Lower staircase railing disappears"
+                    },
+                    {
+                        "name": "Upper railing",
+                        "type": "Missing Object",
+                        "description": "Upper staircase railing disappears"
+                    },
+                    {
+                        "name": "Red carpet",
+                        "type": "Missing Object",
+                        "description": "Stairs carpet disappears"
+                    },
+                    {
+                        "name": "Golden stair rods",
+                        "type": "Missing Object",
+                        "description": "Disappear"
+                    },
+                    {
+                        "name": "Column text",
+                        "type": "Image Anomaly",
+                        "description": "\"Do you see me?\" on right column"
+                    },
+                    {
+                        "name": "TV",
+                        "type": "Image Anomaly",
+                        "description": "Cursed slideshow plays"
+                    },
+                    {
+                        "name": "Upper door light",
+                        "type": "Light Anomaly",
+                        "description": "Bright light glowing from upper doorway"
+                    },
+                    {
+                        "name": "Center statue",
+                        "type": "Object Movement",
+                        "description": "Turns around"
+                    },
+                    {
+                        "name": "Bottom statue",
+                        "type": "Object Movement",
+                        "description": "Right of stairs → left side"
+                    },
+                    {
+                        "name": "Arm statues",
+                        "type": "Object Replacement",
+                        "description": "Top statues cross their arms"
+                    },
+                    {
+                        "name": "Extra bottle",
+                        "type": "Extra Object",
+                        "description": "Appears on left table"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Hanging from railing"
+                    },
+                    {
+                        "name": "Abyss",
+                        "type": "Abyss",
+                        "description": "Starts growing from upper level"
+                    },
+                    {
+                        "name": "Rift",
+                        "type": "Rift",
+                        "description": "Grows from center of lobby"
+                    },
+                    {
+                        "name": "HUGE MAN!",
+                        "type": "INTRUDER",
+                        "description": "Appears at top doorway. Report fails → attack minigame. **Weak spot: his RIGHT leg (our left)**. Aim circle there. He fights back - be fast!"
+                    }
+                ],
+                "Catwalk": [
+                    {
+                        "name": "Mannequin head",
+                        "type": "Extra Object",
+                        "description": "Appears under hat on chair"
+                    },
+                    {
+                        "name": "Curtains",
+                        "type": "Extra Object",
+                        "description": "Appear on left/right of camera"
+                    },
+                    {
+                        "name": "All chairs",
+                        "type": "Object Movement",
+                        "description": "Turn from facing catwalk to camera"
+                    },
+                    {
+                        "name": "Lights",
+                        "type": "Object Movement",
+                        "description": "Above stage, turn to different directions"
+                    },
+                    {
+                        "name": "Lights",
+                        "type": "Object Replacement",
+                        "description": "Wall lights → golden ones"
+                    },
+                    {
+                        "name": "Floor",
+                        "type": "Object Replacement",
+                        "description": "Black tiles → black/white checkered"
+                    },
+                    {
+                        "name": "Rift",
+                        "type": "Rift",
+                        "description": "Middle of catwalk (chairs move backward)"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Partially under chairs on left side"
+                    },
+                    {
+                        "name": "Silhouette",
+                        "type": "INTRUDER",
+                        "description": "Shadowy intruder draped over front chairs"
+                    },
+                    {
+                        "name": "Undead mannequins",
+                        "type": "INTRUDER",
+                        "description": "Walking mannequins replaced by undead-looking intruders"
+                    }
+                ],
+                "Backstage": [
+                    {
+                        "name": "Jacket",
+                        "type": "Missing Object",
+                        "description": "Right coat hanger jacket disappears"
+                    },
+                    {
+                        "name": "Middle bottles",
+                        "type": "Missing Object",
+                        "description": "Bottles on desk disappear"
+                    },
+                    {
+                        "name": "Mannequin head",
+                        "type": "Object Movement",
+                        "description": "Mannequin on floor flips around"
+                    },
+                    {
+                        "name": "Spinning chair",
+                        "type": "Object Movement",
+                        "description": "Chair spins, ghost appears after reporting"
+                    },
+                    {
+                        "name": "Orange jacket",
+                        "type": "Object Replacement",
+                        "description": "→ black"
+                    },
+                    {
+                        "name": "Left bottles",
+                        "type": "Extra Object",
+                        "description": "More bottles on left side of far table"
+                    },
+                    {
+                        "name": "Right bottles",
+                        "type": "Extra Object",
+                        "description": "Bottles on table duplicate"
+                    },
+                    {
+                        "name": "Ring",
+                        "type": "Special Object",
+                        "description": "Appears on desk (collectible!)"
+                    },
+                    {
+                        "name": "Painting face",
+                        "type": "Image Anomaly",
+                        "description": "Lips disappear, OR lips disappear AND painting becomes 3D (both can occur in same game!)"
+                    },
+                    {
+                        "name": "Bottle on chair",
+                        "type": "Extra Object",
+                        "description": "Bottle appears on chair"
+                    },
+                    {
+                        "name": "Mannequin face on painting",
+                        "type": "Extra Object",
+                        "description": "Mannequin face appears on painting"
+                    },
+                    {
+                        "name": "Mirror shadow",
+                        "type": "INTRUDER",
+                        "description": "Shadow/silhouette appears in mirror"
+                    },
+                    {
+                        "name": "The Collector",
+                        "type": "INTRUDER",
+                        "description": "Man with donut appears, start timer. Find donut in other room, click it. **Donut locations:** Lobby (table), Catwalk (chairs), Bar (multiple spots), Store (displays), Storage (desk area)"
+                    }
+                ],
+                "Bar": [
+                    {
+                        "name": "Left statue",
+                        "type": "Object Replacement",
+                        "description": "→ crumpled/contorted body"
+                    },
+                    {
+                        "name": "Mirrored statue",
+                        "type": "Object Replacement",
+                        "description": "Statue replaced with mirrored version"
+                    },
+                    {
+                        "name": "Extra bottle",
+                        "type": "Extra Object",
+                        "description": "On closest table"
+                    },
+                    {
+                        "name": "Extra brackets",
+                        "type": "Extra Object",
+                        "description": "Extra brackets/chains on pillar"
+                    },
+                    {
+                        "name": "Chair missing",
+                        "type": "Missing Object",
+                        "description": "Back room chair disappears"
+                    },
+                    {
+                        "name": "Bar stool missing",
+                        "type": "Missing Object",
+                        "description": "Leftmost bar stool disappears"
+                    },
+                    {
+                        "name": "Light fixture",
+                        "type": "Missing Object",
+                        "description": "Outer part of light fixture disappears"
+                    },
+                    {
+                        "name": "Magazine",
+                        "type": "Image Anomaly",
+                        "description": "Magazine on chair → creepy image"
+                    },
+                    {
+                        "name": "Woman statue",
+                        "type": "Object Movement",
+                        "description": "Stretches and moves (very subtle)"
+                    },
+                    {
+                        "name": "Santa hats",
+                        "type": "Hold LMB",
+                        "description": "6 hats around room, collect all"
+                    },
+                    {
+                        "name": "Dead body (back)",
+                        "type": "Dead Body",
+                        "description": "In back of bar"
+                    },
+                    {
+                        "name": "Dead body (pillar)",
+                        "type": "Dead Body",
+                        "description": "Leaning against pillar"
+                    },
+                    {
+                        "name": "The Handyman",
+                        "type": "INTRUDER",
+                        "description": "LMB hold, he moves and shows symbol in hand-face. Report, then choose: **Fire beats Leaf, Leaf beats Water, Water beats Fire**"
+                    }
+                ],
+                "Store": [
+                    {
+                        "name": "Back rack clothes",
+                        "type": "Missing Object",
+                        "description": "Disappear"
+                    },
+                    {
+                        "name": "2 jackets",
+                        "type": "Missing Object",
+                        "description": "Two jackets from rack disappear"
+                    },
+                    {
+                        "name": "Floor",
+                        "type": "Object Replacement",
+                        "description": "Blue floor → green"
+                    },
+                    {
+                        "name": "Wall bust",
+                        "type": "Object Replacement",
+                        "description": "Bust on wall → male one"
+                    },
+                    {
+                        "name": "Wallet money",
+                        "type": "Object Replacement",
+                        "description": "Money → ID card"
+                    },
+                    {
+                        "name": "Worm sculpture",
+                        "type": "Object Movement",
+                        "description": "Slumps down in cage"
+                    },
+                    {
+                        "name": "Displays",
+                        "type": "Object Movement",
+                        "description": "Two displays swap places"
+                    },
+                    {
+                        "name": "Red lights",
+                        "type": "Light Anomaly",
+                        "description": "Flash with alarm"
+                    },
+                    {
+                        "name": "Laptop",
+                        "type": "Image Anomaly",
+                        "description": "Face appears on computer screen"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Appears in cage in middle"
+                    },
+                    {
+                        "name": "Rift",
+                        "type": "Rift",
+                        "description": "Left side of room"
+                    },
+                    {
+                        "name": "Naked intruder",
+                        "type": "INTRUDER",
+                        "description": "Appears between clothing rows"
+                    }
+                ],
+                "Storage": [
+                    {
+                        "name": "Toolbox",
+                        "type": "Missing Object",
+                        "description": "Toolbox disappears"
+                    },
+                    {
+                        "name": "Chair",
+                        "type": "Missing Object",
+                        "description": "Chair disappears"
+                    },
+                    {
+                        "name": "Red container",
+                        "type": "Missing Object",
+                        "description": "On desk, disappears"
+                    },
+                    {
+                        "name": "Garbage bag",
+                        "type": "Missing Object",
+                        "description": "Behind left desk, disappears"
+                    },
+                    {
+                        "name": "Top right picture",
+                        "type": "Missing Object",
+                        "description": "Disappears"
+                    },
+                    {
+                        "name": "White mannequin",
+                        "type": "Object Movement",
+                        "description": "Right side, moves to face camera"
+                    },
+                    {
+                        "name": "Mannequin head",
+                        "type": "Object Replacement",
+                        "description": "→ creepy face"
+                    },
+                    {
+                        "name": "White mannequin head",
+                        "type": "Object Replacement",
+                        "description": "→ grey"
+                    },
+                    {
+                        "name": "Corner mannequin",
+                        "type": "Object Replacement",
+                        "description": "Torso → full body"
+                    },
+                    {
+                        "name": "Top left image",
+                        "type": "Image Anomaly",
+                        "description": "→ cursed portrait"
+                    },
+                    {
+                        "name": "Bottom left painting",
+                        "type": "Image Anomaly",
+                        "description": "Goes cross-eyed"
+                    },
+                    {
+                        "name": "Rift",
+                        "type": "Rift",
+                        "description": "Middle of room"
+                    },
+                    {
+                        "name": "The Puppeteer",
+                        "type": "INTRUDER",
+                        "description": "Memory game with 9 cards. Match pairs. DON'T HIT SKULLS = death"
+                    }
+                ]
+            }
+        },
+        "Office": {
+            "Rooms": {
+                "Reception": [
+                    {
+                        "name": "Staircase",
+                        "type": "Missing Object",
+                        "description": "Left side disappears"
+                    },
+                    {
+                        "name": "Left door",
+                        "type": "Door Anomaly",
+                        "description": "Opens, someone runs out when reported"
+                    },
+                    {
+                        "name": "Bowl smoke",
+                        "type": "Smoke",
+                        "description": "Rises from bowl"
+                    },
+                    {
+                        "name": "Handprint",
+                        "type": "Handprint",
+                        "description": "Small bloody print under brown cabinet"
+                    },
+                    {
+                        "name": "Purple poster",
+                        "type": "Image Anomaly",
+                        "description": "→ angry Bill Cipher"
+                    },
+                    {
+                        "name": "Blue TV",
+                        "type": "Image Anomaly",
+                        "description": "Creepy scratched-out faces photo"
+                    },
+                    {
+                        "name": "Wall papers",
+                        "type": "Image Anomaly",
+                        "description": "→ redacted texts"
+                    },
+                    {
+                        "name": "Plants",
+                        "type": "Object Replacement",
+                        "description": "Pompom trees → big leafed plants"
+                    },
+                    {
+                        "name": "Chamber logo",
+                        "type": "Extra Object",
+                        "description": "Eyeball in circle"
+                    },
+                    {
+                        "name": "Printer intruder",
+                        "type": "INTRUDER",
+                        "description": "On top of printer (doing unspeakable things)"
+                    }
+                ],
+                "Bullpen": [
+                    {
+                        "name": "Binders",
+                        "type": "Missing Object",
+                        "description": "Half on top left shelf disappear"
+                    },
+                    {
+                        "name": "Board numbers",
+                        "type": "Image Anomaly",
+                        "description": "Go into red"
+                    },
+                    {
+                        "name": "Right monitor",
+                        "type": "Image Anomaly",
+                        "description": "Scary woman appears"
+                    },
+                    {
+                        "name": "Left monitor",
+                        "type": "Image Anomaly",
+                        "description": "Cute drawing app pops up"
+                    },
+                    {
+                        "name": "Room",
+                        "type": "Room Manipulation",
+                        "description": "Gets longer"
+                    },
+                    {
+                        "name": "Paper throwing",
+                        "type": "Object Movement",
+                        "description": "Paper thrown from left desk to trashcan"
+                    },
+                    {
+                        "name": "Extra buttons",
+                        "type": "Extra Object",
+                        "description": "At back of room"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Office worker rams camera, dies"
+                    },
+                    {
+                        "name": "\"E\" anomaly",
+                        "type": "SPECIAL",
+                        "description": "Weird \"Eeee\" noise. Find infected room, report from DIFFERENT room (menu turns to \"E\" if in same room)"
+                    }
+                ],
+                "Workspace": [
+                    {
+                        "name": "Papers",
+                        "type": "Missing Object",
+                        "description": "Right wall papers disappear"
+                    },
+                    {
+                        "name": "Sticky notes",
+                        "type": "Object Movement",
+                        "description": "Change positions"
+                    },
+                    {
+                        "name": "Three cups",
+                        "type": "Object Movement",
+                        "description": "Change positions with each other"
+                    },
+                    {
+                        "name": "Brown duotang",
+                        "type": "Object Movement",
+                        "description": "Turns wrong way"
+                    },
+                    {
+                        "name": "Family photo",
+                        "type": "Image Anomaly",
+                        "description": "→ portrait of man"
+                    },
+                    {
+                        "name": "Extra buttons",
+                        "type": "Extra Object",
+                        "description": "Back wall: 4 → 6"
+                    },
+                    {
+                        "name": "Hole",
+                        "type": "Hole",
+                        "description": "Beside chair, screeching noise"
+                    },
+                    {
+                        "name": "Rift",
+                        "type": "Rift",
+                        "description": "Middle of room, sucks you in"
+                    },
+                    {
+                        "name": "Wall intruder",
+                        "type": "INTRUDER",
+                        "description": "Behind left cubicle wall"
+                    },
+                    {
+                        "name": "Banana thing",
+                        "type": "INTRUDER",
+                        "description": "Weird thing replaces banana"
+                    },
+                    {
+                        "name": "Monitor face",
+                        "type": "INTRUDER",
+                        "description": "Man's face warps monitor, chanting"
+                    }
+                ],
+                "Break Room": [
+                    {
+                        "name": "Trashcan",
+                        "type": "Object Movement",
+                        "description": "Grey trashcan moves from brown trashcan to fridge"
+                    },
+                    {
+                        "name": "Fridge cord",
+                        "type": "Object Movement",
+                        "description": "Left outlet → right"
+                    },
+                    {
+                        "name": "Coffee/microwave",
+                        "type": "Object Movement",
+                        "description": "Switch places"
+                    },
+                    {
+                        "name": "Top left chair",
+                        "type": "Object Movement",
+                        "description": "Faces camera"
+                    },
+                    {
+                        "name": "Flowers",
+                        "type": "Object Replacement",
+                        "description": "4 red → 3 yellow"
+                    },
+                    {
+                        "name": "Fridge text",
+                        "type": "Image Anomaly",
+                        "description": "Changes"
+                    },
+                    {
+                        "name": "Trashcan paper",
+                        "type": "Image Anomaly",
+                        "description": "→ red splatter painting"
+                    },
+                    {
+                        "name": "K-pop poster",
+                        "type": "Image Anomaly",
+                        "description": "→ abstract skull"
+                    },
+                    {
+                        "name": "Coffee machine paper",
+                        "type": "Image Anomaly",
+                        "description": "Changes"
+                    },
+                    {
+                        "name": "\"Work..?\" text",
+                        "type": "Image Anomaly",
+                        "description": "Brown bin sign turns red"
+                    },
+                    {
+                        "name": "Fruit faces",
+                        "type": "Hold LMB",
+                        "description": "3 fruits, collect all, bananarang jumps out"
+                    },
+                    {
+                        "name": "Garbage intruder",
+                        "type": "INTRUDER",
+                        "description": "Takes over garbage can"
+                    },
+                    {
+                        "name": "The Tunneller",
+                        "type": "INTRUDER",
+                        "description": "In wall hole. Start reporting IMMEDIATELY (slow, camera zooms in)"
+                    }
+                ],
+                "Boss' Room": [
+                    {
+                        "name": "Middle shelf books",
+                        "type": "Missing Object",
+                        "description": "Disappear"
+                    },
+                    {
+                        "name": "Left shelf books",
+                        "type": "Missing Object",
+                        "description": "Disappear"
+                    },
+                    {
+                        "name": "Middle plant",
+                        "type": "Missing Object",
+                        "description": "Corner plant disappears"
+                    },
+                    {
+                        "name": "Red/blue frames",
+                        "type": "Object Movement",
+                        "description": "Left cabinet, switch places"
+                    },
+                    {
+                        "name": "Right couch",
+                        "type": "Object Movement",
+                        "description": "Turns toward camera"
+                    },
+                    {
+                        "name": "Red painting",
+                        "type": "Image Anomaly",
+                        "description": "→ white spooky painting"
+                    },
+                    {
+                        "name": "Middle painting",
+                        "type": "Image Anomaly",
+                        "description": "Stains/design underneath"
+                    },
+                    {
+                        "name": "Fish image",
+                        "type": "Image Anomaly",
+                        "description": "→ creepy cursed photo"
+                    },
+                    {
+                        "name": "Room flood",
+                        "type": "Water Anomaly",
+                        "description": "Fills with water and fish"
+                    },
+                    {
+                        "name": "Mug",
+                        "type": "Special Object",
+                        "description": "Appears on boss' desk (collectible!)"
+                    },
+                    {
+                        "name": "Skinny Prince",
+                        "type": "INTRUDER",
+                        "description": "Alert appears with location. DO NOT GO TO THAT ROOM! Report from different room via RMB → \"Skinny Prince\""
+                    }
+                ],
+                "Balcony": [
+                    {
+                        "name": "Sandwich",
+                        "type": "Object Replacement",
+                        "description": "Goes moldy"
+                    },
+                    {
+                        "name": "Crane",
+                        "type": "Object Movement",
+                        "description": "Turns different direction"
+                    },
+                    {
+                        "name": "Extra leg",
+                        "type": "Extra Object",
+                        "description": "Under table (very hard to spot!)"
+                    },
+                    {
+                        "name": "Green bottle",
+                        "type": "Smoke",
+                        "description": "Smoke comes out"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "On railing side"
+                    },
+                    {
+                        "name": "Window face",
+                        "type": "INTRUDER",
+                        "description": "Gross face in balcony barrier window"
+                    },
+                    {
+                        "name": "The Savage",
+                        "type": "INTRUDER",
+                        "description": "Floating disembodied head over balcony"
+                    }
+                ]
+            }
+        },
+        "Lighthouse": {
+            "Rooms": {
+                "Pier": [
+                    {
+                        "name": "Naked Man",
+                        "type": "INTRUDER",
+                        "description": "Naked Man is taking a piss"
+                    },
+                    {
+                        "name": "Dock extended",
+                        "type": "Room Manipulation",
+                        "description": "Dock has been extended plus extra lamppost"
+                    },
+                    {
+                        "name": "Tall piling",
+                        "type": "Object Replacement",
+                        "description": "Tall piling on the right side is shorter"
+                    },
+                    {
+                        "name": "Titan",
+                        "type": "INTRUDER",
+                        "description": "Titan is slowly approaching the dock, click on the faces looking upward"
+                    },
+                    {
+                        "name": "Wood boards",
+                        "type": "Missing Object",
+                        "description": "Wood boards on the roof are gone"
+                    },
+                    {
+                        "name": "Preserver",
+                        "type": "Missing Object",
+                        "description": "Preserver on the cross is gone"
+                    },
+                    {
+                        "name": "Short piling",
+                        "type": "Object Replacement",
+                        "description": "Short piling next to the lamppost is taller"
+                    },
+                    {
+                        "name": "Rubber ducky",
+                        "type": "Secret Object",
+                        "description": "Rubber ducky in the water"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Body floating in the water"
+                    },
+                    {
+                        "name": "Fog",
+                        "type": "Steam/Smoke/Fog",
+                        "description": "There is fog everywhere"
+                    },
+                    {
+                        "name": "Extra buoy",
+                        "type": "Extra Object",
+                        "description": "Extra buoy in the pile on right"
+                    },
+                    {
+                        "name": "Bottle",
+                        "type": "Object Movement",
+                        "description": "Bottle closest to shed will turn other way"
+                    },
+                    {
+                        "name": "Life jacket",
+                        "type": "Extra Object",
+                        "description": "Life jacket in the dinghy"
+                    }
+                ],
+                "Yard": [
+                    {
+                        "name": "Drum",
+                        "type": "Extra Object",
+                        "description": "Drum on the top of left hill"
+                    },
+                    {
+                        "name": "Man in window",
+                        "type": "INTRUDER",
+                        "description": "Man in the lighthouse window"
+                    },
+                    {
+                        "name": "Wires",
+                        "type": "Object Movement",
+                        "description": "Wires are swaying"
+                    },
+                    {
+                        "name": "Siren",
+                        "type": "INTRUDER",
+                        "description": "Siren is singing, time sensitive"
+                    },
+                    {
+                        "name": "Flooded yard",
+                        "type": "Water Anomaly",
+                        "description": "Everything is underwater"
+                    },
+                    {
+                        "name": "Chimney smoke",
+                        "type": "Smoke",
+                        "description": "Smoke coming from cabin chimney"
+                    },
+                    {
+                        "name": "Wine bottle",
+                        "type": "Extra Object",
+                        "description": "Second wine bottle"
+                    },
+                    {
+                        "name": "Flares",
+                        "type": "Light Anomaly",
+                        "description": "Flares going off in the sky"
+                    },
+                    {
+                        "name": "Deflated man",
+                        "type": "INTRUDER",
+                        "description": "Deflated man behind the crates"
+                    },
+                    {
+                        "name": "Yellow/gray buoy",
+                        "type": "Object Replacement",
+                        "description": "Replaced with green/blue buoy"
+                    },
+                    {
+                        "name": "Yellow/blue buoy",
+                        "type": "Object Replacement",
+                        "description": "Replaced with red/white buoy"
+                    },
+                    {
+                        "name": "Outhouse",
+                        "type": "Missing Object",
+                        "description": "Outhouse at top of hill disappears"
+                    }
+                ],
+                "Cabin": [
+                    {
+                        "name": "Man outside",
+                        "type": "INTRUDER",
+                        "description": "Man outside the window"
+                    },
+                    {
+                        "name": "TV screen",
+                        "type": "Image Anomaly",
+                        "description": "Static on TV screen"
+                    },
+                    {
+                        "name": "Ice on windows",
+                        "type": "Frosted Glass",
+                        "description": "Ice on the windows"
+                    },
+                    {
+                        "name": "Dentures",
+                        "type": "Object Replacement",
+                        "description": "Dentures turn into eyeballs"
+                    },
+                    {
+                        "name": "Firewood",
+                        "type": "Extra Object",
+                        "description": "More firewood than normal"
+                    },
+                    {
+                        "name": "Gramophone",
+                        "type": "Object Manipulation",
+                        "description": "Gramophone starts playing"
+                    },
+                    {
+                        "name": "Stove smoke",
+                        "type": "Smoke",
+                        "description": "Smoke coming from stove"
+                    },
+                    {
+                        "name": "Brick walls",
+                        "type": "Object Replacement",
+                        "description": "Brick walls have changed to stucco"
+                    },
+                    {
+                        "name": "Board",
+                        "type": "Image Anomaly",
+                        "description": "Pics of mustachioed man all over board"
+                    },
+                    {
+                        "name": "Keeper",
+                        "type": "INTRUDER",
+                        "description": "Keeper is holding a knife, answer nay for all"
+                    }
+                ],
+                "Interior": [
+                    {
+                        "name": "Ropes",
+                        "type": "Object Manipulation",
+                        "description": "Lots of ropes hanging everywhere"
+                    },
+                    {
+                        "name": "Lantern",
+                        "type": "Object Movement",
+                        "description": "Lantern has shifted to right side of the sill"
+                    },
+                    {
+                        "name": "Radio",
+                        "type": "Strange Broadcast",
+                        "description": "Radio is playing a weird message"
+                    },
+                    {
+                        "name": "Light switch",
+                        "type": "Missing Object",
+                        "description": "Light switch is gone"
+                    },
+                    {
+                        "name": "Typewriter",
+                        "type": "Missing Object",
+                        "description": "Typewriter is gone"
+                    },
+                    {
+                        "name": "Gnawer",
+                        "type": "INTRUDER",
+                        "description": "Appears from behind the pipe near top of screen and leaps toward camera"
+                    },
+                    {
+                        "name": "Map",
+                        "type": "Image Anomaly",
+                        "description": "Extra continent appears on the map"
+                    },
+                    {
+                        "name": "Ladder",
+                        "type": "Object Movement",
+                        "description": "Bottom rung of ladder shifts downward"
+                    },
+                    {
+                        "name": "Cloth",
+                        "type": "Missing Object",
+                        "description": "Blue/green cloth under the stairs disappears"
+                    },
+                    {
+                        "name": "Bottle",
+                        "type": "Extra Object",
+                        "description": "Bottle on windowsill near top of screen"
+                    },
+                    {
+                        "name": "Rope",
+                        "type": "Object Replacement",
+                        "description": "One of the ropes becomes a noose"
+                    },
+                    {
+                        "name": "Trapdoor man",
+                        "type": "INTRUDER",
+                        "description": "Man peeking from the trapdoor"
+                    },
+                    {
+                        "name": "Mousetrap",
+                        "type": "Object Movement",
+                        "description": "Mousetrap flips around, cheese on right"
+                    }
+                ],
+                "Stairwell": [
+                    {
+                        "name": "Tower height",
+                        "type": "Room Manipulation",
+                        "description": "Light house is much taller than before"
+                    },
+                    {
+                        "name": "Stairs",
+                        "type": "Room Manipulation",
+                        "description": "Stairs have been rotated, lower floor on left side"
+                    },
+                    {
+                        "name": "Black pawn",
+                        "type": "Extra Object",
+                        "description": "Black pawn appears, location varies"
+                    },
+                    {
+                        "name": "Rear guardrail",
+                        "type": "Missing Object",
+                        "description": "Rear guardrail is gone"
+                    },
+                    {
+                        "name": "Earthworm",
+                        "type": "INTRUDER",
+                        "description": "Giant earthworm slithering up the stairs, needs to be reported twice"
+                    },
+                    {
+                        "name": "Axel",
+                        "type": "Object Movement",
+                        "description": "Axel begins rotating counterclockwise"
+                    },
+                    {
+                        "name": "Thing under stairs",
+                        "type": "Extra Object",
+                        "description": "Thing under stairs on right"
+                    },
+                    {
+                        "name": "Crate",
+                        "type": "Object Replacement",
+                        "description": "Crate with symbol turns into a barrel"
+                    },
+                    {
+                        "name": "Left guardrail",
+                        "type": "Object Movement",
+                        "description": "Left guardrail shifts up so gap at bottom"
+                    }
+                ],
+                "Lantern": [
+                    {
+                        "name": "Purple scarf",
+                        "type": "Object Replacement",
+                        "description": "Turns black and white"
+                    },
+                    {
+                        "name": "Oilcan",
+                        "type": "Missing Object",
+                        "description": "Oilcan is gone"
+                    },
+                    {
+                        "name": "Seagulls",
+                        "type": "Hold LMB",
+                        "description": "Report the 4 seagulls"
+                    },
+                    {
+                        "name": "Nixie",
+                        "type": "INTRUDER",
+                        "description": "Slowly approaches from lower level until he pounces"
+                    },
+                    {
+                        "name": "Green mug",
+                        "type": "Extra Object",
+                        "description": "Green mug appears on the small table"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Man on the rocks down below"
+                    },
+                    {
+                        "name": "Lantern",
+                        "type": "Object Movement",
+                        "description": "Lantern begins rotating counterclockwise"
+                    },
+                    {
+                        "name": "Ladder",
+                        "type": "Object Movement",
+                        "description": "Ladder is wriggling"
+                    },
+                    {
+                        "name": "Stool",
+                        "type": "Object Movement",
+                        "description": "Stool next to green bucket turned 90 degrees"
+                    }
+                ],
+                "Basement": [
+                    {
+                        "name": "Drum: Front left",
+                        "type": "Object Movement",
+                        "description": "Tipped over"
+                    },
+                    {
+                        "name": "Handprint",
+                        "type": "Handprint",
+                        "description": "On the stairs"
+                    },
+                    {
+                        "name": "Stairs",
+                        "type": "Object Movement",
+                        "description": "Stairs are wriggling"
+                    },
+                    {
+                        "name": "Flooded",
+                        "type": "Water Anomaly",
+                        "description": "Basement is flooded"
+                    },
+                    {
+                        "name": "Hole",
+                        "type": "Hole",
+                        "description": "Opens up at the bottom of the stairs"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Corpse is thrown down the stairs. REQUIRES 2 REPORTS: first as 'Dead Body', then second as 'Intruder' (mumbling corpse)!"
+                    },
+                    {
+                        "name": "Drum: Rear left",
+                        "type": "Object Movement",
+                        "description": "Rotates, you can see the flammable sign"
+                    },
+                    {
+                        "name": "Sack: Top right",
+                        "type": "Missing Object",
+                        "description": "Top sack from right stack is gone"
+                    },
+                    {
+                        "name": "Sack: Top middle",
+                        "type": "Missing Object",
+                        "description": "Top sack from middle stack is gone"
+                    },
+                    {
+                        "name": "Sack: Top left",
+                        "type": "Missing Object",
+                        "description": "Top sack from left stack is gone"
+                    },
+                    {
+                        "name": "Mousetrap: Left of left pair",
+                        "type": "Missing Object",
+                        "description": "Leftmost mousetrap disappears"
+                    },
+                    {
+                        "name": "Mousetrap: Right of left pair",
+                        "type": "Missing Object",
+                        "description": "Second mousetrap from left disappears"
+                    },
+                    {
+                        "name": "Mousetrap: Left of right pair",
+                        "type": "Missing Object",
+                        "description": "Third mousetrap from left disappears"
+                    }
+                ]
+            }
+        },
+        "Research Station": {
+            "Rooms": {
+                "Monitoring Room": [
+                    {
+                        "name": "Post-it notes",
+                        "type": "Extra Object",
+                        "description": "More post-it notes appear on the white board"
+                    },
+                    {
+                        "name": "Laptop",
+                        "type": "Image Anomaly",
+                        "description": "Laptop on the floor turns on"
+                    },
+                    {
+                        "name": "Walkie-talkies",
+                        "type": "Extra Object",
+                        "description": "More walkie-talkies appear on the desk"
+                    },
+                    {
+                        "name": "Bullets",
+                        "type": "Extra Object",
+                        "description": "Bullets on the floor"
+                    },
+                    {
+                        "name": "Crawling creature",
+                        "type": "INTRUDER",
+                        "description": "Fatal if not reported on time"
+                    },
+                    {
+                        "name": "Post-it notes",
+                        "type": "Object Movement",
+                        "description": "Post-it notes levitating"
+                    },
+                    {
+                        "name": "Tic Tac Toe",
+                        "type": "Image Anomaly",
+                        "description": "Changes the longer it goes unnoticed"
+                    },
+                    {
+                        "name": "Clock",
+                        "type": "Object Manipulation",
+                        "description": "Clock shows \"backward\" time"
+                    },
+                    {
+                        "name": "Torch",
+                        "type": "Light Anomaly",
+                        "description": "Torch flickering"
+                    },
+                    {
+                        "name": "Floor",
+                        "type": "Object Replacement",
+                        "description": "Texture changes and becomes more \"rough\" and bumpy"
+                    },
+                    {
+                        "name": "Cable clips",
+                        "type": "Missing Object",
+                        "description": "Clips on wires on the left upper corner disappear"
+                    }
+                ],
+                "Laboratory": [
+                    {
+                        "name": "Tall creature",
+                        "type": "INTRUDER",
+                        "description": "Outside the open door"
+                    },
+                    {
+                        "name": "Sockets (door)",
+                        "type": "Missing Object",
+                        "description": "A pair of sockets next to the door disappears"
+                    },
+                    {
+                        "name": "Giant",
+                        "type": "INTRUDER",
+                        "description": "In the containment room"
+                    },
+                    {
+                        "name": "Sockets (glass)",
+                        "type": "Missing Object",
+                        "description": "A pair of sockets under the glass partition disappears"
+                    },
+                    {
+                        "name": "Microscope",
+                        "type": "Extra Object",
+                        "description": "A thing on the microscope"
+                    },
+                    {
+                        "name": "Creature",
+                        "type": "INTRUDER",
+                        "description": "In the containment room"
+                    },
+                    {
+                        "name": "Scale",
+                        "type": "Object Replacement",
+                        "description": "Changes to typewriter"
+                    },
+                    {
+                        "name": "Bottles",
+                        "type": "Object Movement",
+                        "description": "Bottles on the counter move to the center"
+                    },
+                    {
+                        "name": "Vertical beam",
+                        "type": "Missing Object",
+                        "description": "Beam on the counter going up to the ceiling disappears"
+                    },
+                    {
+                        "name": "Test tubes",
+                        "type": "Object Movement",
+                        "description": "All move to the right side in a row"
+                    },
+                    {
+                        "name": "Light",
+                        "type": "Light Anomaly",
+                        "description": "The light outside the open door is flickering"
+                    },
+                    {
+                        "name": "Cupboard",
+                        "type": "Missing Object",
+                        "description": "Cupboard on the wall (left from clock) disappears"
+                    },
+                    {
+                        "name": "Clock",
+                        "type": "Object Manipulation",
+                        "description": "Clock hands are mirrored"
+                    }
+                ],
+                "Rec Room": [
+                    {
+                        "name": "Dartboard",
+                        "type": "Object Movement",
+                        "description": "Dartboard spinning"
+                    },
+                    {
+                        "name": "Darts",
+                        "type": "Extra Object",
+                        "description": "Darts on the dartboard increase over time"
+                    },
+                    {
+                        "name": "Dead body (couch)",
+                        "type": "Dead Body",
+                        "description": "A dead person in front of the couch"
+                    },
+                    {
+                        "name": "Fridge",
+                        "type": "Door Anomaly",
+                        "description": "Fridge door opens"
+                    },
+                    {
+                        "name": "Mousetrap",
+                        "type": "Extra Object",
+                        "description": "Next to the phone"
+                    },
+                    {
+                        "name": "Books",
+                        "type": "Missing Object",
+                        "description": "Half the books disappear on third bottom shelf (right)"
+                    },
+                    {
+                        "name": "Sink",
+                        "type": "Suspicious Liquid",
+                        "description": "Green liquid appears in the sink"
+                    },
+                    {
+                        "name": "Calendar",
+                        "type": "Image Anomaly",
+                        "description": "Calendar's image changes"
+                    },
+                    {
+                        "name": "Business card",
+                        "type": "Secret Object",
+                        "description": "Business card on the table"
+                    },
+                    {
+                        "name": "Phone",
+                        "type": "Phone Anomaly",
+                        "description": "The phone rings and a man starts talking"
+                    },
+                    {
+                        "name": "Dead body (fridge)",
+                        "type": "Dead Body",
+                        "description": "A dead person on the fridge"
+                    },
+                    {
+                        "name": "Nested intruder",
+                        "type": "INTRUDER",
+                        "description": "Intruder \"inside\" an intruder (requires re-report)"
+                    },
+                    {
+                        "name": "Chair",
+                        "type": "Missing Object",
+                        "description": "Turned chair towards the projector screen disappears"
+                    },
+                    {
+                        "name": "Couches",
+                        "type": "Object Movement",
+                        "description": "Couches and loveseat move slightly angled"
+                    },
+                    {
+                        "name": "Chess pieces",
+                        "type": "Object Movement",
+                        "description": "Chess pieces on chessboard move"
+                    }
+                ],
+                "Quarters": [
+                    {
+                        "name": "Multiple intruders",
+                        "type": "INTRUDER",
+                        "description": "Click one by one"
+                    },
+                    {
+                        "name": "Room length",
+                        "type": "Room Manipulation",
+                        "description": "Longer room"
+                    },
+                    {
+                        "name": "First aid",
+                        "type": "Image Anomaly",
+                        "description": "Text on cupboards changes to \"Third Aid\""
+                    },
+                    {
+                        "name": "Dead body (chair)",
+                        "type": "Dead Body",
+                        "description": "Placed on the far end chair"
+                    },
+                    {
+                        "name": "Shoes",
+                        "type": "Missing Object",
+                        "description": "Shoes at the bottom next to drawers disappear"
+                    },
+                    {
+                        "name": "Dead body (bed)",
+                        "type": "Dead Body",
+                        "description": "A dead person on the right bottom bed"
+                    },
+                    {
+                        "name": "Soda cans",
+                        "type": "Object Movement",
+                        "description": "The red soda cans switch places"
+                    },
+                    {
+                        "name": "Huge Spider",
+                        "type": "INTRUDER",
+                        "description": "On right bed or top of first aid cabinet"
+                    },
+                    {
+                        "name": "Wardrobe handle",
+                        "type": "Object Movement",
+                        "description": "Door handle moves to the right side"
+                    }
+                ],
+                "Quarantine": [
+                    {
+                        "name": "Green smoke",
+                        "type": "Smoke",
+                        "description": "In the containment room"
+                    },
+                    {
+                        "name": "Blood sample",
+                        "type": "Smoke",
+                        "description": "Blood sample smoking"
+                    },
+                    {
+                        "name": "Microscope",
+                        "type": "Object Movement",
+                        "description": "Changes place closer to monitor"
+                    },
+                    {
+                        "name": "The Maw",
+                        "type": "INTRUDER",
+                        "description": "1st report fails (glass shatters). Re-report empty room, then report him rising"
+                    },
+                    {
+                        "name": "Chamber memo",
+                        "type": "Missing Object",
+                        "description": "Memo under the keyboard disappears"
+                    },
+                    {
+                        "name": "Notepad",
+                        "type": "Image Anomaly",
+                        "description": "Scribbles appear on the notepad"
+                    },
+                    {
+                        "name": "Samples",
+                        "type": "Object Movement",
+                        "description": "Blood sample and pink sample switch places"
+                    },
+                    {
+                        "name": "Post-it notes",
+                        "type": "Extra Object",
+                        "description": "Multiple all around (click one by one)"
+                    },
+                    {
+                        "name": "Reflection",
+                        "type": "INTRUDER",
+                        "description": "Creature having spasms in containment room (can be Image Anomaly)"
+                    },
+                    {
+                        "name": "Bottles",
+                        "type": "Object Replacement",
+                        "description": "Both bottles on counter turn into red cups"
+                    }
+                ],
+                "Exterior": [
+                    {
+                        "name": "Yellow snowcat",
+                        "type": "Object Movement",
+                        "description": "Changes position"
+                    },
+                    {
+                        "name": "Radio tower",
+                        "type": "Object Movement",
+                        "description": "Changes position"
+                    },
+                    {
+                        "name": "Stick",
+                        "type": "Missing Object",
+                        "description": "On left corner of right building's rooftop disappears"
+                    },
+                    {
+                        "name": "Round building",
+                        "type": "Light Anomaly",
+                        "description": "Red lights flickering"
+                    },
+                    {
+                        "name": "Penguin creature",
+                        "type": "INTRUDER",
+                        "description": "Penguin creature"
+                    },
+                    {
+                        "name": "Naked man",
+                        "type": "INTRUDER",
+                        "description": "Freezing in front of the camera"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "A dead person on the black snowcat"
+                    },
+                    {
+                        "name": "Snow",
+                        "type": "Weather Anomaly",
+                        "description": "Snow defies gravity as it floats upward"
+                    },
+                    {
+                        "name": "Snow shoes",
+                        "type": "Object Movement",
+                        "description": "Move slightly angled"
+                    },
+                    {
+                        "name": "Baluster",
+                        "type": "Extra Object",
+                        "description": "Extra baluster on railing by timestamp (bottom left)"
+                    },
+                    {
+                        "name": "Dome building",
+                        "type": "Object Replacement",
+                        "description": "Covered in snow"
+                    }
+                ],
+                "The Site": [
+                    {
+                        "name": "Invisible creature",
+                        "type": "INTRUDER",
+                        "description": "Almost invisible creature walks towards the camera"
+                    },
+                    {
+                        "name": "Top container",
+                        "type": "Door Anomaly",
+                        "description": "Top container door opens"
+                    },
+                    {
+                        "name": "Snowcat",
+                        "type": "Object Replacement",
+                        "description": "Changes color"
+                    },
+                    {
+                        "name": "Top container",
+                        "type": "Missing Object",
+                        "description": "Disappears"
+                    },
+                    {
+                        "name": "Device",
+                        "type": "Light Anomaly",
+                        "description": "Red lights and sounds on the electronic device"
+                    },
+                    {
+                        "name": "Lid",
+                        "type": "Object Movement",
+                        "description": "Lid on the electronic device closes"
+                    },
+                    {
+                        "name": "Mound of snow",
+                        "type": "Extra Object",
+                        "description": "On the electronic device"
+                    },
+                    {
+                        "name": "Spools",
+                        "type": "Missing Object",
+                        "description": "Two huge spools covered in snow disappear"
+                    },
+                    {
+                        "name": "Power lines",
+                        "type": "Object Movement",
+                        "description": "Start moving slightly"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "On top of crane (glass looks weird)"
+                    },
+                    {
+                        "name": "Shovel",
+                        "type": "Missing Object",
+                        "description": "Leaning against the crane disappears"
+                    }
+                ],
+                "Underwater": [
+                    {
+                        "name": "Squid creature",
+                        "type": "INTRUDER",
+                        "description": "Fatal if not reported on time"
+                    },
+                    {
+                        "name": "School of fish",
+                        "type": "Extra Object",
+                        "description": "Swim around"
+                    }
+                ]
+            }
+        }
+    }
+}

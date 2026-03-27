@@ -1,0 +1,15 @@
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.113s
+
+OK
+
+Checking Normal Mode (Ground Truth: ['K-pop poster', 'Wires', 'Extra buoy'])
+SUCCESS: Found Normal GT Pair ('K-pop poster', 'Wires')
+SUCCESS: Found Normal GT Pair ('Extra buoy', 'K-pop poster')
+SUCCESS: Found Normal GT Pair ('Extra buoy', 'Wires')
+
+Checking Hard Mode (Ground Truth: ['Invisible creature', 'Backpack', 'Green bottle'])
+SUCCESS: Found Hard GT Pair ('Green bottle', 'Invisible creature')
+SUCCESS: Found Hard GT Pair ('Backpack', 'Green bottle')
+SUCCESS: Found Hard GT Pair ('Backpack', 'Invisible creature')
