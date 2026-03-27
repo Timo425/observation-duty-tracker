@@ -18,12 +18,6 @@
             "description": "Room disappears from rotation (count your rooms!)",
             "type": "Global",
             "report": "RMB → \"Camera Malfunction\""
-        },
-        {
-            "name": "Steam/Smoke/Fog",
-            "description": "Entire screen becomes cloudy",
-            "type": "Global",
-            "report": "RMB → \"Steam/Smoke/Fog\""
         }
     ],
     "Maps": {
