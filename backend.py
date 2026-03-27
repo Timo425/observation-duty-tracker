@@ -21,16 +21,20 @@ class Backend:
         self.session_id = 1
         self.difficulty = "Normal"
         self.last_map = ""
+        self.failures_path = ""
+        self.unlocked_sessions = set()
         
         self.load_config() # This will set game_id and paths
     def set_game(self, game_id):
         self.game_id = game_id
         self.data_path = os.path.join(self.base_dir, "data", f"{self.game_id}.json")
         self.logs_path = os.path.join(self.base_dir, "logs", f"{self.game_id}.csv")
+        self.failures_path = os.path.join(self.base_dir, "logs", f"{self.game_id}_failures.csv")
         
         os.makedirs(os.path.dirname(self.data_path), exist_ok=True)
         os.makedirs(os.path.dirname(self.logs_path), exist_ok=True)
         self.ensure_csv_header()
+        self.ensure_failures_header()
         
         self.data = self.load_master_data()
         self.anomaly_to_room = {}
@@ -87,6 +91,18 @@ class Backend:
                 writer = csv.writer(f)
                 writer.writerow(["Session_ID", "Difficulty", "Map", "Room", "Anomaly_Name", "Timestamp"])
 
+    def ensure_failures_header(self):
+        if not os.path.exists(self.failures_path) or os.stat(self.failures_path).st_size == 0:
+            with open(self.failures_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    "Session_ID", "Map", "Difficulty",
+                    "Room1", "Type1", "Linked1",
+                    "Room2", "Type2", "Linked2",
+                    "Room3", "Type3", "Linked3",
+                    "Timestamp"
+                ])
+
     def set_difficulty(self, difficulty):
         self.difficulty = difficulty
         self.save_config()
@@ -97,8 +113,17 @@ class Backend:
 
     def get_all_sessions(self):
         ids = set()
+        # Check Main logs
         if os.path.exists(self.logs_path):
             with open(self.logs_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    try: ids.add(int(row["Session_ID"]))
+                    except: continue
+        # Check Failure logs
+        fail_path = os.path.join(self.base_dir, "logs", f"{self.game_id}_failures.csv")
+        if os.path.exists(fail_path):
+            with open(fail_path, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
                     try: ids.add(int(row["Session_ID"]))
@@ -107,10 +132,62 @@ class Backend:
 
     def increment_session(self):
         existing = self.get_all_sessions()
-        max_id = max(existing) if existing else 0
-        self.session_id = max_id + 1
+        max_in_logs = max(existing) if existing else 0
+        
+        # Increment based on whichever is higher: logs or our current state
+        # This allows clicking 'New Shift' multiple times even if current is empty.
+        self.session_id = max(max_in_logs, self.session_id) + 1
+        
         self.save_config()
         return self.session_id
+
+    def get_session_info(self, session_id):
+        """Returns (Map, Difficulty) for a given session ID by scanning logs."""
+        # 1. Check main logs first (most common)
+        if os.path.exists(self.logs_path):
+            with open(self.logs_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if int(row["Session_ID"]) == session_id:
+                        return row["Map"], row["Difficulty"]
+        
+        # 2. Check failure logs
+        fail_path = os.path.join(self.base_dir, "logs", f"{self.game_id}_failures.csv")
+        if os.path.exists(fail_path):
+            with open(fail_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if int(row["Session_ID"]) == session_id:
+                        # Assuming at least one reported failure has a valid Map/Difficulty
+                        return row["Map"], row["Difficulty"]
+        return None, None
+
+    def is_current_session_locked(self):
+        """
+        Policy: Any session < max_known_session is locked by default.
+        ALSO: Any session that has an 'It's over' report is locked.
+        Returns True if the current session_id is locked and NOT manually unlocked.
+        """
+        existing = self.get_all_sessions()
+        if not existing: return False
+        
+        max_id = max(existing)
+        
+        # Check if it has a failure report (means it is 'finished')
+        has_failure = len(self.get_missed_anomalies(self.last_map, self.session_id)) > 0
+
+        if self.session_id < max_id or has_failure:
+            # It's an old or finished session. Is it in the override list?
+            return self.session_id not in self.unlocked_sessions
+        return False
+
+    def toggle_session_lock(self):
+        """Toggles the manual 'unlocked' status for the current session ID."""
+        if self.session_id in self.unlocked_sessions:
+            self.unlocked_sessions.remove(self.session_id)
+        else:
+            self.unlocked_sessions.add(self.session_id)
+        return self.is_current_session_locked()
 
     def delete_current_session(self):
         if not os.path.exists(self.logs_path):
@@ -135,7 +212,55 @@ class Backend:
             writer.writerow([self.session_id, self.difficulty, map_name, room_name, anomaly_name, timestamp])
         return True
 
+    def add_failure_report(self, map_name, failures):
+        """
+        failures: list of 3 dicts {"room": str, "reported_type": str, "linked_anomaly": str}
+        """
+        timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        row = [self.session_id, map_name, self.difficulty]
+        
+        updated_any_json = False
+        for f in failures:
+            room = f.get("room", "")
+            reported_type = f.get("reported_type", "")
+            linked_name = f.get("linked_anomaly", "None")
+            row.extend([room, reported_type, linked_name])
+            
+            # Update master JSON if linked
+            if linked_name != "None":
+                if self.update_anomaly_end_game_type(map_name, room, linked_name, reported_type):
+                    updated_any_json = True
+                    
+        row.append(timestamp)
+        
+        with open(self.failures_path, 'a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(row)
+            
+        if updated_any_json:
+            self.save_master_data()
+            
         return True
+
+    def update_anomaly_end_game_type(self, map_name, room_name, anomaly_name, end_game_type):
+        """
+        Look up the anomaly and update its game_end_type field.
+        """
+        # 1. Check specific room
+        target_list = self.data.get("Maps", {}).get(map_name, {}).get("Rooms", {}).get(room_name, [])
+        for anom in target_list:
+            if anom["name"].lower() == anomaly_name.lower():
+                anom["game_end_type"] = end_game_type
+                return True
+        
+        # 2. Check Global section as fallback (every global anomaly is still in a room)
+        global_list = self.data.get("Global", [])
+        for anom in global_list:
+            if anom["name"].lower() == anomaly_name.lower():
+                anom["game_end_type"] = end_game_type
+                return True
+                
+        return False
 
     def undo_observation(self, map_name, room_name, anomaly_name):
         if not os.path.exists(self.logs_path): return False
@@ -159,6 +284,72 @@ class Backend:
                 writer.writeheader()
                 writer.writerows(reversed(rows))
         return removed
+
+    def get_room_anomalies(self, map_name, room_name):
+        if not map_name or not room_name: return []
+        map_data = self.data.get("Maps", {}).get(map_name, {})
+        rooms = map_data.get("Rooms", {})
+        anoms = rooms.get(room_name, [])
+        # Add global ones if map exists
+        if room_name != "Global":
+            anoms = anoms + self.data.get("Global", [])
+            
+        # Format with descriptions if available
+        result = []
+        for a in anoms:
+            name = a["name"]
+            desc = a.get("description", a.get("desc", ""))
+            if desc:
+                result.append(f"{name}: ({desc})")
+            else:
+                result.append(name)
+        return sorted(result)
+
+    def _get_tags(self, value):
+        """Helper to extract tags from a string (comma separated) or a list."""
+        if not value: return []
+        if isinstance(value, list):
+            return [str(t).strip() for t in value if t]
+        if isinstance(value, str):
+            return [t.strip() for t in value.split(',') if t.strip()]
+        return [str(value)]
+
+    def get_room_types(self, map_name, room_name):
+        """Returns unique types found in a specific room + Global (Supports lists or comma strings)."""
+        if not map_name or not room_name: return []
+        types = set()
+        
+        # Local Room
+        room_anoms = self.data.get("Maps", {}).get(map_name, {}).get("Rooms", {}).get(room_name, [])
+        for anom in room_anoms:
+            for t in self._get_tags(anom.get("type")): types.add(t)
+            for t in self._get_tags(anom.get("game_end_type")): types.add(t)
+            
+        # Global
+        for anom in self.data.get("Global", []):
+            for t in self._get_tags(anom.get("type")): types.add(t)
+            for t in self._get_tags(anom.get("game_end_type")): types.add(t)
+            
+        return sorted([t for t in types if t])
+
+    def get_all_types(self):
+        """
+        Scans all anomalies in the JSON for unique types (Supports lists or comma strings).
+        """
+        types = set()
+        # Scan Global
+        for anom in self.data.get("Global", []):
+            for t in self._get_tags(anom.get("type")): types.add(t)
+            for t in self._get_tags(anom.get("game_end_type")): types.add(t)
+            
+        # Scan Maps
+        for map_data in self.data.get("Maps", {}).values():
+            for room_anoms in map_data.get("Rooms", {}).values():
+                for anom in room_anoms:
+                    for t in self._get_tags(anom.get("type")): types.add(t)
+                    for t in self._get_tags(anom.get("game_end_type")): types.add(t)
+                    
+        return sorted([t for t in types if t])
 
     def is_logged_in_current_session(self, map_name, room_name, anomaly_name):
         if not os.path.exists(self.logs_path): return False
@@ -233,7 +424,7 @@ class Backend:
                     anoms.append(row["Anomaly_Name"])
         return anoms
 
-    def get_stats(self, map_name):
+    def get_stats(self, map_name, max_session_id=None):
         stats = {"total_sessions": 0, "anomaly_sessions": defaultdict(set)}
         if not os.path.exists(self.logs_path): return stats
         
@@ -242,16 +433,56 @@ class Backend:
             reader = csv.DictReader(f)
             for row in reader:
                 if row["Difficulty"] == self.difficulty and row["Map"] == map_name:
-                    s_id = row["Session_ID"]
+                    s_id = int(row["Session_ID"])
+                    if max_session_id and s_id > max_session_id: continue
+                    
                     sessions.add(s_id)
                     stats["anomaly_sessions"][row["Anomaly_Name"]].add(s_id)
         
         stats["total_sessions"] = len(sessions)
         return stats
 
+    def get_missed_anomalies(self, map_name, session_id):
+        """Returns a list of anomaly names reported as missed in the given session."""
+        missed = []
+        fail_path = os.path.join(self.base_dir, "logs", f"{self.game_id}_failures.csv")
+        if not os.path.exists(fail_path): return missed
+        
+        with open(fail_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if int(row["Session_ID"]) == session_id and row["Map"] == map_name:
+                    # Collect from Linked1, Linked2, Linked3
+                    for i in range(1, 4):
+                        name = row.get(f"Linked{i}", "None")
+                        if name and name != "None":
+                            missed.append(name)
+        return missed
+
+    def get_failure_details(self, map_name, session_id):
+        """Returns a list of dictionaries with full failure report details."""
+        reports = []
+        fail_path = os.path.join(self.base_dir, "logs", f"{self.game_id}_failures.csv")
+        if not os.path.exists(fail_path): return reports
+        
+        with open(fail_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if int(row["Session_ID"]) == session_id and row["Map"] == map_name:
+                    for i in range(1, 4):
+                        room = row.get(f"Room{i}", "None")
+                        if room and room != "None":
+                            reports.append({
+                                "room": room,
+                                "type": row.get(f"Type{i}", "Unknown"),
+                                "linked_anomaly": row.get(f"Linked{i}", "None")
+                            })
+        return reports
+
     def get_live_exclusions(self, map_name, current_anoms):
         if not current_anoms: return []
-        stats = self.get_stats(map_name)
+        # 'Truly LIVE': include everything up to and including the current session
+        stats = self.get_stats(map_name, max_session_id=self.session_id)
         N = stats["total_sessions"]
         if N < 2: return []
 

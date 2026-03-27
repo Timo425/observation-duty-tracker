@@ -1,5 +1,8 @@
 {
-    "Difficulties": ["Normal", "Hard"],
+    "Difficulties": [
+        "Normal",
+        "Hard"
+    ],
     "Global": [
         {
             "name": "Abyss",
@@ -1619,8 +1622,12 @@
                     },
                     {
                         "name": "Gramophone",
-                        "type": "Object Manipulation",
-                        "description": "Gramophone starts playing"
+                        "type": [
+                            "Object Movement",
+                            "Object Manipulation"
+                        ],
+                        "description": "Gramophone starts playing",
+                        "game_end_type": "Object Movement"
                     },
                     {
                         "name": "Stove smoke",
@@ -1677,7 +1684,8 @@
                     {
                         "name": "Map",
                         "type": "Image Anomaly",
-                        "description": "Extra continent appears on the map"
+                        "description": "Extra continent appears on the map",
+                        "game_end_type": "Image Anomaly"
                     },
                     {
                         "name": "Ladder",
@@ -1813,7 +1821,8 @@
                     {
                         "name": "Handprint",
                         "type": "Handprint",
-                        "description": "On the stairs"
+                        "description": "On the stairs",
+                        "game_end_type": "Handprint"
                     },
                     {
                         "name": "Stairs",

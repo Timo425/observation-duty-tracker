@@ -7,9 +7,10 @@ The goal is to reverse-engineer the game's anomaly selection algorithm through s
 ## Features
 - **Multi-Game Support:** Easily switch between different titles in the series.
 - **Smart UI:** Automatically adapts to the features of each game (e.g., hiding difficulty options for games that don't have them).
-- **Shift Logging:** Track anomalies by Session ID, Difficulty, Map, and Room.
-- **Live Exclusivity Prediction:** During a shift, the GUI uses your historical logs to predict which anomalies are excluded based on what you've already found — helping you narrow down what to look for next.
-- **Audit Log:** Flags suspicious co-occurrences — when two anomalies that almost never appear together (and are likely truly exclusive) suddenly show up in the same shift, it suggests one of them was probably misidentified.
+- **Shift Management:** Navigate between shifts with `<`/`>`, start new ones, and review history. Historical shifts are auto-locked (🔒) to prevent accidental edits; shifts with an "It's over" report are also locked.
+- **"It's over" Failure Reporting:** Report the 3 anomalies shown on the end-game screen. Linked anomalies appear as Orange buttons in room tabs, and a summary section appears below the analysis panel.
+- **Live Exclusivity Prediction:** Uses your full history up to (and including) the current shift to predict which anomalies are excluded — updating in real-time as you log.
+- **Audit Log:** Flags suspicious co-occurrences — when two anomalies that almost never appear together suddenly show up in the same shift, it suggests one of them was probably misidentified.
 - **Data-Driven:** Easily expandable by adding JSON files to the `data/` directory.
 
 ## Usage

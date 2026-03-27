@@ -65,16 +65,24 @@ class AnomalyTrackerApp:
         top_frame = ttk.Frame(self.root, padding="10")
         top_frame.pack(fill=tk.X)
 
-        nav_frame = ttk.LabelFrame(top_frame, text="Shift Management", padding="5")
+        nav_frame = ttk.LabelFrame(top_frame, text="Shift management", padding="5")
         nav_frame.pack(side=tk.LEFT, padx=5)
         ttk.Button(nav_frame, text="<", width=3, command=self.prev_shift).pack(side=tk.LEFT)
-        self.session_label = ttk.Label(nav_frame, text=f"ID: {self.backend.session_id}", font=("Arial", 11, "bold"), width=8, anchor="center")
+        self.session_label = ttk.Label(nav_frame, text=f"ID: {self.backend.session_id}", font=("Arial", 11, "bold"), width=7, anchor="center")
         self.session_label.pack(side=tk.LEFT, padx=5)
+        
+        # Lock Toggle Button
+        self.lock_button = tk.Button(nav_frame, text="🔓", font=("Arial", 10), width=3, height=1, command=self.toggle_lock, relief=tk.FLAT)
+        self.lock_button.pack(side=tk.LEFT, padx=2)
+        ToolTip(self.lock_button, "Lock/Unlock historical session for editing")
+
         ttk.Button(nav_frame, text=">", width=3, command=self.next_shift).pack(side=tk.LEFT)
         self.activity_label = ttk.Label(nav_frame, text="Last activity: Never", font=("Arial", 9, "italic"), foreground="gray")
         self.activity_label.pack(side=tk.LEFT, padx=10)
-        ttk.Button(nav_frame, text="New Shift", command=self.start_new_shift).pack(side=tk.LEFT, padx=10)
-        ttk.Button(nav_frame, text="Audit Logs", command=self.show_analytics_window).pack(side=tk.LEFT, padx=5)
+        ttk.Button(nav_frame, text="New shift", command=self.start_new_shift).pack(side=tk.LEFT, padx=10)
+        self.over_button = ttk.Button(nav_frame, text="It's over", command=self.show_failure_dialog)
+        self.over_button.pack(side=tk.LEFT, padx=5)
+        ttk.Button(nav_frame, text="Audit logs", command=self.show_analytics_window).pack(side=tk.LEFT, padx=5)
 
         mode_frame = ttk.LabelFrame(top_frame, text="Settings", padding="5")
         mode_frame.pack(side=tk.LEFT, padx=15)
@@ -107,7 +115,7 @@ class AnomalyTrackerApp:
         pane.add(self.notebook, weight=3)
 
         # Live Analysis Panel
-        live_frame = ttk.LabelFrame(pane, text="Live Prediction Analysis (Mutual Exclusivity)", padding="5")
+        live_frame = ttk.LabelFrame(pane, text="Live prediction analysis (Mutual exclusivity)", padding="5")
         pane.add(live_frame, weight=1)
         
         cols = ("Anomaly", "E (Surprise)", "Likelihood", "N", "Total Sights", "Conflict With")
@@ -125,12 +133,20 @@ class AnomalyTrackerApp:
         self.live_tree.column("Total Sights", width=80, anchor="center")
         self.live_tree.pack(fill=tk.BOTH, expand=True)
 
+        # Failure Summary Section (Hidden by default)
+        self.failure_frame = ttk.LabelFrame(live_frame, text="⚠️ Anomalies took over this shift", padding="5")
+        self.failure_label = ttk.Label(self.failure_frame, text="", foreground="#D35400", font=("Arial", 10, "bold"), wraplength=1000)
+        self.failure_label.pack(fill=tk.X)
+        
+        # Tags for analysis coloring
+        self.live_tree.tag_configure("REPORTED", background="#FFCC80") # Light Orange
+
         # Bottom Frame: Status
         status_frame = ttk.Frame(self.root, padding="5")
         status_frame.pack(fill=tk.X)
         self.status_label = ttk.Label(status_frame, text="Ready")
         self.status_label.pack(side=tk.LEFT)
-        self.data_weight_label = ttk.Label(status_frame, text="Total Sessions: 0", font=("Arial", 9, "italic"))
+        self.data_weight_label = ttk.Label(status_frame, text="Total shifts: 0", font=("Arial", 9, "italic"))
         self.data_weight_label.pack(side=tk.RIGHT, padx=10)
 
         self.update_title()
@@ -297,13 +313,13 @@ class AnomalyTrackerApp:
 
         header_frame = ttk.Frame(scrollable_frame); header_frame.pack(fill=tk.X, pady=5)
         ttk.Label(header_frame, text=f"Room: {room_name}", font=("Arial", 10, "bold")).pack(side=tk.LEFT)
-        ttk.Button(header_frame, text="+ Add Anomaly", command=lambda r=room_name: self.prompt_add_anomaly(r)).pack(side=tk.RIGHT)
+        ttk.Button(header_frame, text="+ Add anomaly", command=lambda r=room_name: self.prompt_add_anomaly(r)).pack(side=tk.RIGHT)
         self.create_buttons(scrollable_frame, room_name, room_anomalies)
         
         ttk.Separator(scrollable_frame, orient='horizontal').pack(fill='x', pady=10)
         global_header = ttk.Frame(scrollable_frame); global_header.pack(fill=tk.X, pady=5)
-        ttk.Label(global_header, text="Global Anomalies", font=("Arial", 10, "bold")).pack(side=tk.LEFT)
-        ttk.Button(global_header, text="+ Add Global", command=lambda: self.prompt_add_anomaly("Global")).pack(side=tk.RIGHT)
+        ttk.Label(global_header, text="Global anomalies", font=("Arial", 10, "bold")).pack(side=tk.LEFT)
+        ttk.Button(global_header, text="+ Add anomaly", command=lambda: self.prompt_add_anomaly("Global")).pack(side=tk.RIGHT)
         self.create_buttons(scrollable_frame, "Global", self.data.get("Global", []))
         
         canvas.pack(side="left", fill="both", expand=True)
@@ -315,6 +331,7 @@ class AnomalyTrackerApp:
         current_session_anoms = self.backend.get_current_session_anomalies(current_map)
         live_exclusions = self.backend.get_live_exclusions(current_map, current_session_anoms)
         exclusions_map = {e["name"]: e for e in live_exclusions}
+        missed_names = self.backend.get_missed_anomalies(current_map, self.backend.session_id)
         
         grid_frame = ttk.Frame(parent); grid_frame.pack(fill=tk.X)
         for c in range(3): grid_frame.columnconfigure(c, weight=1) # Allow columns to expand
@@ -351,6 +368,9 @@ class AnomalyTrackerApp:
             
             if self.backend.is_logged_in_current_session(current_map, room_name, name):
                 bg_color = "#90ee90" # Light Green
+            elif name in missed_names:
+                bg_color = "#FF8C00" # DarkOrange (Missed)
+                fg_color = "white"
             elif excl_info:
                 # Scaled Red Saturation based on E (1.0 to 5.0 scale)
                 E = excl_info['expected_overlap']
@@ -372,20 +392,38 @@ class AnomalyTrackerApp:
         if not map_name: return
         
         current_anoms = self.backend.get_current_session_anomalies(map_name)
-        exclusions = self.backend.get_live_exclusions(map_name, current_anoms)
+        live_exclusions = self.backend.get_live_exclusions(map_name, current_anoms)
+        failure_details = self.backend.get_failure_details(map_name, self.backend.session_id)
         
         for item in self.live_tree.get_children():
             self.live_tree.delete(item)
             
-        for e in exclusions:
+        # 1. Update Failure Summary Frame
+        if failure_details:
+            summary_parts = []
+            for f in failure_details:
+                name = f["linked_anomaly"] if f["linked_anomaly"] != "None" else f["type"]
+                summary_parts.append(f"• {name} in {f['room']}")
+            
+            self.failure_label.config(text="\n".join(summary_parts))
+            self.failure_frame.pack(fill=tk.X, pady=(5, 0), after=self.live_tree)
+        else:
+            self.failure_frame.pack_forget()
+
+        # 2. Show Mutual Exclusivity Predictions
+        for e in live_exclusions:
             self.live_tree.insert("", tk.END, values=(
                 e["name"], f"{e['expected_overlap']:.2f}", f"{e['likelihood']:.2%}", e["N"], e["count"], ", ".join(e["current_set"])
             ))
 
-        stats = self.backend.get_stats(map_name)
-        self.data_weight_label.config(text=f"Total Sessions for {map_name} [{self.backend.difficulty}]: {stats['total_sessions']}")
+        stats = self.backend.get_stats(map_name, max_session_id=self.backend.session_id)
+        self.data_weight_label.config(text=f"Truly live analysis (Shifts 1-{self.backend.session_id}): {stats['total_sessions']} shifts total")
 
     def log_anomaly(self, name, room_name):
+        if self.backend.is_current_session_locked():
+            messagebox.showwarning("Locked", "This historical session is LOCKED. Unlock it (🔓) to make changes.")
+            return
+
         current_map = self.current_map.get()
         if self.backend.is_logged_in_current_session(current_map, room_name, name):
             messagebox.showwarning("Duplicate", f"'{name}' is already logged in {room_name}.") ; return
@@ -394,6 +432,10 @@ class AnomalyTrackerApp:
             self.update_session_view()
 
     def undo_anomaly(self, name, room_name):
+        if self.backend.is_current_session_locked():
+            messagebox.showwarning("Locked", "This historical session is LOCKED. Unlock it (🔓) to make changes.")
+            return
+
         current_map = self.current_map.get()
         if self.backend.undo_observation(current_map, room_name, name):
             self.status_label.config(text=f"Undid: {name}")
@@ -429,7 +471,28 @@ class AnomalyTrackerApp:
     def update_session_view(self):
         self.session_label.config(text=f"ID: {self.backend.session_id}")
         self.activity_label.config(text=f"Last activity: {self.backend.get_last_activity()}")
+        
+        # Update Lock Icon
+        if self.backend.is_current_session_locked():
+            self.lock_button.config(text="🔒", foreground="red")
+        else:
+            self.lock_button.config(text="🔓", foreground="green")
+
+        # Smart Load: If this session has activity in logs, switch to its map/diff
+        s_map, s_diff = self.backend.get_session_info(self.backend.session_id)
+        if s_map and s_diff:
+            # Update variables without triggering infinite recursion if needed
+            # (on_map_change will still trigger, but that's what we want)
+            if self.current_map.get() != s_map or self.current_difficulty.get() != s_diff:
+                self.current_map.set(s_map)
+                self.current_difficulty.set(s_diff)
+                return # on_map_change will be triggered by trace/bind
+        
         self.on_map_change(None)
+
+    def toggle_lock(self):
+        self.backend.toggle_session_lock()
+        self.update_session_view()
 
     def prompt_add_anomaly(self, room_name):
         dialog = tk.Toplevel(self.root)
@@ -450,7 +513,7 @@ class AnomalyTrackerApp:
         name_entry.pack()
         name_entry.focus_set()
 
-        ttk.Label(dialog, text="Type (e.g. Object Replacement):").pack(pady=5)
+        ttk.Label(dialog, text="Type (e.g. object replacement):").pack(pady=5)
         type_var = tk.StringVar(value="Unknown")
         type_entry = ttk.Entry(dialog, textvariable=type_var, width=40)
         type_entry.pack()
@@ -477,6 +540,158 @@ class AnomalyTrackerApp:
         btn_frame.pack(pady=10)
         ttk.Button(btn_frame, text="OK", command=on_ok).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Cancel", command=dialog.destroy).pack(side=tk.LEFT, padx=5)
+
+    def show_failure_dialog(self):
+        FailureDialog(self.root, self.backend, self.current_map.get())
+
+class FailureDialog:
+    def __init__(self, parent, backend, current_map):
+        self.parent = parent
+        self.backend = backend
+        self.current_map = current_map
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title("It's over - Report Failure")
+        self.dialog.geometry("700x400")
+        self.dialog.transient(parent)
+        self.dialog.grab_set()
+
+        # Center dialog
+        self.dialog.update_idletasks()
+        x = parent.winfo_rootx() + (parent.winfo_width() // 2) - 350
+        y = parent.winfo_rooty() + (parent.winfo_height() // 2) - 200
+        self.dialog.geometry(f"+{x}+{y}")
+
+        ttk.Label(self.dialog, text="Report the 3 anomalies seen on the end-game screen:", font=("Arial", 11, "bold")).pack(pady=10)
+
+        self.rows = []
+        rooms = list(self.backend.data.get("Maps", {}).get(current_map, {}).get("Rooms", {}).keys())
+        
+        # All types currently in the JSON
+        self.all_types = self.backend.get_all_types()
+
+        container = ttk.Frame(self.dialog, padding=10)
+        container.pack(fill=tk.BOTH, expand=True)
+
+        # Header
+        header = ttk.Frame(container)
+        header.pack(fill=tk.X, pady=5)
+        ttk.Label(header, text="Room", width=20, font=("Arial", 9, "bold")).pack(side=tk.LEFT, padx=5)
+        ttk.Label(header, text="Reported type", width=25, font=("Arial", 9, "bold")).pack(side=tk.LEFT, padx=5)
+        ttk.Label(header, text="Link to database (optional)", width=35, font=("Arial", 9, "bold")).pack(side=tk.LEFT, padx=5)
+
+        for i in range(3):
+            row_frame = ttk.Frame(container)
+            row_frame.pack(fill=tk.X, pady=5)
+
+            # Room
+            room_var = tk.StringVar()
+            room_combo = ttk.Combobox(row_frame, textvariable=room_var, values=rooms, width=18, state="readonly")
+            room_combo.pack(side=tk.LEFT, padx=5)
+
+            # Type
+            type_var = tk.StringVar()
+            # Initial types are map-wide, but will be filtered by room selection
+            type_combo = ttk.Combobox(row_frame, textvariable=type_var, values=self.all_types, width=23)
+            type_combo.pack(side=tk.LEFT, padx=5)
+            
+            # Linked Anomaly
+            link_var = tk.StringVar()
+            link_combo = ttk.Combobox(row_frame, textvariable=link_var, values=["None"], state="readonly", width=35)
+            link_combo.pack(side=tk.LEFT, padx=5)
+
+            # Store references
+            row_data = {
+                "room_var": room_var, "type_var": type_var, "link_var": link_var, 
+                "link_combo": link_combo, "type_combo": type_combo,
+                "room_types": self.all_types
+            }
+            self.rows.append(row_data)
+
+            # Bind events
+            room_combo.bind("<<ComboboxSelected>>", lambda e, rv=room_var, i=i: self.update_anomaly_list(rv.get(), i))
+            type_combo.bind('<KeyRelease>', lambda e, c=type_combo, i=i: self.on_type_search(e, c, i))
+
+        btn_frame = ttk.Frame(self.dialog)
+        btn_frame.pack(pady=20)
+        ttk.Button(btn_frame, text="Submit Report", command=self.submit).pack(side=tk.LEFT, padx=10)
+        ttk.Button(btn_frame, text="Cancel", command=self.dialog.destroy).pack(side=tk.LEFT, padx=10)
+
+    def update_anomaly_list(self, room_name, row_index):
+        """Updates both the anomaly link list and the suggested types based on room."""
+        if not room_name: return
+        
+        row = self.rows[row_index]
+        link_combo = row["link_combo"]
+        type_combo = row["type_combo"]
+        
+        # Update Links
+        anomalies = self.backend.get_room_anomalies(self.current_map, room_name)
+        link_combo.config(values=["None"] + anomalies)
+        link_combo.set("None")
+        
+        # Update suggested Types for this room
+        room_types = self.backend.get_room_types(self.current_map, room_name)
+        row["room_types"] = room_types
+        type_combo.config(values=room_types)
+
+    def on_type_search(self, event, combo, row_index):
+        """Filters the dropdown values as the user types."""
+        value = combo.get()
+        room_types = self.rows[row_index]["room_types"]
+        
+        if value == '':
+            combo['values'] = room_types
+        else:
+            filtered = [item for item in room_types if value.lower() in item.lower()]
+            combo['values'] = filtered
+        
+        # Open dropdown if there are matches
+        if combo['values']:
+            # We use try/except as some systems/versions might flicker on immediate open
+            try:
+                combo.event_generate('<Down>')
+            except:
+                pass
+
+    def submit(self):
+        if self.backend.is_current_session_locked():
+            messagebox.showwarning("Locked", "This historical session is LOCKED. Unlock it (🔓) to make changes.")
+            return
+
+        reports = []
+        for i, row in enumerate(self.rows):
+            room = row["room_var"].get()
+            reported_type = row["type_var"].get().strip()
+            link = row["link_var"].get()
+
+            # Validate each entry
+            if not room:
+                messagebox.showerror("Error", f"Please select a room for entry {i+1}.")
+                return
+            if not reported_type:
+                messagebox.showerror("Error", f"Please enter/select a type for entry {i+1}.")
+                return
+            
+            # Strictly validate the type against the database
+            if reported_type not in self.all_types:
+                messagebox.showerror("Invalid Type", f"'{reported_type}' is not a valid category in your database. Please select an existing type.")
+                return
+
+            reports.append({
+                "room": room,
+                "reported_type": reported_type,
+                "linked_anomaly": link.split(": (")[0] if link != "None" else "None"
+            })
+
+        if self.backend.add_failure_report(self.current_map, reports):
+            msg = f"Failure report saved for shift ID {self.backend.session_id}."
+            if any(r["linked_anomaly"] != "None" for r in reports):
+                msg += "\n\nMaster database updated for linked anomalies."
+            messagebox.showinfo("Success", msg)
+            self.dialog.destroy()
+            self.parent.update_session_view()
+        else:
+            messagebox.showerror("Error", "Failed to save report.")
 
 if __name__ == "__main__":
     root = tk.Tk()
