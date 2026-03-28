@@ -24,6 +24,10 @@ class Backend:
         self.unlocked_sessions = set()
         self.window_size = "1200x800"
         
+        # Performance Cache
+        self._cache = {} # {path: list_of_dicts}
+        self._cache_mtimes = {} # {path: float}
+        
         self.load_config() # This will set game_id and paths
     def set_game(self, game_id):
         self.game_id = game_id
@@ -128,7 +132,25 @@ class Backend:
         cfg = self.session_configs.get(str(session_id), {})
         if "Difficulty" in cfg: self.difficulty = cfg["Difficulty"]
         if "Map" in cfg: self.last_map = cfg["Map"]
-        self.save_config()
+
+    def _get_csv_data(self, path):
+        """Helper to get CSV data from cache or disk if changed."""
+        if not os.path.exists(path): return []
+        
+        current_mtime = os.path.getmtime(path)
+        if path in self._cache and self._cache_mtimes.get(path) == current_mtime:
+            return self._cache[path]
+            
+        # Re-read from disk
+        data = []
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                data = list(reader)
+            self._cache[path] = data
+            self._cache_mtimes[path] = current_mtime
+        except: pass
+        return data
 
     def get_all_sessions(self):
         ids = set()
@@ -137,20 +159,16 @@ class Backend:
         ids.add(self.session_id)
         
         # Check Main logs
-        if os.path.exists(self.logs_path):
-            with open(self.logs_path, 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    try: ids.add(int(row["Session_ID"]))
-                    except: continue
+        for row in self._get_csv_data(self.logs_path):
+            try: ids.add(int(row["Session_ID"]))
+            except: continue
+            
         # Check Failure logs
         fail_path = os.path.join(self.base_dir, "logs", f"{self.game_id}_failures.csv")
-        if os.path.exists(fail_path):
-            with open(fail_path, 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    try: ids.add(int(row["Session_ID"]))
-                    except: continue
+        for row in self._get_csv_data(fail_path):
+            try: ids.add(int(row["Session_ID"]))
+            except: continue
+            
         return sorted(list(ids))
 
     def increment_session(self):
@@ -178,22 +196,16 @@ class Backend:
             return cfg["Map"], cfg["Difficulty"]
             
         # 2. Check main logs fallback
-        if os.path.exists(self.logs_path):
-            with open(self.logs_path, 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    if int(row["Session_ID"]) == session_id:
-                        return row["Map"], row["Difficulty"]
+        for row in self._get_csv_data(self.logs_path):
+            if int(row["Session_ID"]) == session_id:
+                return row["Map"], row["Difficulty"]
         
-        # 2. Check failure logs
+        # 3. Check failure logs
         fail_path = os.path.join(self.base_dir, "logs", f"{self.game_id}_failures.csv")
-        if os.path.exists(fail_path):
-            with open(fail_path, 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    if int(row["Session_ID"]) == session_id:
-                        # Assuming at least one reported failure has a valid Map/Difficulty
-                        return row["Map"], row["Difficulty"]
+        for row in self._get_csv_data(fail_path):
+            if int(row["Session_ID"]) == session_id:
+                # Assuming at least one reported failure has a valid Map/Difficulty
+                return row["Map"], row["Difficulty"]
         return None, None
 
     def is_current_session_locked(self):
@@ -386,38 +398,29 @@ class Backend:
         return sorted([t for t in types if t])
 
     def is_logged_in_current_session(self, map_name, room_name, anomaly_name):
-        if not os.path.exists(self.logs_path): return False
-        with open(self.logs_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if int(row["Session_ID"]) == self.session_id and \
-                   row["Difficulty"] == self.difficulty and \
-                   row["Map"] == map_name and \
-                   row["Room"] == room_name and \
-                   row["Anomaly_Name"] == anomaly_name:
-                    return True
+        for row in self._get_csv_data(self.logs_path):
+            if int(row["Session_ID"]) == self.session_id and \
+               row["Difficulty"] == self.difficulty and \
+               row["Map"] == map_name and \
+               row["Room"] == room_name and \
+               row["Anomaly_Name"] == anomaly_name:
+                return True
         return False
 
     def get_last_activity(self):
         last_time = "Never"
-        if os.path.exists(self.logs_path):
-            with open(self.logs_path, 'r', encoding='utf-8') as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    if int(row["Session_ID"]) == self.session_id:
-                        last_time = row.get("Timestamp", "N/A")
+        for row in self._get_csv_data(self.logs_path):
+            if int(row["Session_ID"]) == self.session_id:
+                last_time = row.get("Timestamp", "N/A")
         return last_time
 
     def get_counts(self, map_name=None, room_name=None):
         counts = defaultdict(int)
-        if not os.path.exists(self.logs_path): return counts
-        with open(self.logs_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if row["Difficulty"] == self.difficulty:
-                    if map_name and row["Map"] != map_name: continue
-                    if room_name and row["Room"] != room_name: continue
-                    counts[row["Anomaly_Name"]] += 1
+        for row in self._get_csv_data(self.logs_path):
+            if row["Difficulty"] == self.difficulty:
+                if map_name and row["Map"] != map_name: continue
+                if room_name and row["Room"] != room_name: continue
+                counts[row["Anomaly_Name"]] += 1
         return counts
 
     def add_new_anomaly(self, map_name, room_name, anom_name, anom_type="Unknown", description=""):
@@ -448,30 +451,24 @@ class Backend:
 
     def get_current_session_anomalies(self, map_name):
         anoms = []
-        if not os.path.exists(self.logs_path): return anoms
-        with open(self.logs_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if int(row["Session_ID"]) == self.session_id and \
-                   row["Difficulty"] == self.difficulty and \
-                   row["Map"] == map_name:
-                    anoms.append(row["Anomaly_Name"])
+        for row in self._get_csv_data(self.logs_path):
+            if int(row["Session_ID"]) == self.session_id and \
+               row["Difficulty"] == self.difficulty and \
+               row["Map"] == map_name:
+                anoms.append(row["Anomaly_Name"])
         return anoms
 
     def get_stats(self, map_name, max_session_id=None):
         stats = {"total_sessions": 0, "anomaly_sessions": defaultdict(set)}
-        if not os.path.exists(self.logs_path): return stats
-        
         sessions = set()
-        with open(self.logs_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                if row["Difficulty"] == self.difficulty and row["Map"] == map_name:
-                    s_id = int(row["Session_ID"])
-                    if max_session_id and s_id > max_session_id: continue
-                    
-                    sessions.add(s_id)
-                    stats["anomaly_sessions"][row["Anomaly_Name"]].add(s_id)
+        
+        for row in self._get_csv_data(self.logs_path):
+            if row["Difficulty"] == self.difficulty and row["Map"] == map_name:
+                s_id = int(row["Session_ID"])
+                if max_session_id and s_id > max_session_id: continue
+                
+                sessions.add(s_id)
+                stats["anomaly_sessions"][row["Anomaly_Name"]].add(s_id)
         
         stats["total_sessions"] = len(sessions)
         return stats

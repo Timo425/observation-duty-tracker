@@ -64,8 +64,14 @@ class AnomalyTrackerApp:
         self.current_difficulty = tk.StringVar(value=self.backend.difficulty)
         self.current_difficulty.trace_add("write", self.on_difficulty_change)
         
+        self._prediction_job = None
+        self._updating_ui = False
+        self._last_rendered_map = None
+        self._room_buttons = {} # {room_name: {anomaly_name: button_widget}}
+        
         self.setup_ui()
-        self.update_live_analysis()
+        # Initial analysis with a slight delay for better startup feel
+        self.root.after(100, self.update_live_analysis)
 
     def setup_ui(self):
         # Top Frame: Session & Map Control
@@ -172,9 +178,11 @@ class AnomalyTrackerApp:
             geom = self.root.geometry()
             if geom != self.backend.window_size:
                 self.backend.window_size = geom
+                # Performance: only save if it's a stable change, but resize is manual so it's fine.
                 self.backend.save_config()
 
     def on_game_change(self, *args):
+        self._updating_ui = True
         nice_name = self.current_game_display.get()
         # Convert back to ID: either from map OR formatted correctly
         target_id = self.NAME_TO_ID.get(nice_name)
@@ -208,29 +216,48 @@ class AnomalyTrackerApp:
         else:
             self.current_map.set("")
         
-        self.on_map_change(None)
+        self._updating_ui = False
+        self.refresh_map_ui()
 
     def on_difficulty_change(self, *args):
+        if self._updating_ui: return
         self.backend.set_difficulty(self.current_difficulty.get())
         self.status_label.config(text=f"Mode switched to {self.backend.difficulty}")
-        self.on_map_change(None)
+        self.refresh_map_ui()
 
-    def on_map_change(self, event):
+    def on_map_change(self, *args):
+        """User manually changed the map in the dropdown."""
+        if self._updating_ui: return
         map_name = self.current_map.get()
         if map_name:
-            self.backend.set_map(map_name)
+            self.backend.last_map = map_name
+            self.backend.session_configs.setdefault(str(self.backend.session_id), {})["Map"] = map_name
+            self.backend.save_config()
+            self.refresh_map_ui()
 
+    def refresh_map_ui(self):
+        """Updates the room buttons and live analysis. Uses recycling to stay fast."""
+        map_name = self.current_map.get()
+        if not map_name: return
+        
+        # Performance: If it's the same map, just update button colors (Logged vs Not)
+        if self._last_rendered_map == map_name:
+            self.update_button_states()
+            self.update_live_analysis()
+            return
+            
+        self._last_rendered_map = map_name
+        self._room_buttons = {}
+        
         # Save current tab selection if possible
         selected_index = 0
-        try:
-            selected_index = self.notebook.index("current")
-        except:
-            pass
-
+        try: selected_index = self.notebook.index("current")
+        except: pass
+        
+        # Full rebuild of tabs (only on map change)
         for tab in self.notebook.tabs():
             self.notebook.forget(tab)
-        
-        map_name = self.current_map.get()
+            
         rooms = self.data["Maps"].get(map_name, {}).get("Rooms", {})
         for room_name, anomalies in rooms.items():
             tab = ttk.Frame(self.notebook)
@@ -241,7 +268,48 @@ class AnomalyTrackerApp:
         if selected_index < len(self.notebook.tabs()):
             self.notebook.select(selected_index)
             
+        self.update_button_states()
         self.update_live_analysis()
+
+    def update_button_states(self):
+        """Fast pass: update labels and smart colors based on live stats."""
+        map_name = self.current_map.get()
+        if not map_name: return
+        
+        counts = self.backend.get_counts(map_name)
+        current_session_anoms = self.backend.get_current_session_anomalies(map_name)
+        live_exclusions = self.backend.get_live_exclusions(map_name, current_session_anoms)
+        exclusions_map = {e["name"]: e for e in live_exclusions}
+        missed_names = self.backend.get_missed_anomalies(map_name, self.backend.session_id)
+
+        for room_name, btns in self._room_buttons.items():
+            for anom_name, btn in btns.items():
+                count = counts.get(anom_name, 0)
+                excl_info = exclusions_map.get(anom_name)
+                
+                # Update text with count
+                btn.config(text=f"{anom_name} ({count})")
+                
+                # Probabilistic Color Logic
+                bg_color = "lightgray"
+                fg_color = "black"
+                
+                if self.backend.is_logged_in_current_session(map_name, room_name, anom_name):
+                    bg_color = "#90ee90" # Green (Found)
+                elif anom_name in missed_names:
+                    bg_color = "#FF8C00" # Orange (Missed)
+                    fg_color = "white"
+                elif excl_info:
+                    # Heat-map red based on Expected Overlap (Surprise density)
+                    E = excl_info['expected_overlap']
+                    # Scale saturation: 1.0 (light) to 5.0 (vibrant red)
+                    sat = max(0.15, min(1.0, 0.2 + (E - 1.0) * (0.8 / 4.0)))
+                    import colorsys
+                    rgb = colorsys.hls_to_rgb(0, 0.5, sat)
+                    bg_color = '#%02x%02x%02x' % (int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
+                    if sat > 0.7: fg_color = "white" # High intensity = white text
+                
+                btn.config(bg=bg_color, fg=fg_color)
 
     def show_analytics_window(self):
         win = tk.Toplevel(self.root)
@@ -297,110 +365,76 @@ class AnomalyTrackerApp:
             ), tags=(tag,))
 
     def populate_room_tab(self, tab, room_name, room_anomalies):
+        self._room_buttons[room_name] = {}
+        
         canvas = tk.Canvas(tab, highlightthickness=0)
         scrollbar = ttk.Scrollbar(tab, orient="vertical", command=canvas.yview)
         scrollable_frame = ttk.Frame(canvas)
 
-        # Bindings for scrolling and scaling
         scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-        
-        # Ensure scrollable_frame width stays in sync with canvas width
-        def on_canvas_configure(event):
-            canvas.itemconfig(canvas_frame, width=event.width)
-        canvas.bind("<Configure>", on_canvas_configure)
-
         canvas_frame = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_frame, width=e.width))
         canvas.configure(yscrollcommand=scrollbar.set)
         
-        # Mouse Wheel Support (Across different platforms)
+        # Mouse Wheel Support
         def _on_mouse_wheel(event):
-            if event.num == 4 or event.delta > 0:
-                canvas.yview_scroll(-1, "units")
-            elif event.num == 5 or event.delta < 0:
-                canvas.yview_scroll(1, "units")
-        
-        # Bind to canvas and all its children recursively
-        canvas.bind_all("<MouseWheel>", _on_mouse_wheel) # Windows/macOS
-        canvas.bind_all("<Button-4>", _on_mouse_wheel)   # Linux
-        canvas.bind_all("<Button-5>", _on_mouse_wheel)   # Linux
+            if event.num == 4 or event.delta > 0: canvas.yview_scroll(-1, "units")
+            elif event.num == 5 or event.delta < 0: canvas.yview_scroll(1, "units")
+        canvas.bind_all("<MouseWheel>", _on_mouse_wheel)
+        canvas.bind_all("<Button-4>", _on_mouse_wheel)
+        canvas.bind_all("<Button-5>", _on_mouse_wheel)
 
-        header_frame = ttk.Frame(scrollable_frame); header_frame.pack(fill=tk.X, pady=5)
-        ttk.Label(header_frame, text=f"Room: {room_name}", font=("Arial", 10, "bold")).pack(side=tk.LEFT)
-        ttk.Button(header_frame, text="+ Add anomaly", command=lambda r=room_name: self.prompt_add_anomaly(r)).pack(side=tk.RIGHT)
+        # Local Header
+        header = ttk.Frame(scrollable_frame); header.pack(fill=tk.X, pady=5)
+        ttk.Label(header, text=f"Room: {room_name}", font=("Arial", 10, "bold")).pack(side=tk.LEFT)
+        ttk.Button(header, text="+ Add", command=lambda r=room_name: self.prompt_add_anomaly(r)).pack(side=tk.RIGHT)
+        
+        # Local Buttons
         self.create_buttons(scrollable_frame, room_name, room_anomalies)
         
+        # Global Section
         ttk.Separator(scrollable_frame, orient='horizontal').pack(fill='x', pady=10)
         global_header = ttk.Frame(scrollable_frame); global_header.pack(fill=tk.X, pady=5)
         ttk.Label(global_header, text="Global anomalies", font=("Arial", 10, "bold")).pack(side=tk.LEFT)
-        ttk.Button(global_header, text="+ Add anomaly", command=lambda: self.prompt_add_anomaly("Global")).pack(side=tk.RIGHT)
+        ttk.Button(global_header, text="+ Add", command=lambda: self.prompt_add_anomaly("Global")).pack(side=tk.RIGHT)
+        
         self.create_buttons(scrollable_frame, "Global", self.data.get("Global", []))
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
     def create_buttons(self, parent, room_name, anomalies):
-        current_map = self.current_map.get()
-        counts = self.backend.get_counts(current_map, room_name)
-        current_session_anoms = self.backend.get_current_session_anomalies(current_map)
-        live_exclusions = self.backend.get_live_exclusions(current_map, current_session_anoms)
-        exclusions_map = {e["name"]: e for e in live_exclusions}
-        missed_names = self.backend.get_missed_anomalies(current_map, self.backend.session_id)
+        if room_name not in self._room_buttons: self._room_buttons[room_name] = {}
         
         grid_frame = ttk.Frame(parent); grid_frame.pack(fill=tk.X)
-        for c in range(3): grid_frame.columnconfigure(c, weight=1) # Allow columns to expand
-        cols = 3
-        sorted_anoms = sorted(anomalies, key=lambda x: x["name"])
+        for c in range(3): grid_frame.columnconfigure(c, weight=1) # Center/Expand rows
         
-        for i, anom in enumerate(sorted_anoms):
-            name = anom["name"]; count = counts.get(name, 0)
+        sorted_anoms = sorted(anomalies, key=lambda x: x["name"])
+        for i, a in enumerate(sorted_anoms):
+            name = a["name"]
+            # Store reference for recycling
+            btn = tk.Button(grid_frame, text=name, width=20, height=2,
+                          command=lambda n=name, r=room_name: self.log_anomaly(n, r))
+            btn.grid(row=i // 3, column=i % 3, padx=3, pady=3, sticky="ew")
+            self._room_buttons[room_name][name] = btn
             
-            # Use tk.Button instead of ttk.Button for better Linux color support
-            btn = tk.Button(grid_frame, text=f"{name} ({count})", width=25, height=2, wraplength=180, justify="center")
-            btn.grid(row=i//cols, column=i%cols, padx=3, pady=3, sticky="ew")
-            btn.bind("<Button-1>", lambda e, n=name, r=room_name: self.log_anomaly(n, r))
+            # Use Right-click for Undo as before
             btn.bind("<Button-3>", lambda e, n=name, r=room_name: self.undo_anomaly(n, r))
-
-            # Tooltip
-            excl_info = exclusions_map.get(name)
-            desc = anom.get("description", anom.get("desc", ""))
-            anom_type = anom.get("type", "Unknown")
             
-            tip_text = f"NAME: {name}\nTYPE: {anom_type}"
-            if desc: tip_text += f"\nDESC: {desc}"
-            tip_text += f"\nTotal sightings: {count}"
-            
-            if excl_info:
-                E = excl_info['expected_overlap']
-                tip_text += f"\n\nEXPECTED overlap: {E:.2f} | ACTUAL: 0"
-                tip_text += f"\nRule Certainty: {excl_info['certainty']:.0%}"
-            ToolTip(btn, tip_text)
-
-            # Color Logic
-            bg_color = "lightgray" # Default Linux gray
-            fg_color = "black"
-            
-            if self.backend.is_logged_in_current_session(current_map, room_name, name):
-                bg_color = "#90ee90" # Light Green
-            elif name in missed_names:
-                bg_color = "#FF8C00" # DarkOrange (Missed)
-                fg_color = "white"
-            elif excl_info:
-                # Scaled Red Saturation based on E (1.0 to 5.0 scale)
-                E = excl_info['expected_overlap']
-                if E < 1.0:
-                    sat = 0.15
-                elif E >= 5.0:
-                    sat = 1.0
-                else:
-                    sat = 0.2 + (E - 1.0) * (0.8 / 4.0)
-                
-                rgb = colorsys.hls_to_rgb(0, 0.5, sat)
-                bg_color = '#%02x%02x%02x' % (int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
-                # If very dark red, use white text (though at 0.5 lightness it should be fine)
-            
-            btn.config(bg=bg_color, fg=fg_color)
+            # Tooltips for descriptions
+            desc = a.get("description", a.get("desc", ""))
+            if desc: ToolTip(btn, desc)
 
     def update_live_analysis(self):
+        """Debounced wrapper: only calls the real math after 250ms of silence."""
+        if self._prediction_job:
+            self.root.after_cancel(self._prediction_job)
+        self._prediction_job = self.root.after(250, self._perform_live_analysis)
+
+    def _perform_live_analysis(self):
+        """The heavy mathematical lifting."""
+        self._prediction_job = None
+        
         map_name = self.current_map.get()
         if not map_name: return
         
@@ -486,6 +520,7 @@ class AnomalyTrackerApp:
             self.on_map_change(None)
 
     def update_session_view(self):
+        self._updating_ui = True
         self.session_label.config(text=f"ID: {self.backend.session_id}")
         self.activity_label.config(text=f"Last activity: {self.backend.get_last_activity()}")
         
@@ -502,10 +537,10 @@ class AnomalyTrackerApp:
             # (on_map_change will still trigger, but that's what we want)
             if self.current_map.get() != s_map or self.current_difficulty.get() != s_diff:
                 self.current_map.set(s_map)
-                self.current_difficulty.set(s_diff)
-                return # on_map_change will be triggered by trace/bind
+                if s_diff: self.current_difficulty.set(s_diff)
         
-        self.on_map_change(None)
+        self._updating_ui = False
+        self.refresh_map_ui()
 
     def toggle_lock(self):
         self.backend.toggle_session_lock()
