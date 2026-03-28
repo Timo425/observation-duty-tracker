@@ -15,10 +15,9 @@ class Backend:
             
         self.config_path = os.path.join(self.base_dir, "app_config.json")
         self.game_id = "game_8"
-        self.data_path = ""
-        self.logs_path = ""
-        self.data = {}
         self.session_id = 1
+        self.max_session_id = 1
+        self.session_configs = {} # {str(id): {"Map": str, "Difficulty": str}}
         self.difficulty = "Normal"
         self.last_map = ""
         self.failures_path = ""
@@ -51,6 +50,8 @@ class Backend:
         with open(self.config_path, 'w') as f:
             json.dump({
                 "Session_ID": self.session_id,
+                "Max_Session_ID": self.max_session_id,
+                "Session_Configs": self.session_configs,
                 "Difficulty": self.difficulty,
                 "Last_Map": self.last_map,
                 "Game_ID": self.game_id,
@@ -66,8 +67,17 @@ class Backend:
             except: pass
         
         self.session_id = config.get("Session_ID", 1)
-        self.difficulty = config.get("Difficulty", "Normal")
-        self.last_map = config.get("Last_Map", "")
+        self.max_session_id = config.get("Max_Session_ID", self.session_id)
+        self.session_configs = config.get("Session_Configs", {})
+        
+        # Pull current session defaults from session_configs if they exist
+        curr_cfg = self.session_configs.get(str(self.session_id), {})
+        self.difficulty = curr_cfg.get("Difficulty", config.get("Difficulty", "Normal"))
+        self.last_map = curr_cfg.get("Map", config.get("Last_Map", ""))
+        
+        # Ensure max_session_id syncs with current if current is somehow higher
+        self.max_session_id = max(self.max_session_id, self.session_id)
+        
         self.window_size = config.get("Window_Size", "1200x800")
         self.game_id = config.get("Game_ID", "game_8")
         self.set_game(self.game_id)
@@ -75,6 +85,7 @@ class Backend:
 
     def set_map(self, map_name):
         self.last_map = map_name
+        self.session_configs.setdefault(str(self.session_id), {})["Map"] = map_name
         self.save_config()
 
     def load_master_data(self):
@@ -108,14 +119,23 @@ class Backend:
 
     def set_difficulty(self, difficulty):
         self.difficulty = difficulty
+        self.session_configs.setdefault(str(self.session_id), {})["Difficulty"] = difficulty
         self.save_config()
 
     def set_session(self, session_id):
         self.session_id = session_id
+        # Update current state from saved session config if available
+        cfg = self.session_configs.get(str(session_id), {})
+        if "Difficulty" in cfg: self.difficulty = cfg["Difficulty"]
+        if "Map" in cfg: self.last_map = cfg["Map"]
         self.save_config()
 
     def get_all_sessions(self):
         ids = set()
+        # High-water mark from config
+        ids.add(self.max_session_id)
+        ids.add(self.session_id)
+        
         # Check Main logs
         if os.path.exists(self.logs_path):
             with open(self.logs_path, 'r', encoding='utf-8') as f:
@@ -137,16 +157,27 @@ class Backend:
         existing = self.get_all_sessions()
         max_in_logs = max(existing) if existing else 0
         
-        # Increment based on whichever is higher: logs or our current state
-        # This allows clicking 'New Shift' multiple times even if current is empty.
-        self.session_id = max(max_in_logs, self.session_id) + 1
+        # Increment based on whichever is higher: logs, config, or current state
+        self.session_id = max(max_in_logs, self.session_id, self.max_session_id) + 1
+        self.max_session_id = self.session_id
+
+        # Pre-populate this new session with current settings so they stick
+        self.session_configs[str(self.session_id)] = {
+            "Map": self.last_map,
+            "Difficulty": self.difficulty
+        }
         
         self.save_config()
         return self.session_id
 
     def get_session_info(self, session_id):
-        """Returns (Map, Difficulty) for a given session ID by scanning logs."""
-        # 1. Check main logs first (most common)
+        """Returns (Map, Difficulty) for a given session ID by checking configs first, then logs."""
+        # 1. Check manual configs first (user's intent)
+        cfg = self.session_configs.get(str(session_id), {})
+        if "Map" in cfg and "Difficulty" in cfg:
+            return cfg["Map"], cfg["Difficulty"]
+            
+        # 2. Check main logs fallback
         if os.path.exists(self.logs_path):
             with open(self.logs_path, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
