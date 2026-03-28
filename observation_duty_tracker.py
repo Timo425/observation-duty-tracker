@@ -125,19 +125,18 @@ class AnomalyTrackerApp:
         self.live_frame = ttk.LabelFrame(pane, text="Live prediction analysis (Mutual exclusivity)", padding="5")
         pane.add(self.live_frame, weight=1)
         
-        cols = ("Anomaly", "E (Surprise)", "Likelihood", "N", "Total Sights", "Conflict With")
-        self.live_tree = ttk.Treeview(self.live_frame, columns=cols, show="headings", height=4)
+        cols = ("Anomaly", "Certainty", "Evidence", "Sightings", "Blockers")
+        self.live_tree = ttk.Treeview(self.live_frame, columns=cols, show="headings", height=10)
         self.live_tree.heading("Anomaly", text="Anomaly Name")
-        self.live_tree.heading("E (Surprise)", text="Surprise (E)")
-        self.live_tree.heading("Likelihood", text="Exclusivity %")
-        self.live_tree.heading("N", text="N (Data)")
-        self.live_tree.heading("Total Sights", text="Sightings")
-        self.live_tree.heading("Conflict With", text="Conflict With")
+        self.live_tree.heading("Certainty", text="Certainty")
+        self.live_tree.heading("Evidence", text="Evidence (Shifts)")
+        self.live_tree.heading("Sightings", text="Sights")
+        self.live_tree.heading("Blockers", text="Conflict Triggered By")
         self.live_tree.column("Anomaly", width=180)
-        self.live_tree.column("E (Surprise)", width=80)
-        self.live_tree.column("Likelihood", width=100)
-        self.live_tree.column("N", width=50, anchor="center")
-        self.live_tree.column("Total Sights", width=80, anchor="center")
+        self.live_tree.column("Certainty", width=120)
+        self.live_tree.column("Evidence", width=110, anchor="center")
+        self.live_tree.column("Sightings", width=60, anchor="center")
+        self.live_tree.column("Blockers", width=400)
         self.live_tree.pack(fill=tk.BOTH, expand=True)
 
         # Failure Summary Section (Hidden by default)
@@ -257,19 +256,19 @@ class AnomalyTrackerApp:
         desc = ttk.Label(win, text="Flags pairs with high Expected Overlap (E) but low Actual Overlap. 'POTENTIAL ERROR' suggests a data entry mistake.", foreground="gray")
         desc.pack(pady=5)
 
-        cols = ("Pair", "Actual", "Expected (E)", "Likelihood", "N", "Status")
+        cols = ("Pair", "Actual", "Expected (E)", "Certainty", "N", "Status")
         tree = ttk.Treeview(win, columns=cols, show="headings")
         tree.heading("Pair", text="Anomaly Pair (A vs B)")
         tree.heading("Actual", text="Actual Overlap")
         tree.heading("Expected (E)", text="Expected (E)")
-        tree.heading("Likelihood", text="Likelihood")
+        tree.heading("Certainty", text="Certainty")
         tree.heading("N", text="N")
         tree.heading("Status", text="Status")
         
         tree.column("Pair", width=550)
         tree.column("Actual", width=80, anchor="center")
         tree.column("Expected (E)", width=80, anchor="center")
-        tree.column("Likelihood", width=80, anchor="center")
+        tree.column("Certainty", width=80, anchor="center")
         tree.column("N", width=40, anchor="center")
         tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         
@@ -292,7 +291,7 @@ class AnomalyTrackerApp:
                 pair_str, 
                 r['actual'], 
                 f"{r['expected']:.2f}", 
-                f"{r['likelihood']:.2%}" if r['likelihood'] > 0 else "N/A",
+                f"{r['certainty']:.0%}" if r['certainty'] > 0 else "N/A",
                 r['N'],
                 r['status']
             ), tags=(tag,))
@@ -373,7 +372,7 @@ class AnomalyTrackerApp:
             if excl_info:
                 E = excl_info['expected_overlap']
                 tip_text += f"\n\nEXPECTED overlap: {E:.2f} | ACTUAL: 0"
-                tip_text += f"\nExclusivity Likelihood: {excl_info['likelihood']:.2%}"
+                tip_text += f"\nRule Certainty: {excl_info['certainty']:.0%}"
             ToolTip(btn, tip_text)
 
             # Color Logic
@@ -426,8 +425,12 @@ class AnomalyTrackerApp:
 
         # 2. Show Mutual Exclusivity Predictions
         for e in live_exclusions:
+            # Evidence: How many times was the blocker seen vs Total sessions
+            evidence_str = f"{e['n_blockers']} / {e['N']} shifts" 
+            certainty_str = f"{e['certainty_status']} ({e['certainty']:.0%})"
+            
             self.live_tree.insert("", tk.END, values=(
-                e["name"], f"{e['expected_overlap']:.2f}", f"{e['likelihood']:.2%}", e["N"], e["count"], ", ".join(e["current_set"])
+                e["name"], certainty_str, evidence_str, e["count"], ", ".join(e["blockers"])
             ))
 
         stats = self.backend.get_stats(map_name, max_session_id=self.backend.session_id)

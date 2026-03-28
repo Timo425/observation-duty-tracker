@@ -70,7 +70,7 @@ def generate_report(backend, difficulties=None):
             lines.append(f"  Likely Exclusions (needs more data):")
             for r in likely:
                 a1, a2 = r["pair"]
-                lines.append(f"    {a1} <-> {a2}  (seen {r['n1']}x / {r['n2']}x, likelihood {r['likelihood']:.2f})")
+                lines.append(f"    {a1} <-> {a2}  (seen {r['n1']}x / {r['n2']}x, certainty {r['certainty']:.0%})")
             lines.append("")
 
         if errors:

@@ -489,13 +489,8 @@ class Backend:
         N = stats["total_sessions"]
         if N < 2: return []
 
-        # Sessions where at least one current anomaly appeared
-        S_current = set()
-        for a in current_anoms:
-            S_current.update(stats["anomaly_sessions"].get(a, set()))
-        
-        n_current = len(S_current)
-        if n_current == 0: return []
+        # Pre-calculate session sets for each reported anomaly
+        session_sets = {a: stats["anomaly_sessions"].get(a, set()) for a in current_anoms}
 
         exclusions = []
         all_possible_anoms = set()
@@ -516,30 +511,50 @@ class Backend:
             n_a = len(S_a)
             if n_a == 0: continue
 
-            # Expected overlap E = (n_current * n_a) / N
-            expected_overlap = (n_current * n_a) / N
+            # Direct Blocker Logic: An anomaly is excluded if it conflicts with ANY individual report.
+            blockers = []
+            S_blockers_union = set()
+            for r_name, S_r in session_sets.items():
+                if not (S_r & S_a):
+                    blockers.append(r_name)
+                    S_blockers_union.update(S_r)
+            
+            if not blockers: continue
 
-            # Check if they co-occur'd in ANY past session
-            if not (S_current & S_a):
-                # Probability of zero intersection by chance (Hypergeometric p-value)
-                if N - n_current < n_a:
-                    p_value = 0
-                else:
-                    lp = log_comb(N - n_current, n_a) - log_comb(N, n_a)
-                    p_value = math.exp(lp)
-                
-                likelihood = 1 - p_value
-                exclusions.append({
-                    "name": a_name,
-                    "count": n_a,
-                    "expected_overlap": expected_overlap,
-                    "likelihood": likelihood,
-                    "rank_score": expected_overlap,
-                    "N": N,
-                    "current_set": list(current_anoms)
-                })
+            # Surprise metric: Based on the union of sessions that cause the exclusion
+            n_blockers = len(S_blockers_union)
+            expected_overlap = (n_blockers * n_a) / N
 
-        exclusions.sort(key=lambda x: x["rank_score"], reverse=True)
+            # Probability of zero intersection by chance (Hypergeometric p-value)
+            if N - n_blockers < n_a:
+                p_value = 0
+            else:
+                lp = log_comb(N - n_blockers, n_a) - log_comb(N, n_a)
+                p_value = math.exp(lp)
+            
+            certainty = 1 - p_value
+            
+            # Map p-value to a more human-friendly Status
+            certainty_status = "Initial Pattern"
+            if n_blockers > 5:
+                if p_value < 0.01: certainty_status = "Confirmed Rule"
+                elif p_value < 0.1: certainty_status = "High Prob."
+            elif n_blockers > 2:
+                if p_value < 0.2: certainty_status = "Strong Pattern"
+
+            exclusions.append({
+                "name": a_name,
+                "count": n_a,
+                "expected_overlap": expected_overlap,
+                "certainty": certainty,
+                "certainty_status": certainty_status,
+                "n_blockers": n_blockers,
+                "N": N,
+                "blockers": blockers
+            })
+
+        # Sort by Certainty first, then by Surprise (overlap)
+        exclusions.sort(key=lambda x: (x["certainty"], x["expected_overlap"]), reverse=True)
         return exclusions
 
     def analyze_exclusivity(self):
@@ -584,7 +599,7 @@ class Backend:
                 if actual_overlap == 0:
                     lp = math.lgamma(total_sessions - n1 + 1) + math.lgamma(total_sessions - n2 + 1) - \
                          math.lgamma(total_sessions + 1) - math.lgamma(total_sessions - n1 - n2 + 1) if (total_sessions - n1 >= n2) else -float('inf')
-                    likelihood = 1 - math.exp(lp) if lp != -float('inf') else 1.0
+                    certainty = 1 - math.exp(lp) if lp != -float('inf') else 1.0
                     
                     results.append({
                         "pair": (a1, a2),
@@ -593,9 +608,9 @@ class Backend:
                         "n1": n1, "n2": n2,
                         "expected": expected_overlap,
                         "actual": 0,
-                        "likelihood": likelihood,
+                        "certainty": certainty,
                         "N": total_sessions,
-                        "status": "Hard Lock" if likelihood > 0.95 else "Likely Excl."
+                        "status": "Hard Lock" if certainty > 0.95 else "Likely Excl."
                     })
                 elif actual_overlap == 1 and expected_overlap > 5.0:
                     results.append({
@@ -605,9 +620,9 @@ class Backend:
                         "n1": n1, "n2": n2,
                         "expected": expected_overlap,
                         "actual": 1,
-                        "likelihood": 0,
+                        "certainty": 0,
                         "N": total_sessions,
-                        "status": "POTENTIAL ERROR"
+                        "status": "Anti-Pattern"
                     })
         
         results.sort(key=lambda x: x["expected"], reverse=True)
