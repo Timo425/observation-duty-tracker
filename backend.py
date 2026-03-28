@@ -470,6 +470,18 @@ class Backend:
                 sessions.add(s_id)
                 stats["anomaly_sessions"][row["Anomaly_Name"]].add(s_id)
         
+        # Merge failure-reported anomalies into known sessions (best-effort)
+        if os.path.exists(self.failures_path):
+            for row in self._get_csv_data(self.failures_path):
+                if row.get("Difficulty") == self.difficulty and row.get("Map") == map_name:
+                    s_id = int(row["Session_ID"])
+                    if max_session_id and s_id > max_session_id: continue
+                    if s_id not in sessions: continue  # Only enhance known sessions
+                    for i in range(1, 4):
+                        linked = row.get(f"Linked{i}", "None")
+                        if linked and linked != "None":
+                            stats["anomaly_sessions"][linked].add(s_id)
+        
         stats["total_sessions"] = len(sessions)
         return stats
 
@@ -515,7 +527,7 @@ class Backend:
         # 'Truly LIVE': include everything up to and including the current session
         stats = self.get_stats(map_name, max_session_id=self.session_id)
         N = stats["total_sessions"]
-        if N < 2: return []
+        if N < 1: return []
 
         # Pre-calculate session sets for each reported anomaly
         session_sets = {a: stats["anomaly_sessions"].get(a, set()) for a in current_anoms}
@@ -577,30 +589,52 @@ class Backend:
                 "certainty": certainty,
                 "certainty_status": certainty_status,
                 "n_blockers": n_blockers,
+                "blockers": blockers,
                 "N": N,
-                "blockers": blockers
             })
-
         # Sort by Certainty first, then by Surprise (overlap)
         exclusions.sort(key=lambda x: (x["certainty"], x["expected_overlap"]), reverse=True)
         return exclusions
 
-    def analyze_exclusivity(self):
+    def analyze_exclusivity(self, target_difficulty=None):
+        """Analyzes historical logs to find exclusive anomaly pairs and flag suspicious co-occurrences.
+        
+        Per README: Flags when two anomalies that almost never appear together
+        suddenly show up in the same shift, suggesting one was misidentified.
+        """
+        difficulty_filter = target_difficulty if target_difficulty else self.difficulty
+        
         sessions = defaultdict(set)
         anom_to_sessions = defaultdict(set)
         anom_to_room_counts = defaultdict(lambda: defaultdict(int))
         all_anomalies = set()
         if not os.path.exists(self.logs_path): return []
         
+        # Read sightings
         with open(self.logs_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                if row["Difficulty"] != self.difficulty: continue
+                if row["Difficulty"] != difficulty_filter: continue
                 s_id = row["Session_ID"]; a_name = row["Anomaly_Name"]; room = row["Room"]
                 sessions[s_id].add(a_name)
                 anom_to_sessions[a_name].add(s_id)
                 anom_to_room_counts[a_name][room] += 1
                 all_anomalies.add(a_name)
+        
+        # Merge failure-reported anomalies (best-effort: missed != absent)
+        if os.path.exists(self.failures_path):
+            with open(self.failures_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if row.get("Difficulty") != difficulty_filter: continue
+                    s_id = row["Session_ID"]
+                    if s_id not in sessions: continue  # Only enhance known sessions
+                    for i in range(1, 4):
+                        linked = row.get(f"Linked{i}", "None")
+                        if linked and linked != "None":
+                            sessions[s_id].add(linked)
+                            anom_to_sessions[linked].add(s_id)
+                            all_anomalies.add(linked)
         
         def format_rooms(anom):
             rooms = anom_to_room_counts[anom]
@@ -608,7 +642,7 @@ class Backend:
             return ", ".join(parts) if parts else "Unknown"
 
         total_sessions = len(sessions)
-        if total_sessions < 3: return []
+        if total_sessions == 0: return []
         
         anom_list = sorted(list(all_anomalies))
         results = []
@@ -621,14 +655,20 @@ class Backend:
                 a2 = anom_list[j]; s2 = anom_to_sessions[a2]; n2 = freq[a2]
                 if n2 < 2: continue
                 
-                actual_overlap = len(s1 & s2)
+                overlap_sessions = s1 & s2
+                actual_overlap = len(overlap_sessions)
                 expected_overlap = (n1 * n2) / total_sessions
                 
                 if actual_overlap == 0:
-                    lp = math.lgamma(total_sessions - n1 + 1) + math.lgamma(total_sessions - n2 + 1) - \
-                         math.lgamma(total_sessions + 1) - math.lgamma(total_sessions - n1 - n2 + 1) if (total_sessions - n1 >= n2) else -float('inf')
-                    certainty = 1 - math.exp(lp) if lp != -float('inf') else 1.0
+                    # Pure exclusion — calculate statistical certainty
+                    if total_sessions - n1 >= n2:
+                        lp = math.lgamma(total_sessions - n1 + 1) + math.lgamma(total_sessions - n2 + 1) - \
+                             math.lgamma(total_sessions + 1) - math.lgamma(total_sessions - n1 - n2 + 1)
+                        certainty = 1 - math.exp(lp) if lp != -float('inf') else 1.0
+                    else:
+                        certainty = 1.0
                     
+                    if certainty < 0.5: continue
                     results.append({
                         "pair": (a1, a2),
                         "room1": format_rooms(a1),
@@ -638,20 +678,29 @@ class Backend:
                         "actual": 0,
                         "certainty": certainty,
                         "N": total_sessions,
-                        "status": "Hard Lock" if certainty > 0.95 else "Likely Excl."
+                        "status": "TOTAL EXCLUSION" if certainty > 0.95 else "LIKELY EXCLUSION",
+                        "flagged_sessions": []
                     })
-                elif actual_overlap == 1 and expected_overlap > 5.0:
+                
+                elif expected_overlap >= 2.0 and actual_overlap / expected_overlap <= 0.35:
+                    # Suspicious co-occurrence: they co-occur MUCH less than expected.
+                    # The rare sessions where they DO appear together may be misidentifications.
+                    flagged = sorted(overlap_sessions, key=lambda x: int(x))
+                    shift_label = ", ".join(f"#{s}" for s in flagged)
                     results.append({
                         "pair": (a1, a2),
                         "room1": format_rooms(a1),
                         "room2": format_rooms(a2),
                         "n1": n1, "n2": n2,
                         "expected": expected_overlap,
-                        "actual": 1,
+                        "actual": actual_overlap,
                         "certainty": 0,
                         "N": total_sessions,
-                        "status": "Anti-Pattern"
+                        "status": f"SUSPICIOUS (Shift {shift_label})",
+                        "flagged_sessions": flagged
                     })
         
-        results.sort(key=lambda x: x["expected"], reverse=True)
+        # Suspicious co-occurrences first, then by expected overlap
+        results.sort(key=lambda x: (0 if "SUSPICIOUS" in x["status"] else 1, -x["expected"]))
         return results
+

@@ -313,53 +313,74 @@ class AnomalyTrackerApp:
 
     def show_analytics_window(self):
         win = tk.Toplevel(self.root)
-        win.title(f"Global Analytics - {self.backend.difficulty}")
-        win.geometry("900x600")
+        win.title("Expert Audit")
+        win.geometry("950x650")
         
-        # Tools for global analysis
         header = ttk.Frame(win, padding=10)
         header.pack(fill=tk.X)
-        ttk.Label(header, text="Full Database Exclusivity & Error Report", font=("Arial", 12, "bold")).pack(side=tk.LEFT)
+        ttk.Label(header, text="Full Database Exclusivity Report", font=("Arial", 12, "bold")).pack(side=tk.LEFT)
         
-        desc = ttk.Label(win, text="Flags pairs with high Expected Overlap (E) but low Actual Overlap. 'POTENTIAL ERROR' suggests a data entry mistake.", foreground="gray")
+        # Difficulty Filter
+        filter_frame = ttk.Frame(header)
+        filter_frame.pack(side=tk.RIGHT)
+        ttk.Label(filter_frame, text="Filter:").pack(side=tk.LEFT, padx=5)
+        
+        supported_diffs = self.data.get("Difficulties", ["Normal", "Hard"])
+        audit_diff = tk.StringVar(value=self.backend.difficulty)
+        diff_combo = ttk.Combobox(filter_frame, textvariable=audit_diff, values=supported_diffs, width=10, state="readonly")
+        diff_combo.pack(side=tk.LEFT)
+
+        # 1. Define refresh logic first
+        def refresh(*args):
+            self.update_analytics_window(tree, target_diff=audit_diff.get())
+
+        # 2. Add the button (now it can see 'refresh')
+        ttk.Button(header, text="Refresh Analysis", command=refresh).pack(side=tk.RIGHT, padx=5)
+        
+        desc = ttk.Label(win, text="Flags suspicious co-occurrences: when anomalies that almost never appear together show up in the same shift, suggesting possible misidentification.", foreground="gray")
         desc.pack(pady=5)
 
-        cols = ("Pair", "Actual", "Expected (E)", "Certainty", "N", "Status")
+        cols = ("Pair", "Actual", "Expected", "Certainty", "N", "Status")
         tree = ttk.Treeview(win, columns=cols, show="headings")
         tree.heading("Pair", text="Anomaly Pair (A vs B)")
         tree.heading("Actual", text="Actual Overlap")
-        tree.heading("Expected (E)", text="Expected (E)")
+        tree.heading("Expected", text="Expected Overlap")
         tree.heading("Certainty", text="Certainty")
         tree.heading("N", text="N")
         tree.heading("Status", text="Status")
         
         tree.column("Pair", width=550)
         tree.column("Actual", width=80, anchor="center")
-        tree.column("Expected (E)", width=80, anchor="center")
+        tree.column("Expected", width=80, anchor="center")
         tree.column("Certainty", width=80, anchor="center")
         tree.column("N", width=40, anchor="center")
-        tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
-        
-        tree.tag_configure("ERROR", background="#ffcccc", foreground="#990000")
-        
-        ttk.Button(header, text="Refresh Analysis", command=lambda: self.update_analytics_window(tree)).pack(side=tk.RIGHT)
-        
-        # Initial fill
-        self.update_analytics_window(tree)
+        tree.pack(fill="both", expand=True, padx=10, pady=10)
 
-    def update_analytics_window(self, tree):
+        # Style colors
+        tree.tag_configure("suspicious", background="#ffcccc")
+        tree.tag_configure("likely", background="#fff0cc")
+        tree.tag_configure("exclusion", background="#ccffcc")
+
+        audit_diff.trace_add("write", refresh)
+        refresh()
+
+    def update_analytics_window(self, tree, target_diff=None):
         for item in tree.get_children():
             tree.delete(item)
             
-        results = self.backend.analyze_exclusivity()
+        results = self.backend.analyze_exclusivity(target_difficulty=target_diff)
         for r in results:
             pair_str = f"{r['pair'][0]} ({r['room1']})  <--->  {r['pair'][1]} ({r['room2']})"
-            tag = "ERROR" if r['status'] == "POTENTIAL ERROR" else ""
+            tag = ""
+            if "SUSPICIOUS" in r['status']: tag = "suspicious"
+            elif "TOTAL EXCLUSION" in r['status']: tag = "exclusion"
+            elif "LIKELY EXCLUSION" in r['status']: tag = "likely"
+
             tree.insert("", tk.END, values=(
                 pair_str, 
-                r['actual'], 
+                r['actual'],
                 f"{r['expected']:.2f}", 
-                f"{r['certainty']:.0%}" if r['certainty'] > 0 else "N/A",
+                f"{r['certainty']:.0%}" if r['certainty'] > 0 else "—",
                 r['N'],
                 r['status']
             ), tags=(tag,))

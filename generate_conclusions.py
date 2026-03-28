@@ -39,10 +39,10 @@ def generate_report(backend, difficulties=None):
             lines.append("")
             continue
 
-        # Separate hard locks from potential errors
-        hard_locks = [r for r in results if r["status"] == "Hard Lock"]
-        likely = [r for r in results if r["status"] == "Likely Excl."]
-        errors = [r for r in results if r["status"] == "POTENTIAL ERROR"]
+        # Separate confirmed exclusions from suspicious co-occurrences
+        hard_locks = [r for r in results if r["status"] == "TOTAL EXCLUSION"]
+        likely = [r for r in results if r["status"] == "LIKELY EXCLUSION"]
+        suspicious = [r for r in results if "SUSPICIOUS" in r["status"]]
 
         lines.append(f"  Total sessions analyzed: {results[0]['N'] if results else 0}")
         N = results[0]['N']
@@ -73,11 +73,11 @@ def generate_report(backend, difficulties=None):
                 lines.append(f"    {a1} <-> {a2}  (seen {r['n1']}x / {r['n2']}x, certainty {r['certainty']:.0%})")
             lines.append("")
 
-        if errors:
-            lines.append(f"  Audit Flags (possible misidentifications):")
-            for r in errors:
+        if suspicious:
+            lines.append(f"  Suspicious Co-occurrences (possible misidentifications):")
+            for r in suspicious:
                 a1, a2 = r["pair"]
-                lines.append(f"    {a1} + {a2}: co-occurred {r['actual']}x but expected {r['expected']:.1f}x")
+                lines.append(f"    {a1} + {a2}: co-occurred {r['actual']}x but expected {r['expected']:.1f}x — {r['status']}")
             lines.append("")
 
         # Anomaly occurrence frequency

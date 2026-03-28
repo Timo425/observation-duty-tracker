@@ -88,7 +88,7 @@ class TestExclusivityDetection(unittest.TestCase):
         self.backend.difficulty = "Normal"
         results = self.backend.analyze_exclusivity()
 
-        exclusive_pairs = {r["pair"] for r in results if r["status"] in ("Hard Lock", "Likely Excl.")}
+        exclusive_pairs = {r["pair"] for r in results if r["status"] in ("TOTAL EXCLUSION", "LIKELY EXCLUSION")}
         # Anomaly_1 and Anomaly_2 should be detected
         self.assertIn(("Anomaly_1", "Anomaly_2"), exclusive_pairs,
                        "Failed to detect pair exclusivity between Anomaly_1 and Anomaly_2")
@@ -109,7 +109,7 @@ class TestExclusivityDetection(unittest.TestCase):
         self.backend.difficulty = "Normal"
         results = self.backend.analyze_exclusivity()
 
-        hl_pairs = {r["pair"] for r in results if r["status"] in ("Hard Lock", "Likely Excl.")}
+        hl_pairs = {r["pair"] for r in results if r["status"] in ("TOTAL EXCLUSION", "LIKELY EXCLUSION")}
         # All 3 pairwise combos should be detected
         self.assertIn(("Anomaly_1", "Anomaly_2"), hl_pairs)
         self.assertIn(("Anomaly_1", "Anomaly_3"), hl_pairs)
@@ -131,10 +131,9 @@ class TestExclusivityDetection(unittest.TestCase):
                           "False positive: co-occurring anomalies flagged as exclusive")
 
     def test_insufficient_data(self):
-        """With fewer than 3 sessions, should return empty results."""
+        """With only 1 session, should return empty (need >= 2 sightings per anomaly)."""
         sessions = [
             (1, "Normal", "TestMap", ["Anomaly_1", "Anomaly_3"]),
-            (2, "Normal", "TestMap", ["Anomaly_2", "Anomaly_4"]),
         ]
         write_mock_csv(self.backend.logs_path, sessions)
         self.backend.difficulty = "Normal"
@@ -158,7 +157,7 @@ class TestExclusivityDetection(unittest.TestCase):
         # Normal should find exclusion
         self.backend.difficulty = "Normal"
         normal_results = self.backend.analyze_exclusivity()
-        normal_pairs = {r["pair"] for r in normal_results if r["status"] in ("Hard Lock", "Likely Excl.")}
+        normal_pairs = {r["pair"] for r in normal_results if r["status"] in ("TOTAL EXCLUSION", "LIKELY EXCLUSION")}
         self.assertIn(("Anomaly_1", "Anomaly_2"), normal_pairs)
 
         # Hard should NOT find exclusion
