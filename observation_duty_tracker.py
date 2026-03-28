@@ -35,6 +35,13 @@ class AnomalyTrackerApp:
     def __init__(self, root):
         self.root = root
         self.backend = Backend()
+        self.root.title("Observation Duty Tracker")
+        self.root.geometry(self.backend.window_size)
+        self.root.minsize(1000, 700) # Ensure it's never too tiny
+        
+        self.root.bind("<Configure>", self.on_window_resize)
+        
+        # Game State
         self.data = self.backend.data
         
         self.GAME_NAMES = {
@@ -112,14 +119,14 @@ class AnomalyTrackerApp:
         pane.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
         self.notebook = ttk.Notebook(pane)
-        pane.add(self.notebook, weight=3)
+        pane.add(self.notebook, weight=5)
 
         # Live Analysis Panel
-        live_frame = ttk.LabelFrame(pane, text="Live prediction analysis (Mutual exclusivity)", padding="5")
-        pane.add(live_frame, weight=1)
+        self.live_frame = ttk.LabelFrame(pane, text="Live prediction analysis (Mutual exclusivity)", padding="5")
+        pane.add(self.live_frame, weight=1)
         
         cols = ("Anomaly", "E (Surprise)", "Likelihood", "N", "Total Sights", "Conflict With")
-        self.live_tree = ttk.Treeview(live_frame, columns=cols, show="headings", height=8)
+        self.live_tree = ttk.Treeview(self.live_frame, columns=cols, show="headings", height=4)
         self.live_tree.heading("Anomaly", text="Anomaly Name")
         self.live_tree.heading("E (Surprise)", text="Surprise (E)")
         self.live_tree.heading("Likelihood", text="Exclusivity %")
@@ -134,7 +141,7 @@ class AnomalyTrackerApp:
         self.live_tree.pack(fill=tk.BOTH, expand=True)
 
         # Failure Summary Section (Hidden by default)
-        self.failure_frame = ttk.LabelFrame(live_frame, text="⚠️ Anomalies took over this shift", padding="5")
+        self.failure_frame = ttk.LabelFrame(self.live_frame, text="⚠️ Anomalies took over this shift", padding="5")
         self.failure_label = ttk.Label(self.failure_frame, text="", foreground="#D35400", font=("Arial", 10, "bold"), wraplength=1000)
         self.failure_label.pack(fill=tk.X)
         
@@ -142,12 +149,10 @@ class AnomalyTrackerApp:
         self.live_tree.tag_configure("REPORTED", background="#FFCC80") # Light Orange
 
         # Bottom Frame: Status
-        status_frame = ttk.Frame(self.root, padding="5")
+        status_frame = ttk.Frame(self.root, padding="2")
         status_frame.pack(fill=tk.X)
-        self.status_label = ttk.Label(status_frame, text="Ready")
+        self.status_label = ttk.Label(status_frame, text="Ready", font=("Arial", 9))
         self.status_label.pack(side=tk.LEFT)
-        self.data_weight_label = ttk.Label(status_frame, text="Total shifts: 0", font=("Arial", 9, "italic"))
-        self.data_weight_label.pack(side=tk.RIGHT, padx=10)
 
         self.update_title()
         if map_names:
@@ -160,6 +165,15 @@ class AnomalyTrackerApp:
 
     def update_title(self):
         self.root.title(f"{self.current_game_display.get()} Anomaly Tracker")
+
+    def on_window_resize(self, event):
+        """Saves current window geometry to config (throttled to root window configure events)."""
+        if event.widget == self.root:
+            # We only care about root window changes
+            geom = self.root.geometry()
+            if geom != self.backend.window_size:
+                self.backend.window_size = geom
+                self.backend.save_config()
 
     def on_game_change(self, *args):
         nice_name = self.current_game_display.get()
@@ -417,7 +431,7 @@ class AnomalyTrackerApp:
             ))
 
         stats = self.backend.get_stats(map_name, max_session_id=self.backend.session_id)
-        self.data_weight_label.config(text=f"Truly live analysis (Shifts 1-{self.backend.session_id}): {stats['total_sessions']} shifts total")
+        self.live_frame.config(text=f"Live prediction analysis (Shifts 1-{self.backend.session_id}: {stats['total_sessions']} total)")
 
     def log_anomaly(self, name, room_name):
         if self.backend.is_current_session_locked():

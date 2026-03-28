@@ -23,6 +23,7 @@ class Backend:
         self.last_map = ""
         self.failures_path = ""
         self.unlocked_sessions = set()
+        self.window_size = "1200x800"
         
         self.load_config() # This will set game_id and paths
     def set_game(self, game_id):
@@ -52,7 +53,8 @@ class Backend:
                 "Session_ID": self.session_id,
                 "Difficulty": self.difficulty,
                 "Last_Map": self.last_map,
-                "Game_ID": self.game_id
+                "Game_ID": self.game_id,
+                "Window_Size": self.window_size
             }, f)
 
     def load_config(self):
@@ -66,6 +68,7 @@ class Backend:
         self.session_id = config.get("Session_ID", 1)
         self.difficulty = config.get("Difficulty", "Normal")
         self.last_map = config.get("Last_Map", "")
+        self.window_size = config.get("Window_Size", "1200x800")
         self.game_id = config.get("Game_ID", "game_8")
         self.set_game(self.game_id)
         return config
