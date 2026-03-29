@@ -279,7 +279,7 @@ class Backend:
             return False
         timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         cfg = self.session_configs.get(str(self.session_id), {})
-        alt_tabbed = "True" if cfg.get("Alt_Tabbed_At") else ""
+        alt_tabbed = "True" if cfg.get("Alt_Tabbed_At") else "False"
         last_cycled = cfg.get("Last_Cycled", "")
         with open(self.logs_path, 'a', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
