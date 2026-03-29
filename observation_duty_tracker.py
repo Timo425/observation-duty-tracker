@@ -39,6 +39,32 @@ class AnomalyTrackerApp:
         self.root.geometry(self.backend.window_size)
         self.root.minsize(1000, 700) # Ensure it's never too tiny
         
+        # Check if window is off-screen (Windows specific)
+        self.root.update_idletasks()
+        try:
+            import ctypes
+            # System metrics for virtual screen bounding box
+            SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN = 76, 77
+            SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN = 78, 79
+
+            user32 = ctypes.windll.user32
+            vx = user32.GetSystemMetrics(SM_XVIRTUALSCREEN)
+            vy = user32.GetSystemMetrics(SM_YVIRTUALSCREEN)
+            vw = user32.GetSystemMetrics(SM_CXVIRTUALSCREEN)
+            vh = user32.GetSystemMetrics(SM_CYVIRTUALSCREEN)
+
+            wx = self.root.winfo_x()
+            wy = self.root.winfo_y()
+            ww = self.root.winfo_width()
+            wh = self.root.winfo_height()
+
+            if (wx + ww <= vx) or (wx >= vx + vw) or (wy + wh <= vy) or (wy >= vy + vh):
+                # Window is outside the virtual desktop bounds; reset it
+                self.root.geometry(f"{ww}x{wh}+100+100")
+                self.backend.window_size = f"{ww}x{wh}+100+100"
+        except Exception:
+            pass
+
         self.root.bind("<Configure>", self.on_window_resize)
         
         # Game State
