@@ -6,13 +6,15 @@ from collections import defaultdict
 from datetime import datetime
 
 class Backend:
+    CSV_FIELDS = ["Session_ID", "Difficulty", "Map", "Room", "Anomaly_Name", "Timestamp", "Alt_Tabbed", "Last_Cycled"]
+
     def __init__(self, base_dir=None):
         if base_dir is None:
             # Assumes base_dir is where the script is
             self.base_dir = os.path.dirname(os.path.abspath(__file__))
         else:
             self.base_dir = base_dir
-            
+
         self.config_path = os.path.join(self.base_dir, "app_config.json")
         self.game_id = "game_8"
         self.session_id = 1
@@ -107,7 +109,7 @@ class Backend:
         if not os.path.exists(self.logs_path) or os.stat(self.logs_path).st_size == 0:
             with open(self.logs_path, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
-                writer.writerow(["Session_ID", "Difficulty", "Map", "Room", "Anomaly_Name", "Timestamp"])
+                writer.writerow(self.CSV_FIELDS)
 
     def ensure_failures_header(self):
         if not os.path.exists(self.failures_path) or os.stat(self.failures_path).st_size == 0:
@@ -235,6 +237,29 @@ class Backend:
             self.unlocked_sessions.add(self.session_id)
         return self.is_current_session_locked()
 
+    # --- Debug: glitch tracking ---
+
+    def mark_alt_tabbed(self):
+        """One-way toggle: marks that alt-tabbing happened in this shift from now on."""
+        cfg = self.session_configs.setdefault(str(self.session_id), {})
+        if not cfg.get("Alt_Tabbed_At"):
+            cfg["Alt_Tabbed_At"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+            self.save_config()
+        return cfg["Alt_Tabbed_At"]
+
+    def get_alt_tabbed_at(self):
+        return self.session_configs.get(str(self.session_id), {}).get("Alt_Tabbed_At", "")
+
+    def mark_camera_cycled(self):
+        """Records current timestamp as last camera cycling event for this shift."""
+        cfg = self.session_configs.setdefault(str(self.session_id), {})
+        cfg["Last_Cycled"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        self.save_config()
+        return cfg["Last_Cycled"]
+
+    def get_last_cycled(self):
+        return self.session_configs.get(str(self.session_id), {}).get("Last_Cycled", "")
+
     def delete_current_session(self):
         if not os.path.exists(self.logs_path):
             return
@@ -245,7 +270,7 @@ class Backend:
                 if int(row["Session_ID"]) != self.session_id:
                     rows.append(row)
         with open(self.logs_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=["Session_ID", "Difficulty", "Map", "Room", "Anomaly_Name", "Timestamp"])
+            writer = csv.DictWriter(f, fieldnames=self.CSV_FIELDS)
             writer.writeheader()
             writer.writerows(rows)
 
@@ -253,9 +278,12 @@ class Backend:
         if self.is_logged_in_current_session(map_name, room_name, anomaly_name):
             return False
         timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+        cfg = self.session_configs.get(str(self.session_id), {})
+        alt_tabbed = "True" if cfg.get("Alt_Tabbed_At") else ""
+        last_cycled = cfg.get("Last_Cycled", "")
         with open(self.logs_path, 'a', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
-            writer.writerow([self.session_id, self.difficulty, map_name, room_name, anomaly_name, timestamp])
+            writer.writerow([self.session_id, self.difficulty, map_name, room_name, anomaly_name, timestamp, alt_tabbed, last_cycled])
         return True
 
     def add_failure_report(self, map_name, failures):
@@ -326,7 +354,7 @@ class Backend:
                 rows.append(row)
         if removed:
             with open(self.logs_path, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=["Session_ID", "Difficulty", "Map", "Room", "Anomaly_Name", "Timestamp"])
+                writer = csv.DictWriter(f, fieldnames=self.CSV_FIELDS)
                 writer.writeheader()
                 writer.writerows(reversed(rows))
         return removed

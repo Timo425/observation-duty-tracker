@@ -120,6 +120,21 @@ class AnomalyTrackerApp:
         self.map_combo.grid(row=0, column=5, padx=5)
         self.map_combo.bind("<<ComboboxSelected>>", self.on_map_change)
 
+        # Debug: Glitch tracking toggles
+        debug_frame = ttk.LabelFrame(top_frame, text="Debug", padding="5")
+        debug_frame.pack(side=tk.LEFT, padx=15)
+
+        self.alt_tab_btn = tk.Button(debug_frame, text="Alt-Tabbed", width=12, command=self.on_alt_tab_toggle, relief=tk.RAISED, bg="#d9d9d9")
+        self.alt_tab_btn.pack(side=tk.LEFT, padx=3)
+        ToolTip(self.alt_tab_btn, "Mark that alt-tabbing happened this shift (one-way, can't undo)")
+
+        self.cycle_btn = tk.Button(debug_frame, text="Cycled cams", width=12, command=self.on_camera_cycle, relief=tk.RAISED, bg="#d9d9d9")
+        self.cycle_btn.pack(side=tk.LEFT, padx=3)
+        ToolTip(self.cycle_btn, "Record a camera cycling event (each press updates timestamp)")
+
+        self.debug_status = ttk.Label(debug_frame, text="", font=("Arial", 8, "italic"), foreground="gray")
+        self.debug_status.pack(side=tk.LEFT, padx=5)
+
         # Content: Notebook + Live Panel
         pane = ttk.Panedwindow(self.root, orient=tk.VERTICAL)
         pane.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
@@ -561,11 +576,47 @@ class AnomalyTrackerApp:
                 if s_diff: self.current_difficulty.set(s_diff)
         
         self._updating_ui = False
+        self.update_debug_ui()
         self.refresh_map_ui()
 
     def toggle_lock(self):
         self.backend.toggle_session_lock()
         self.update_session_view()
+
+    def on_alt_tab_toggle(self):
+        if self.backend.is_current_session_locked():
+            return
+        if self.backend.get_alt_tabbed_at():
+            return  # Already toggled, one-way
+        ts = self.backend.mark_alt_tabbed()
+        self.alt_tab_btn.config(relief=tk.SUNKEN, bg="#ffaaaa")
+        self.debug_status.config(text=f"Alt-tabbed at {ts}")
+
+    def on_camera_cycle(self):
+        if self.backend.is_current_session_locked():
+            return
+        ts = self.backend.mark_camera_cycled()
+        self.cycle_btn.config(relief=tk.SUNKEN, bg="#aaaaff")
+        self.debug_status.config(text=f"Last cycled: {ts}")
+
+    def update_debug_ui(self):
+        """Refresh debug button states for current session."""
+        alt_at = self.backend.get_alt_tabbed_at()
+        if alt_at:
+            self.alt_tab_btn.config(relief=tk.SUNKEN, bg="#ffaaaa")
+        else:
+            self.alt_tab_btn.config(relief=tk.RAISED, bg="#d9d9d9")
+
+        cycled = self.backend.get_last_cycled()
+        if cycled:
+            self.cycle_btn.config(relief=tk.SUNKEN, bg="#aaaaff")
+        else:
+            self.cycle_btn.config(relief=tk.RAISED, bg="#d9d9d9")
+
+        parts = []
+        if alt_at: parts.append(f"Alt-tabbed at {alt_at}")
+        if cycled: parts.append(f"Last cycled: {cycled}")
+        self.debug_status.config(text=" | ".join(parts))
 
     def prompt_add_anomaly(self, room_name):
         dialog = tk.Toplevel(self.root)
