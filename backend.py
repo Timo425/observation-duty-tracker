@@ -24,6 +24,7 @@ class Backend:
         self.last_map = ""
         self.failures_path = ""
         self.unlocked_sessions = set()
+        self.manually_locked_sessions = set()
         self.window_size = "1200x800"
         
         # Performance Cache
@@ -214,13 +215,18 @@ class Backend:
         """
         Policy: Any session < max_known_session is locked by default.
         ALSO: Any session that has an 'It's over' report is locked.
+        ALSO: Any session manually locked via toggle is locked.
         Returns True if the current session_id is locked and NOT manually unlocked.
         """
+        # Manual lock takes priority
+        if self.session_id in self.manually_locked_sessions:
+            return True
+
         existing = self.get_all_sessions()
         if not existing: return False
-        
+
         max_id = max(existing)
-        
+
         # Check if it has a failure report (means it is 'finished')
         has_failure = len(self.get_missed_anomalies(self.last_map, self.session_id)) > 0
 
@@ -230,11 +236,23 @@ class Backend:
         return False
 
     def toggle_session_lock(self):
-        """Toggles the manual 'unlocked' status for the current session ID."""
-        if self.session_id in self.unlocked_sessions:
-            self.unlocked_sessions.remove(self.session_id)
+        """Toggles lock status. For current/latest session: manual lock. For old sessions: unlock override."""
+        existing = self.get_all_sessions()
+        max_id = max(existing) if existing else 0
+        has_failure = len(self.get_missed_anomalies(self.last_map, self.session_id)) > 0
+
+        if self.session_id < max_id or has_failure:
+            # Old/finished session: toggle unlock override
+            if self.session_id in self.unlocked_sessions:
+                self.unlocked_sessions.remove(self.session_id)
+            else:
+                self.unlocked_sessions.add(self.session_id)
         else:
-            self.unlocked_sessions.add(self.session_id)
+            # Current session: toggle manual lock
+            if self.session_id in self.manually_locked_sessions:
+                self.manually_locked_sessions.remove(self.session_id)
+            else:
+                self.manually_locked_sessions.add(self.session_id)
         return self.is_current_session_locked()
 
     # --- Debug: glitch tracking ---
@@ -359,6 +377,38 @@ class Backend:
                 writer.writerows(reversed(rows))
         return removed
 
+    COLLECTIBLE_TYPES = {"Special Object", "Secret Object"}
+
+    def is_collectible_collected(self, map_name, name):
+        """Check if a collectible is marked as collected."""
+        collected = self.session_configs.get("_collectibles", {}).get(map_name, [])
+        return name in collected
+
+    def toggle_collectible(self, map_name, name):
+        """Toggle collected state for a collectible. Stored globally, not per-session."""
+        coll = self.session_configs.setdefault("_collectibles", {}).setdefault(map_name, [])
+        if name in coll:
+            coll.remove(name)
+        else:
+            coll.append(name)
+        self.save_config()
+
+    def is_collectible(self, anomaly):
+        atype = anomaly.get("type", "")
+        if isinstance(atype, list):
+            return bool(set(atype) & self.COLLECTIBLE_TYPES)
+        return atype in self.COLLECTIBLE_TYPES
+
+    def get_collectibles(self, map_name):
+        """Returns list of {name, room, description} for all collectibles on this map."""
+        result = []
+        rooms = self.data.get("Maps", {}).get(map_name, {}).get("Rooms", {})
+        for room_name, anoms in rooms.items():
+            for a in anoms:
+                if self.is_collectible(a):
+                    result.append({"name": a["name"], "room": room_name, "description": a.get("description", "")})
+        return result
+
     def get_room_anomalies(self, map_name, room_name):
         if not map_name or not room_name: return []
         map_data = self.data.get("Maps", {}).get(map_name, {})
@@ -367,7 +417,7 @@ class Backend:
         # Add global ones if map exists
         if room_name != "Global":
             anoms = anoms + self.data.get("Global", [])
-            
+
         # Format with descriptions if available
         result = []
         for a in anoms:

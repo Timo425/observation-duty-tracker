@@ -135,6 +135,11 @@ class AnomalyTrackerApp:
         self.debug_status = ttk.Label(debug_frame, text="", font=("Arial", 8, "italic"), foreground="gray")
         self.debug_status.pack(side=tk.LEFT, padx=5)
 
+        # Collectibles strip (compact, between top bar and main content)
+        self.collectibles_frame = ttk.LabelFrame(self.root, text="Collectibles", padding="3")
+        self.collectibles_frame.pack(fill=tk.X, padx=10, pady=(2, 0))
+        self._collectible_buttons = {}
+
         # Content: Notebook + Live Panel
         pane = ttk.Panedwindow(self.root, orient=tk.VERTICAL)
         pane.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
@@ -263,28 +268,59 @@ class AnomalyTrackerApp:
             
         self._last_rendered_map = map_name
         self._room_buttons = {}
-        
+
+        # Rebuild collectibles strip
+        self.rebuild_collectibles(map_name)
+
         # Save current tab selection if possible
         selected_index = 0
         try: selected_index = self.notebook.index("current")
         except: pass
-        
+
         # Full rebuild of tabs (only on map change)
         for tab in self.notebook.tabs():
             self.notebook.forget(tab)
-            
+
         rooms = self.data["Maps"].get(map_name, {}).get("Rooms", {})
         for room_name, anomalies in rooms.items():
             tab = ttk.Frame(self.notebook)
             self.notebook.add(tab, text=room_name)
             self.populate_room_tab(tab, room_name, anomalies)
-        
+
         # Restore tab selection
         if selected_index < len(self.notebook.tabs()):
             self.notebook.select(selected_index)
-            
+
         self.update_button_states()
         self.update_live_analysis()
+
+    def rebuild_collectibles(self, map_name):
+        """Rebuild the collectibles strip for the current map."""
+        for w in self.collectibles_frame.winfo_children():
+            w.destroy()
+        self._collectible_buttons = {}
+
+        collectibles = self.backend.get_collectibles(map_name)
+        if not collectibles:
+            self.collectibles_frame.pack_forget()
+            return
+
+        self.collectibles_frame.pack(fill=tk.X, padx=10, pady=(2, 0))
+
+        for c in collectibles:
+            name, room = c["name"], c["room"]
+            collected = self.backend.is_collectible_collected(map_name, name)
+            btn = tk.Button(self.collectibles_frame, text=name, width=18, height=1,
+                          font=("Arial", 8), command=lambda n=name, r=room: self.toggle_collectible(n, r))
+            btn.pack(side=tk.LEFT, padx=3, pady=1)
+            ToolTip(btn, f"{c['description']} [{room}]")
+            self._collectible_buttons[name] = (btn, room)
+
+    def toggle_collectible(self, name, room):
+        """Toggle collected state for a collectible."""
+        map_name = self.current_map.get()
+        self.backend.toggle_collectible(map_name, name)
+        self.update_button_states()
 
     def update_button_states(self):
         """Fast pass: update labels and smart colors based on live stats."""
@@ -325,6 +361,14 @@ class AnomalyTrackerApp:
                     if sat > 0.7: fg_color = "white" # High intensity = white text
                 
                 btn.config(bg=bg_color, fg=fg_color)
+
+        # Update collectible buttons
+        for anom_name, (btn, room_name) in self._collectible_buttons.items():
+            collected = self.backend.is_collectible_collected(map_name, anom_name)
+            if collected:
+                btn.config(bg="#90ee90", fg="black")
+            else:
+                btn.config(bg="#e8e8e8", fg="black")
 
     def show_analytics_window(self):
         win = tk.Toplevel(self.root)
@@ -441,11 +485,14 @@ class AnomalyTrackerApp:
 
     def create_buttons(self, parent, room_name, anomalies):
         if room_name not in self._room_buttons: self._room_buttons[room_name] = {}
-        
+
+        # Filter out collectibles from normal anomaly grid
+        normal_anoms = [a for a in anomalies if not self.backend.is_collectible(a)]
+
         grid_frame = ttk.Frame(parent); grid_frame.pack(fill=tk.X)
         for c in range(3): grid_frame.columnconfigure(c, weight=1) # Center/Expand rows
-        
-        sorted_anoms = sorted(anomalies, key=lambda x: x["name"])
+
+        sorted_anoms = sorted(normal_anoms, key=lambda x: x["name"])
         for i, a in enumerate(sorted_anoms):
             name = a["name"]
             # Store reference for recycling
@@ -453,10 +500,10 @@ class AnomalyTrackerApp:
                           command=lambda n=name, r=room_name: self.log_anomaly(n, r))
             btn.grid(row=i // 3, column=i % 3, padx=3, pady=3, sticky="ew")
             self._room_buttons[room_name][name] = btn
-            
+
             # Use Right-click for Undo as before
             btn.bind("<Button-3>", lambda e, n=name, r=room_name: self.undo_anomaly(n, r))
-            
+
             # Tooltips for descriptions
             desc = a.get("description", a.get("desc", ""))
             if desc: ToolTip(btn, desc)
@@ -574,7 +621,11 @@ class AnomalyTrackerApp:
             if self.current_map.get() != s_map or self.current_difficulty.get() != s_diff:
                 self.current_map.set(s_map)
                 if s_diff: self.current_difficulty.set(s_diff)
-        
+
+        # Always sync backend state from UI to prevent stale difficulty/map
+        self.backend.difficulty = self.current_difficulty.get()
+        self.backend.last_map = self.current_map.get()
+
         self._updating_ui = False
         self.update_debug_ui()
         self.refresh_map_ui()
