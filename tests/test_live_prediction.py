@@ -33,17 +33,17 @@ class TestLiveExclusionLogic(unittest.TestCase):
         with open(os.path.join(self.tmp_dir, "data", "game_test.json"), "w") as f:
             json.dump(game_data, f)
 
-        # 8 sessions: Rope in S1-S4, AnomalyA+B in S5-S8 (never overlap)
+        # 8 sessions: Rope in odd, AnomalyA+B in even (interleaved, never overlap)
         # Epsilon only in S1 (single sighting)
-        # Expected overlap for Rope(4) vs AnomalyA(4) = 4*4/8 = 2.0 (above 1.5)
         with open(os.path.join(self.tmp_dir, "logs", "game_test.csv"), "w", newline='') as f:
             w = csv.writer(f)
             w.writerow(["Session_ID", "Difficulty", "Map", "Room", "Anomaly_Name", "Timestamp"])
-            for s in ["1", "2", "3", "4"]:
-                w.writerow([s, "Hard", "TestMap", "Room1", "Rope", ""])
-            for s in ["5", "6", "7", "8"]:
-                w.writerow([s, "Hard", "TestMap", "Room1", "AnomalyA", ""])
-                w.writerow([s, "Hard", "TestMap", "Room1", "AnomalyB", ""])
+            for s in range(1, 9):
+                if s % 2 == 1:
+                    w.writerow([str(s), "Hard", "TestMap", "Room1", "Rope", ""])
+                else:
+                    w.writerow([str(s), "Hard", "TestMap", "Room1", "AnomalyA", ""])
+                    w.writerow([str(s), "Hard", "TestMap", "Room1", "AnomalyB", ""])
             w.writerow(["1", "Hard", "TestMap", "Room1", "Epsilon", ""])
 
         self.backend = Backend(self.tmp_dir)
@@ -108,18 +108,18 @@ class TestMinSightingsAndPersistence(unittest.TestCase):
         with open(os.path.join(self.tmp_dir, "data", "game_test.json"), "w") as f:
             json.dump(game_data, f)
 
-        # 10 sessions: Alpha+Beta in S1-S5, Gamma+Delta in S6-S10
-        # Expected overlap for Alpha(5) vs Gamma(5) = 5*5/10 = 2.5 (above 1.5)
+        # 10 sessions: Alpha+Beta in odd, Gamma+Delta in even (interleaved)
         # Epsilon only in S1 (single sighting)
         with open(os.path.join(self.tmp_dir, "logs", "game_test.csv"), "w", newline='') as f:
             w = csv.writer(f)
             w.writerow(["Session_ID", "Difficulty", "Map", "Room", "Anomaly_Name", "Timestamp"])
-            for s in range(1, 6):
-                w.writerow([str(s), "Normal", "TestMap", "Room1", "Alpha", ""])
-                w.writerow([str(s), "Normal", "TestMap", "Room1", "Beta", ""])
-            for s in range(6, 11):
-                w.writerow([str(s), "Normal", "TestMap", "Room1", "Gamma", ""])
-                w.writerow([str(s), "Normal", "TestMap", "Room1", "Delta", ""])
+            for s in range(1, 11):
+                if s % 2 == 1:
+                    w.writerow([str(s), "Normal", "TestMap", "Room1", "Alpha", ""])
+                    w.writerow([str(s), "Normal", "TestMap", "Room1", "Beta", ""])
+                else:
+                    w.writerow([str(s), "Normal", "TestMap", "Room1", "Gamma", ""])
+                    w.writerow([str(s), "Normal", "TestMap", "Room1", "Delta", ""])
             w.writerow(["1", "Normal", "TestMap", "Room1", "Epsilon", ""])
 
         self.backend = Backend(self.tmp_dir)

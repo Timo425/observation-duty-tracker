@@ -14,7 +14,7 @@ from backend import Backend
 
 def generate_report(backend, difficulties=None):
     """Generate a text report of exclusivity findings using Backend's own analysis.
-    
+
     Returns the report as a string.
     """
     if difficulties is None:
@@ -29,99 +29,49 @@ def generate_report(backend, difficulties=None):
     for diff in difficulties:
         backend.difficulty = diff
         results = backend.analyze_exclusivity()
+        groups = results.get("groups", [])
+        suspicious = results.get("suspicious", [])
 
         lines.append(f"--- {diff} Mode ---")
 
-        if not results:
+        if not groups and not suspicious:
             all_sessions = backend.get_all_sessions()
             lines.append(f"  Sessions logged: {len(all_sessions)}")
             lines.append(f"  Not enough data yet (need at least 3 sessions with 2+ anomalies each).")
             lines.append("")
             continue
 
-        # Separate confirmed exclusions from suspicious co-occurrences
-        hard_locks = [r for r in results if r["status"] == "TOTAL EXCLUSION"]
-        likely = [r for r in results if r["status"] == "LIKELY EXCLUSION"]
-        suspicious = [r for r in results if "SUSPICIOUS" in r["status"]]
-
-        lines.append(f"  Total sessions analyzed: {results[0]['N'] if results else 0}")
-        N = results[0]['N']
+        N = groups[0]["N"] if groups else suspicious[0]["N"]
+        lines.append(f"  Total sessions analyzed: {N}")
         lines.append("")
 
-        # Collect per-anomaly frequency from the exclusivity data
-        anom_freq = {}
-        for r in results:
-            a1, a2 = r["pair"]
-            anom_freq[a1] = r["n1"]
-            anom_freq[a2] = r["n2"]
+        confirmed = [g for g in groups if "CONFIRMED" in g["status"]]
+        likely = [g for g in groups if "LIKELY" in g["status"]]
 
-        if hard_locks:
-            lines.append(f"  Confirmed Exclusivity Groups (>95% confidence):")
-            # Group into clusters: if A excludes B and A excludes C, they form a group
-            groups = _cluster_pairs(hard_locks)
-            for i, group in enumerate(groups, 1):
-                # Sort by frequency within group (most common first)
-                members = sorted(group, key=lambda a: anom_freq.get(a, 0), reverse=True)
-                member_strs = [f"{a} ({anom_freq.get(a, '?')}/{N})" for a in members]
+        if confirmed:
+            lines.append(f"  Confirmed Exclusion Groups (>95% confidence):")
+            for i, g in enumerate(confirmed, 1):
+                members = sorted(g["members"], key=lambda m: m["sightings"], reverse=True)
+                member_strs = [f"{m['name']} ({m['sightings']}/{N})" for m in members]
                 lines.append(f"    Group {i}: {', '.join(member_strs)}")
             lines.append("")
 
         if likely:
-            lines.append(f"  Likely Exclusions (needs more data):")
-            for r in likely:
-                a1, a2 = r["pair"]
-                lines.append(f"    {a1} <-> {a2}  (seen {r['n1']}x / {r['n2']}x, certainty {r['certainty']:.0%})")
+            lines.append(f"  Likely Exclusion Groups (needs more data):")
+            for i, g in enumerate(likely, 1):
+                members = sorted(g["members"], key=lambda m: m["sightings"], reverse=True)
+                member_strs = [f"{m['name']} ({m['sightings']}/{N})" for m in members]
+                lines.append(f"    Group {i}: {', '.join(member_strs)} — certainty {g['certainty']:.0%}")
             lines.append("")
 
         if suspicious:
             lines.append(f"  Suspicious Co-occurrences (possible misidentifications):")
-            for r in suspicious:
-                a1, a2 = r["pair"]
-                lines.append(f"    {a1} + {a2}: co-occurred {r['actual']}x but expected {r['expected']:.1f}x — {r['status']}")
-            lines.append("")
-
-        # Anomaly occurrence frequency
-        if anom_freq:
-            lines.append(f"  Anomaly Occurrence (sessions seen / total):")
-            for anom, count in sorted(anom_freq.items(), key=lambda x: x[1], reverse=True):
-                pct = (count / N) * 100
-                lines.append(f"    {anom}: {count}/{N} ({pct:.0f}%)")
+            for s in suspicious:
+                a1, a2 = s["pair"]
+                lines.append(f"    {a1} + {a2}: co-occurred {s['actual']}x but expected {s['expected']:.1f}x — {s['status']}")
             lines.append("")
 
     return "\n".join(lines)
-
-
-def _cluster_pairs(pair_results):
-    """Cluster exclusivity pairs into groups.
-    
-    If A-B and A-C are both hard locks, they form one group {A, B, C}.
-    Uses union-find for grouping.
-    """
-    parent = {}
-
-    def find(x):
-        if x not in parent:
-            parent[x] = x
-        while parent[x] != x:
-            parent[x] = parent[parent[x]]
-            x = parent[x]
-        return x
-
-    def union(x, y):
-        px, py = find(x), find(y)
-        if px != py:
-            parent[px] = py
-
-    for r in pair_results:
-        a1, a2 = r["pair"]
-        union(a1, a2)
-
-    groups = {}
-    for node in parent:
-        root = find(node)
-        groups.setdefault(root, set()).add(node)
-
-    return list(groups.values())
 
 
 def main():

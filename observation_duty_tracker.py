@@ -396,29 +396,28 @@ class AnomalyTrackerApp:
         # 2. Add the button (now it can see 'refresh')
         ttk.Button(header, text="Refresh Analysis", command=refresh).pack(side=tk.RIGHT, padx=5)
         
-        desc = ttk.Label(win, text="Flags suspicious co-occurrences: when anomalies that almost never appear together show up in the same shift, suggesting possible misidentification.", foreground="gray")
+        desc = ttk.Label(win, text="Finds exclusion groups: anomalies where seeing any one member excludes all others in the group. Also flags suspicious co-occurrences.", foreground="gray")
         desc.pack(pady=5)
 
-        cols = ("Pair", "Actual", "Expected", "Certainty", "N", "Status")
+        cols = ("Group", "Size", "Certainty", "N", "Status")
         tree = ttk.Treeview(win, columns=cols, show="headings")
-        tree.heading("Pair", text="Anomaly Pair (A vs B)")
-        tree.heading("Actual", text="Actual Overlap")
-        tree.heading("Expected", text="Expected Overlap")
+        tree.heading("Group", text="Exclusion Group Members")
+        tree.heading("Size", text="Size")
         tree.heading("Certainty", text="Certainty")
         tree.heading("N", text="N")
         tree.heading("Status", text="Status")
-        
-        tree.column("Pair", width=550)
-        tree.column("Actual", width=80, anchor="center")
-        tree.column("Expected", width=80, anchor="center")
+
+        tree.column("Group", width=600)
+        tree.column("Size", width=50, anchor="center")
         tree.column("Certainty", width=80, anchor="center")
         tree.column("N", width=40, anchor="center")
+        tree.column("Status", width=150)
         tree.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Style colors
         tree.tag_configure("suspicious", background="#ffcccc")
         tree.tag_configure("likely", background="#fff0cc")
-        tree.tag_configure("exclusion", background="#ccffcc")
+        tree.tag_configure("confirmed", background="#ccffcc")
 
         audit_diff.trace_add("write", refresh)
         refresh()
@@ -426,23 +425,31 @@ class AnomalyTrackerApp:
     def update_analytics_window(self, tree, target_diff=None):
         for item in tree.get_children():
             tree.delete(item)
-            
-        results = self.backend.analyze_exclusivity(target_difficulty=target_diff)
-        for r in results:
-            pair_str = f"{r['pair'][0]} ({r['room1']})  <--->  {r['pair'][1]} ({r['room2']})"
-            tag = ""
-            if "SUSPICIOUS" in r['status']: tag = "suspicious"
-            elif "TOTAL EXCLUSION" in r['status']: tag = "exclusion"
-            elif "LIKELY EXCLUSION" in r['status']: tag = "likely"
 
+        results = self.backend.analyze_exclusivity(target_difficulty=target_diff)
+
+        # Exclusion groups
+        for g in results.get("groups", []):
+            members_str = " | ".join(f"{m['name']} ({m['rooms']}, {m['sightings']}x)" for m in g["members"])
+            tag = "confirmed" if "CONFIRMED" in g["status"] else "likely"
             tree.insert("", tk.END, values=(
-                pair_str, 
-                r['actual'],
-                f"{r['expected']:.2f}", 
-                f"{r['certainty']:.0%}" if r['certainty'] > 0 else "—",
-                r['N'],
-                r['status']
+                members_str,
+                g["size"],
+                f"{g['certainty']:.0%}",
+                g["N"],
+                g["status"],
             ), tags=(tag,))
+
+        # Suspicious co-occurrences
+        for s in results.get("suspicious", []):
+            pair_str = f"{s['pair'][0]} ({s['room1']})  <--->  {s['pair'][1]} ({s['room2']})"
+            tree.insert("", tk.END, values=(
+                pair_str,
+                2,
+                "—",
+                s["N"],
+                s["status"],
+            ), tags=("suspicious",))
 
     def populate_room_tab(self, tab, room_name, room_anomalies):
         self._room_buttons[room_name] = {}
