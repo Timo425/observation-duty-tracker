@@ -353,13 +353,13 @@ class AnomalyTrackerApp:
         map_name = self.current_map.get()
         if not map_name: return
         
-        counts = self.backend.get_counts(map_name)
         current_session_anoms = self.backend.get_current_session_anomalies(map_name)
         live_exclusions = self.backend.get_live_exclusions(map_name, current_session_anoms)
         exclusions_map = {e["name"]: e for e in live_exclusions}
         missed_names = self.backend.get_missed_anomalies(map_name, self.backend.session_id)
 
         for room_name, btns in self._room_buttons.items():
+            counts = self.backend.get_counts(map_name, room_name, max_session_id=self.backend.session_id)
             for anom_name, btn in btns.items():
                 count = counts.get(anom_name, 0)
                 excl_info = exclusions_map.get(anom_name)
@@ -511,7 +511,7 @@ class AnomalyTrackerApp:
         ttk.Label(global_header, text="Global anomalies", font=("Arial", 10, "bold")).pack(side=tk.LEFT)
         ttk.Button(global_header, text="+ Add", command=lambda: self.prompt_add_anomaly("Global")).pack(side=tk.RIGHT)
         
-        self.create_buttons(scrollable_frame, "Global", self.data.get("Global", []))
+        self.create_buttons(scrollable_frame, room_name, self.data.get("Global", []))
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")

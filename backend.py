@@ -62,7 +62,9 @@ class Backend:
                 "Difficulty": self.difficulty,
                 "Last_Map": self.last_map,
                 "Game_ID": self.game_id,
-                "Window_Size": self.window_size
+                "Window_Size": self.window_size,
+                "Unlocked_Sessions": list(self.unlocked_sessions),
+                "Manually_Locked_Sessions": list(self.manually_locked_sessions)
             }, f)
 
     def load_config(self):
@@ -87,6 +89,8 @@ class Backend:
         
         self.window_size = config.get("Window_Size", "1200x800")
         self.game_id = config.get("Game_ID", "game_8")
+        self.unlocked_sessions = set(config.get("Unlocked_Sessions", []))
+        self.manually_locked_sessions = set(config.get("Manually_Locked_Sessions", []))
         self.set_game(self.game_id)
         return config
 
@@ -253,6 +257,7 @@ class Backend:
                 self.manually_locked_sessions.remove(self.session_id)
             else:
                 self.manually_locked_sessions.add(self.session_id)
+        self.save_config()
         return self.is_current_session_locked()
 
     # --- Debug: glitch tracking ---
@@ -492,10 +497,16 @@ class Backend:
                 last_time = row.get("Timestamp", "N/A")
         return last_time
 
-    def get_counts(self, map_name=None, room_name=None):
+    def get_counts(self, map_name=None, room_name=None, max_session_id=None):
         counts = defaultdict(int)
         for row in self._get_csv_data(self.logs_path):
             if row["Difficulty"] == self.difficulty:
+                try:
+                    s_id = int(row["Session_ID"])
+                except ValueError:
+                    continue
+                if max_session_id is not None and s_id > max_session_id:
+                    continue
                 if map_name and row["Map"] != map_name: continue
                 if room_name and row["Room"] != room_name: continue
                 counts[row["Anomaly_Name"]] += 1
