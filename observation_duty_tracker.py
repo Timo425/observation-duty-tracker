@@ -167,18 +167,20 @@ class AnomalyTrackerApp:
         self._collectible_buttons = {}
 
         # Content: Notebook + Live Panel
-        pane = ttk.Panedwindow(self.root, orient=tk.VERTICAL)
+        pane = ttk.Frame(self.root)
         pane.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
 
         self.notebook = ttk.Notebook(pane)
-        pane.add(self.notebook, weight=5)
+        self.notebook.pack(fill=tk.BOTH, expand=False, pady=(0, 5))
 
         # Live Analysis Panel
         self.live_frame = ttk.LabelFrame(pane, text="Live prediction analysis (Mutual exclusivity)", padding="5")
-        pane.add(self.live_frame, weight=1)
+        self.live_frame.pack(fill=tk.BOTH, expand=True)
+        self.tree_wrapper = ttk.Frame(self.live_frame)
+        self.tree_wrapper.pack(fill=tk.BOTH, expand=True)
         
         cols = ("Anomaly", "Certainty", "Evidence", "Sightings", "Blockers")
-        self.live_tree = ttk.Treeview(self.live_frame, columns=cols, show="headings", height=10)
+        self.live_tree = ttk.Treeview(self.tree_wrapper, columns=cols, show="headings", height=5)
         self.live_tree.heading("Anomaly", text="Anomaly Name")
         self.live_tree.heading("Certainty", text="Certainty")
         self.live_tree.heading("Evidence", text="Evidence (Shifts)")
@@ -189,7 +191,12 @@ class AnomalyTrackerApp:
         self.live_tree.column("Evidence", width=110, anchor="center")
         self.live_tree.column("Sightings", width=60, anchor="center")
         self.live_tree.column("Blockers", width=400)
-        self.live_tree.pack(fill=tk.BOTH, expand=True)
+        
+        tree_scroll = ttk.Scrollbar(self.tree_wrapper, orient="vertical", command=self.live_tree.yview)
+        self.live_tree.configure(yscrollcommand=tree_scroll.set)
+        
+        tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        self.live_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         # Failure Summary Section (Hidden by default)
         self.failure_frame = ttk.LabelFrame(self.live_frame, text="⚠️ Anomalies took over this shift", padding="5")
@@ -484,7 +491,11 @@ class AnomalyTrackerApp:
         scrollbar = ttk.Scrollbar(tab, orient="vertical", command=canvas.yview)
         scrollable_frame = ttk.Frame(canvas)
 
-        scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        def _on_frame_configure(e):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            canvas.configure(height=e.height)
+
+        scrollable_frame.bind("<Configure>", _on_frame_configure)
         canvas_frame = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.bind("<Configure>", lambda e: canvas.itemconfig(canvas_frame, width=e.width))
         canvas.configure(yscrollcommand=scrollbar.set)
@@ -569,7 +580,7 @@ class AnomalyTrackerApp:
                 summary_parts.append(f"• {name} in {f['room']}")
             
             self.failure_label.config(text="\n".join(summary_parts))
-            self.failure_frame.pack(fill=tk.X, pady=(5, 0), after=self.live_tree)
+            self.failure_frame.pack(fill=tk.X, pady=(5, 0), after=self.tree_wrapper)
         else:
             self.failure_frame.pack_forget()
 
