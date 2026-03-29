@@ -717,6 +717,9 @@ class AnomalyTrackerApp:
         ttk.Button(btn_frame, text="Cancel", command=dialog.destroy).pack(side=tk.LEFT, padx=5)
 
     def show_failure_dialog(self):
+        if self.backend.is_current_session_locked():
+            messagebox.showwarning("Locked", "This session is locked. Unlock it first to report failures.")
+            return
         FailureDialog(self.root, self.backend, self.current_map.get())
 
 class FailureDialog:

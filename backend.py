@@ -624,10 +624,10 @@ class Backend:
 
         for a_name in all_possible_anoms:
             if a_name in current_anoms: continue
-            
+
             S_a = stats["anomaly_sessions"].get(a_name, set())
             n_a = len(S_a)
-            if n_a == 0: continue
+            if n_a < 2: continue  # Need at least 2 sightings to form patterns
 
             # Direct Blocker Logic: An anomaly is excluded if it conflicts with ANY individual report.
             blockers = []
@@ -636,12 +636,15 @@ class Backend:
                 if not (S_r & S_a):
                     blockers.append(r_name)
                     S_blockers_union.update(S_r)
-            
+
             if not blockers: continue
 
             # Surprise metric: Based on the union of sessions that cause the exclusion
             n_blockers = len(S_blockers_union)
             expected_overlap = (n_blockers * n_a) / N
+
+            # Skip if zero overlap isn't surprising (expected < 1.5 means sparse data)
+            if expected_overlap < 1.5: continue
 
             # Probability of zero intersection by chance (Hypergeometric p-value)
             if N - n_blockers < n_a:
@@ -649,7 +652,7 @@ class Backend:
             else:
                 lp = log_comb(N - n_blockers, n_a) - log_comb(N, n_a)
                 p_value = math.exp(lp)
-            
+
             certainty = 1 - p_value
             
             # Map p-value to a more human-friendly Status
@@ -738,6 +741,9 @@ class Backend:
                 expected_overlap = (n1 * n2) / total_sessions
                 
                 if actual_overlap == 0:
+                    # Skip if zero overlap isn't surprising (sparse data)
+                    if expected_overlap < 1.5: continue
+
                     # Pure exclusion — calculate statistical certainty
                     if total_sessions - n1 >= n2:
                         lp = math.lgamma(total_sessions - n1 + 1) + math.lgamma(total_sessions - n2 + 1) - \
@@ -745,8 +751,8 @@ class Backend:
                         certainty = 1 - math.exp(lp) if lp != -float('inf') else 1.0
                     else:
                         certainty = 1.0
-                    
-                    if certainty < 0.5: continue
+
+                    if certainty < 0.7: continue
                     results.append({
                         "pair": (a1, a2),
                         "room1": format_rooms(a1),
