@@ -270,6 +270,27 @@ class Backend:
             self.save_config()
         return cfg["Alt_Tabbed_At"]
 
+    def undo_alt_tabbed(self):
+        """Undo alt-tab flag: clear from config and retroactively unflag CSV rows for this session."""
+        cfg = self.session_configs.get(str(self.session_id), {})
+        if not cfg.get("Alt_Tabbed_At"):
+            return
+        del cfg["Alt_Tabbed_At"]
+        self.save_config()
+        # Retroactively set Alt_Tabbed=False on all rows for this session
+        if not os.path.exists(self.logs_path):
+            return
+        rows = []
+        with open(self.logs_path, 'r', encoding='utf-8') as f:
+            for row in csv.DictReader(f):
+                if int(row["Session_ID"]) == self.session_id:
+                    row["Alt_Tabbed"] = "False"
+                rows.append(row)
+        with open(self.logs_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=self.CSV_FIELDS)
+            writer.writeheader()
+            writer.writerows(rows)
+
     def get_alt_tabbed_at(self):
         return self.session_configs.get(str(self.session_id), {}).get("Alt_Tabbed_At", "")
 

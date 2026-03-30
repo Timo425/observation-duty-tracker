@@ -159,7 +159,8 @@ class AnomalyTrackerApp:
 
         self.alt_tab_btn = tk.Button(debug_frame, text="Alt-Tabbed", width=12, command=self.on_alt_tab_toggle, relief=tk.RAISED, bg="#d9d9d9")
         self.alt_tab_btn.pack(side=tk.LEFT, padx=3)
-        ToolTip(self.alt_tab_btn, "Mark that alt-tabbing happened this shift (one-way, can't undo)")
+        self.alt_tab_btn.bind("<Button-3>", self.on_alt_tab_undo)
+        ToolTip(self.alt_tab_btn, "Left-click: mark alt-tab. Right-click: undo")
 
         self.cycle_btn = tk.Button(debug_frame, text="Cycled cams", width=12, command=self.on_camera_cycle, relief=tk.RAISED, bg="#d9d9d9")
         self.cycle_btn.pack(side=tk.LEFT, padx=3)
@@ -732,7 +733,8 @@ class AnomalyTrackerApp:
             btn.bind("<Button-3>", lambda e, n=name, r=room_name: self.undo_anomaly(n, r))
             # Tooltips for descriptions
             desc = a.get("description", a.get("desc", ""))
-            if desc: ToolTip(btn, desc)
+            tip = f"{desc}\n\nRight-click to undo" if desc else "Right-click to undo"
+            ToolTip(btn, tip)
             # Bind after ToolTip so both coexist
             btn.bind("<Enter>", lambda e, n=name: self._highlight_prediction(n), add="+")
             btn.bind("<Leave>", lambda e, n=name: self._unhighlight_prediction(n), add="+")
@@ -906,11 +908,19 @@ class AnomalyTrackerApp:
     def on_alt_tab_toggle(self):
         if self.backend.is_current_session_locked():
             return
-        if self.backend.get_alt_tabbed_at():
-            return  # Already toggled, one-way
         ts = self.backend.mark_alt_tabbed()
         self.alt_tab_btn.config(relief=tk.SUNKEN, bg="#ffaaaa")
         self.debug_status.config(text=f"Alt-tabbed at {ts}")
+
+    def on_alt_tab_undo(self, event=None):
+        if self.backend.is_current_session_locked():
+            return
+        if not self.backend.get_alt_tabbed_at():
+            self.flash_status("Alt-tab not active, nothing to undo")
+            return
+        self.backend.undo_alt_tabbed()
+        self.alt_tab_btn.config(relief=tk.RAISED, bg="#d9d9d9")
+        self.debug_status.config(text="Alt-tab undone")
 
     def on_camera_cycle(self):
         if self.backend.is_current_session_locked():
