@@ -103,13 +103,17 @@ class AnomalyTrackerApp:
         # Top Frame: Session & Map Control
         top_frame = ttk.Frame(self.root, padding="10")
         top_frame.pack(fill=tk.X)
+        self._top_frame = top_frame
 
         nav_frame = ttk.LabelFrame(top_frame, text="Shift management", padding="5")
-        nav_frame.pack(side=tk.LEFT, padx=5)
         ttk.Button(nav_frame, text="<", width=3, command=self.prev_shift).pack(side=tk.LEFT)
         self.session_label = ttk.Label(nav_frame, text=f"ID: {self.backend.session_id}", font=("Arial", 11, "bold"), width=7, anchor="center")
         self.session_label.pack(side=tk.LEFT, padx=5)
-        
+        ToolTip(self.session_label, "Current shift/session ID")
+        self.anomaly_count_label = ttk.Label(nav_frame, text="(0)", font=("Arial", 10), foreground="#555")
+        self.anomaly_count_label.pack(side=tk.LEFT, padx=(0, 5))
+        ToolTip(self.anomaly_count_label, "Anomalies reported in this shift")
+
         # Lock Toggle Button
         self.lock_button = tk.Button(nav_frame, text="🔓", font=("Arial", 10), width=3, height=1, command=self.toggle_lock, relief=tk.FLAT)
         self.lock_button.pack(side=tk.LEFT, padx=2)
@@ -118,19 +122,23 @@ class AnomalyTrackerApp:
         ttk.Button(nav_frame, text=">", width=3, command=self.next_shift).pack(side=tk.LEFT)
         self.activity_label = ttk.Label(nav_frame, text="Last activity: Never", font=("Arial", 9, "italic"), foreground="gray")
         self.activity_label.pack(side=tk.LEFT, padx=10)
-        ttk.Button(nav_frame, text="New shift", command=self.start_new_shift).pack(side=tk.LEFT, padx=10)
+        new_shift_btn = ttk.Button(nav_frame, text="New shift", command=self.start_new_shift)
+        new_shift_btn.pack(side=tk.LEFT, padx=10)
+        ToolTip(new_shift_btn, "Start a new shift (increments session ID)")
         self.over_button = ttk.Button(nav_frame, text="It's over", command=self.show_failure_dialog)
         self.over_button.pack(side=tk.LEFT, padx=5)
-        ttk.Button(nav_frame, text="Audit logs", command=self.show_analytics_window).pack(side=tk.LEFT, padx=5)
+        ToolTip(self.over_button, "Report the 3 anomalies shown on the end-game screen")
+        audit_btn = ttk.Button(nav_frame, text="Audit logs", command=self.show_analytics_window)
+        audit_btn.pack(side=tk.LEFT, padx=5)
+        ToolTip(audit_btn, "Open the expert audit / analytics window")
 
         mode_frame = ttk.LabelFrame(top_frame, text="Settings", padding="5")
-        mode_frame.pack(side=tk.LEFT, padx=15)
-        
+
         ttk.Label(mode_frame, text="Game:").grid(row=0, column=0, padx=5)
         # Scan for available games and map to nice names
         raw_ids = [f.split('.')[0] for f in os.listdir(os.path.join(self.backend.base_dir, "data")) if f.endswith('.json')]
         nice_names = [self.GAME_NAMES.get(rid, rid.replace('_', ' ').title()) for rid in raw_ids]
-        
+
         self.game_combo = ttk.Combobox(mode_frame, textvariable=self.current_game_display, values=nice_names, state="readonly", width=25)
         self.game_combo.grid(row=0, column=1)
 
@@ -148,7 +156,6 @@ class AnomalyTrackerApp:
 
         # Debug: Glitch tracking toggles
         debug_frame = ttk.LabelFrame(top_frame, text="Debug", padding="5")
-        debug_frame.pack(side=tk.LEFT, padx=15)
 
         self.alt_tab_btn = tk.Button(debug_frame, text="Alt-Tabbed", width=12, command=self.on_alt_tab_toggle, relief=tk.RAISED, bg="#d9d9d9")
         self.alt_tab_btn.pack(side=tk.LEFT, padx=3)
@@ -160,6 +167,13 @@ class AnomalyTrackerApp:
 
         self.debug_status = ttk.Label(debug_frame, text="", font=("Arial", 8, "italic"), foreground="gray")
         self.debug_status.pack(side=tk.LEFT, padx=5)
+
+        # Responsive top bar: sections wrap to new rows when window is too narrow
+        self._top_sections = [nav_frame, mode_frame, debug_frame]
+        self._top_layout_rows = None  # track current layout to avoid redundant updates
+        top_frame.bind("<Configure>", self._reflow_top_bar)
+        # Initial placement
+        self.root.after_idle(self._reflow_top_bar)
 
         # Collectibles strip (compact, between top bar and main content)
         self.collectibles_frame = ttk.LabelFrame(self.root, text="Collectibles", padding="3")
@@ -206,6 +220,8 @@ class AnomalyTrackerApp:
         # Tags for analysis coloring
         self.live_tree.tag_configure("REPORTED", background="#FFCC80") # Light Orange
         self.live_tree.tag_configure("GROUP_HEADER", background="#E8EAF6", font=("Arial", 9, "bold")) # Light indigo
+        self.live_tree.tag_configure("HOVER_HIGHLIGHT", background="#B3E5FC") # Light blue highlight
+        self._tree_item_map = {} # anomaly_name -> list of tree item IDs
 
         # Bottom Frame: Status
         status_frame = ttk.Frame(self.root, padding="2")
@@ -224,6 +240,40 @@ class AnomalyTrackerApp:
 
     def update_title(self):
         self.root.title(f"{self.current_game_display.get()} Anomaly Tracker")
+
+    def _reflow_top_bar(self, event=None):
+        """Arrange top bar sections into rows based on available width."""
+        self._top_frame.update_idletasks()
+        available = self._top_frame.winfo_width()
+        if available <= 1:
+            return  # Not yet rendered
+
+        # Calculate how sections fit into rows
+        pad = 10  # padding between sections
+        rows = [[]]
+        row_width = 0
+        for section in self._top_sections:
+            w = section.winfo_reqwidth() + pad
+            if row_width > 0 and row_width + w > available:
+                rows.append([])
+                row_width = 0
+            rows[-1].append(section)
+            row_width += w
+
+        # Check if layout changed
+        layout_key = tuple(tuple(id(s) for s in r) for r in rows)
+        if layout_key == self._top_layout_rows:
+            return
+        self._top_layout_rows = layout_key
+
+        # Remove all sections from grid
+        for section in self._top_sections:
+            section.grid_forget()
+
+        # Place into grid rows
+        for row_idx, row_sections in enumerate(rows):
+            for col_idx, section in enumerate(row_sections):
+                section.grid(row=row_idx, column=col_idx, padx=5, pady=2, sticky="w")
 
     def on_window_resize(self, event):
         """Saves current window geometry to config (throttled to root window configure events)."""
@@ -403,6 +453,33 @@ class AnomalyTrackerApp:
                 btn.config(bg="#90ee90", fg="black")
             else:
                 btn.config(bg="#e8e8e8", fg="black")
+
+        self.update_anomaly_count()
+
+    def _highlight_prediction(self, anomaly_name):
+        """Highlight matching anomaly rows in the live prediction tree."""
+        for item_id in self._tree_item_map.get(anomaly_name, []):
+            tags = list(self.live_tree.item(item_id, "tags"))
+            if "HOVER_HIGHLIGHT" not in tags:
+                tags.append("HOVER_HIGHLIGHT")
+                self.live_tree.item(item_id, tags=tags)
+                self.live_tree.see(item_id)
+
+    def _unhighlight_prediction(self, anomaly_name):
+        """Remove highlight from matching anomaly rows in the live prediction tree."""
+        for item_id in self._tree_item_map.get(anomaly_name, []):
+            tags = [t for t in self.live_tree.item(item_id, "tags") if t != "HOVER_HIGHLIGHT"]
+            self.live_tree.item(item_id, tags=tags)
+
+    def flash_status(self, text, duration=3000):
+        """Show a status message in red that reverts after duration ms."""
+        self.status_label.config(text=text, foreground="red")
+        self.root.after(duration, lambda: self.status_label.config(foreground="black"))
+
+    def update_anomaly_count(self):
+        map_name = self.current_map.get()
+        count = len(self.backend.get_current_session_anomalies(map_name)) if map_name else 0
+        self.anomaly_count_label.config(text=f"({count})")
 
     def show_analytics_window(self):
         win = tk.Toplevel(self.root)
@@ -653,10 +730,12 @@ class AnomalyTrackerApp:
 
             # Use Right-click for Undo as before
             btn.bind("<Button-3>", lambda e, n=name, r=room_name: self.undo_anomaly(n, r))
-
             # Tooltips for descriptions
             desc = a.get("description", a.get("desc", ""))
             if desc: ToolTip(btn, desc)
+            # Bind after ToolTip so both coexist
+            btn.bind("<Enter>", lambda e, n=name: self._highlight_prediction(n), add="+")
+            btn.bind("<Leave>", lambda e, n=name: self._unhighlight_prediction(n), add="+")
 
     def update_live_analysis(self):
         """Debounced wrapper: only calls the real math after 250ms of silence."""
@@ -679,6 +758,7 @@ class AnomalyTrackerApp:
 
         for item in self.live_tree.get_children():
             self.live_tree.delete(item)
+        self._tree_item_map = {}
 
         # 1. Update Failure Summary Frame
         if failure_details:
@@ -724,15 +804,17 @@ class AnomalyTrackerApp:
             for e in members_in_group:
                 evidence_str = f"{e['n_blockers']} / {e['N']} shifts"
                 certainty_str = f"{e['certainty_status']} ({e['certainty']:.0%})"
-                self.live_tree.insert(parent_id, tk.END, text=e["name"],
+                item_id = self.live_tree.insert(parent_id, tk.END, text=e["name"],
                     values=(certainty_str, evidence_str, e["count"], ", ".join(e["blockers"])))
+                self._tree_item_map.setdefault(e["name"], []).append(item_id)
 
         # Render ungrouped exclusions as top-level items
         for e in ungrouped:
             evidence_str = f"{e['n_blockers']} / {e['N']} shifts"
             certainty_str = f"{e['certainty_status']} ({e['certainty']:.0%})"
-            self.live_tree.insert("", tk.END, text=e["name"],
+            item_id = self.live_tree.insert("", tk.END, text=e["name"],
                 values=(certainty_str, evidence_str, e["count"], ", ".join(e["blockers"])))
+            self._tree_item_map.setdefault(e["name"], []).append(item_id)
 
         stats = self.backend.get_stats(map_name, max_session_id=self.backend.session_id)
         self.live_frame.config(text=f"Live prediction analysis (Shifts 1-{self.backend.session_id}: {stats['total_sessions']} total)")
@@ -758,6 +840,8 @@ class AnomalyTrackerApp:
         if self.backend.undo_observation(current_map, room_name, name):
             self.status_label.config(text=f"Undid: {name}")
             self.update_session_view()
+        else:
+            self.flash_status(f"Nothing to undo for: {name}")
 
     def start_new_shift(self):
         self.backend.increment_session()
@@ -812,6 +896,7 @@ class AnomalyTrackerApp:
 
         self._updating_ui = False
         self.update_debug_ui()
+        self.update_anomaly_count()
         self.refresh_map_ui()
 
     def toggle_lock(self):
