@@ -30,18 +30,18 @@ def generate_report(backend, difficulties=None):
         backend.difficulty = diff
         results = backend.analyze_exclusivity()
         groups = results.get("groups", [])
-        suspicious = results.get("suspicious", [])
+        violations = results.get("violations", [])
 
         lines.append(f"--- {diff} Mode ---")
 
-        if not groups and not suspicious:
+        if not groups and not violations:
             all_sessions = backend.get_all_sessions()
-            lines.append(f"  Sessions logged: {len(all_sessions)}")
-            lines.append(f"  Not enough data yet (need at least 3 sessions with 2+ anomalies each).")
+            lines.append(f"  Shifts logged: {len(all_sessions)}")
+            lines.append(f"  Not enough data yet (need at least 3 shifts with 2+ anomalies each).")
             lines.append("")
             continue
 
-        N = groups[0]["N"] if groups else suspicious[0]["N"]
+        N = groups[0]["N"] if groups else "?"
         lines.append(f"  Total sessions analyzed: {N}")
         lines.append("")
 
@@ -64,11 +64,15 @@ def generate_report(backend, difficulties=None):
                 lines.append(f"    Group {i}: {', '.join(member_strs)} — certainty {g['certainty']:.0%}")
             lines.append("")
 
-        if suspicious:
-            lines.append(f"  Suspicious Co-occurrences (possible misidentifications):")
-            for s in suspicious:
-                a1, a2 = s["pair"]
-                lines.append(f"    {a1} + {a2}: co-occurred {s['actual']}x but expected {s['expected']:.1f}x — {s['status']}")
+        violations = results.get("violations", [])
+        if violations:
+            lines.append(f"  Possible Group Violations:")
+            for v in violations:
+                group_str = ", ".join(v["group_names"])
+                shifts_str = ", ".join(f"#{s}" for s in v["conflict_shifts"])
+                lines.append(f"    {v['candidate']} may belong to group {{{group_str}}}")
+                lines.append(f"      but co-occurs with {v['conflicts_with']} in shifts {shifts_str}")
+                lines.append(f"      (expected overlap: {v['expected_overlap']:.1f}, actual: {v['actual_overlap']})")
             lines.append("")
 
     return "\n".join(lines)

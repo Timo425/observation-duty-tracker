@@ -406,83 +406,188 @@ class AnomalyTrackerApp:
     def show_analytics_window(self):
         win = tk.Toplevel(self.root)
         win.title("Expert Audit")
-        win.geometry("950x650")
-        
+        win.geometry("1050x700")
+
+        # Header: title + difficulty filter + refresh
         header = ttk.Frame(win, padding=10)
         header.pack(fill=tk.X)
-        ttk.Label(header, text="Full Database Exclusivity Report", font=("Arial", 12, "bold")).pack(side=tk.LEFT)
-        
-        # Difficulty Filter
+        ttk.Label(header, text="Expert Audit", font=("Arial", 12, "bold")).pack(side=tk.LEFT)
+
         filter_frame = ttk.Frame(header)
         filter_frame.pack(side=tk.RIGHT)
-        ttk.Label(filter_frame, text="Filter:").pack(side=tk.LEFT, padx=5)
-        
+        ttk.Label(filter_frame, text="Difficulty:").pack(side=tk.LEFT, padx=5)
+
         supported_diffs = self.data.get("Difficulties", ["Normal", "Hard"])
         audit_diff = tk.StringVar(value=self.backend.difficulty)
         diff_combo = ttk.Combobox(filter_frame, textvariable=audit_diff, values=supported_diffs, width=10, state="readonly")
         diff_combo.pack(side=tk.LEFT)
 
-        # 1. Define refresh logic first
+        # Tabbed notebook
+        notebook = ttk.Notebook(win)
+        notebook.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+        # --- Tab 1: Group Violations ---
+        violations_frame = ttk.Frame(notebook)
+        notebook.add(violations_frame, text="Group Violations")
+
+        self._violations_empty_label = ttk.Label(
+            violations_frame,
+            text="No group violations detected \u2014 data looks clean.",
+            foreground="gray", font=("Arial", 10))
+
+        v_cols = ("group", "candidate", "conflicts", "shifts", "expected_actual")
+        violations_tree = ttk.Treeview(violations_frame, columns=v_cols, show="headings")
+        violations_tree.heading("group", text="Exclusion Group")
+        violations_tree.heading("candidate", text="Candidate")
+        violations_tree.heading("conflicts", text="Conflicts With")
+        violations_tree.heading("shifts", text="Flagged Shifts")
+        violations_tree.heading("expected_actual", text="Expected / Actual")
+
+        violations_tree.column("group", width=300)
+        violations_tree.column("candidate", width=180)
+        violations_tree.column("conflicts", width=150)
+        violations_tree.column("shifts", width=150, anchor="center")
+        violations_tree.column("expected_actual", width=130, anchor="center")
+        violations_tree.pack(fill="both", expand=True, padx=5, pady=5)
+
+        violations_tree.tag_configure("violation", background="#ffcccc")
+
+        # --- Tab 2: Anomaly Frequency ---
+        freq_frame = ttk.Frame(notebook)
+        notebook.add(freq_frame, text="Anomaly Frequency")
+
+        freq_controls = ttk.Frame(freq_frame)
+        freq_controls.pack(fill=tk.X, padx=5, pady=5)
+        first_seen_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(freq_controls, text="Count from first sighting",
+                        variable=first_seen_var).pack(side=tk.LEFT)
+
+        f_cols = ("name", "rooms", "rate", "clean", "alttab", "cycled", "first_seen", "shifts")
+        freq_tree = ttk.Treeview(freq_frame, columns=f_cols, show="headings")
+        freq_tree.heading("name", text="Anomaly")
+        freq_tree.heading("rooms", text="Room(s)")
+        freq_tree.heading("rate", text="Rate")
+        freq_tree.heading("clean", text="Clean Rate")
+        freq_tree.heading("alttab", text="Alt-Tab Rate")
+        freq_tree.heading("cycled", text="Cycled Shift")
+        freq_tree.heading("first_seen", text="First Seen")
+        freq_tree.heading("shifts", text="Shifts")
+
+        freq_tree.column("name", width=180)
+        freq_tree.column("rooms", width=150)
+        freq_tree.column("rate", width=70, anchor="center")
+        freq_tree.column("clean", width=90, anchor="center")
+        freq_tree.column("alttab", width=100, anchor="center")
+        freq_tree.column("cycled", width=100, anchor="center")
+        freq_tree.column("first_seen", width=80, anchor="center")
+        freq_tree.column("shifts", width=70, anchor="center")
+        freq_tree.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # --- Tab 3: Exclusion Groups ---
+        groups_frame = ttk.Frame(notebook)
+        notebook.add(groups_frame, text="Exclusion Groups")
+
+        g_cols = ("members", "size", "certainty", "analyzed", "status")
+        groups_tree = ttk.Treeview(groups_frame, columns=g_cols, show="headings")
+        groups_tree.heading("members", text="Group Members")
+        groups_tree.heading("size", text="Size")
+        groups_tree.heading("certainty", text="Certainty")
+        groups_tree.heading("analyzed", text="Shifts Analyzed")
+        groups_tree.heading("status", text="Status")
+
+        groups_tree.column("members", width=550)
+        groups_tree.column("size", width=50, anchor="center")
+        groups_tree.column("certainty", width=80, anchor="center")
+        groups_tree.column("analyzed", width=110, anchor="center")
+        groups_tree.column("status", width=160)
+        groups_tree.pack(fill="both", expand=True, padx=5, pady=5)
+
+        groups_tree.tag_configure("confirmed", background="#ccffcc")
+        groups_tree.tag_configure("likely", background="#fff0cc")
+
+        # Store references for refresh
+        self._audit_trees = {
+            "violations": violations_tree,
+            "freq": freq_tree,
+            "groups": groups_tree,
+        }
+        self._audit_first_seen_var = first_seen_var
+
         def refresh(*args):
-            self.update_analytics_window(tree, target_diff=audit_diff.get())
+            self._refresh_audit(audit_diff.get())
 
-        # 2. Add the button (now it can see 'refresh')
-        ttk.Button(header, text="Refresh Analysis", command=refresh).pack(side=tk.RIGHT, padx=5)
-        
-        desc = ttk.Label(win, text="Finds exclusion groups: anomalies where seeing any one member excludes all others in the group. Also flags suspicious co-occurrences.", foreground="gray")
-        desc.pack(pady=5)
-
-        cols = ("Group", "Size", "Certainty", "N", "Status")
-        tree = ttk.Treeview(win, columns=cols, show="headings")
-        tree.heading("Group", text="Exclusion Group Members")
-        tree.heading("Size", text="Size")
-        tree.heading("Certainty", text="Certainty")
-        tree.heading("N", text="N")
-        tree.heading("Status", text="Status")
-
-        tree.column("Group", width=600)
-        tree.column("Size", width=50, anchor="center")
-        tree.column("Certainty", width=80, anchor="center")
-        tree.column("N", width=40, anchor="center")
-        tree.column("Status", width=150)
-        tree.pack(fill="both", expand=True, padx=10, pady=10)
-
-        # Style colors
-        tree.tag_configure("suspicious", background="#ffcccc")
-        tree.tag_configure("likely", background="#fff0cc")
-        tree.tag_configure("confirmed", background="#ccffcc")
-
+        ttk.Button(header, text="Refresh", command=refresh).pack(side=tk.RIGHT, padx=5)
         audit_diff.trace_add("write", refresh)
+        first_seen_var.trace_add("write", refresh)
         refresh()
 
-    def update_analytics_window(self, tree, target_diff=None):
-        for item in tree.get_children():
-            tree.delete(item)
+    def _refresh_audit(self, target_diff):
+        trees = self._audit_trees
+
+        # --- Violations tab ---
+        vt = trees["violations"]
+        for item in vt.get_children():
+            vt.delete(item)
 
         results = self.backend.analyze_exclusivity(target_difficulty=target_diff)
 
-        # Exclusion groups
+        violations = results.get("violations", [])
+        if violations:
+            self._violations_empty_label.pack_forget()
+            for v in violations:
+                group_str = ", ".join(v["group_names"])
+                shifts_str = ", ".join(f"#{s}" for s in v["conflict_shifts"])
+                exp_act = f"{v['expected_overlap']:.1f} / {v['actual_overlap']}"
+                vt.insert("", tk.END, values=(
+                    group_str,
+                    v["candidate"],
+                    v["conflicts_with"],
+                    shifts_str,
+                    exp_act,
+                ), tags=("violation",))
+        else:
+            self._violations_empty_label.pack(pady=20)
+
+        # --- Frequency tab ---
+        ft = trees["freq"]
+        for item in ft.get_children():
+            ft.delete(item)
+
+        from_first = self._audit_first_seen_var.get()
+        freqs = self.backend.get_anomaly_frequencies(
+            target_difficulty=target_diff, from_first_seen=from_first)
+
+        def fmt_rate(val):
+            return f"{val:.0%}" if val is not None else "\u2014"
+
+        for f in freqs:
+            ft.insert("", tk.END, values=(
+                f["name"],
+                f["rooms"],
+                fmt_rate(f["overall_rate"]),
+                fmt_rate(f["clean_rate"]),
+                fmt_rate(f["alt_tab_rate"]),
+                fmt_rate(f["cycled_shift_rate"]),
+                f"#{f['first_seen']}",
+                f"{f['total_shifts']}/{f['eligible_shifts']}",
+            ))
+
+        # --- Groups tab ---
+        gt = trees["groups"]
+        for item in gt.get_children():
+            gt.delete(item)
+
         for g in results.get("groups", []):
-            members_str = " | ".join(f"{m['name']} ({m['rooms']}, {m['sightings']}x)" for m in g["members"])
+            members_str = ", ".join(
+                f"{m['name']} ({m['sightings']} sightings)" for m in g["members"])
             tag = "confirmed" if "CONFIRMED" in g["status"] else "likely"
-            tree.insert("", tk.END, values=(
+            gt.insert("", tk.END, values=(
                 members_str,
                 g["size"],
                 f"{g['certainty']:.0%}",
                 g["N"],
                 g["status"],
             ), tags=(tag,))
-
-        # Suspicious co-occurrences
-        for s in results.get("suspicious", []):
-            pair_str = f"{s['pair'][0]} ({s['room1']})  <--->  {s['pair'][1]} ({s['room2']})"
-            tree.insert("", tk.END, values=(
-                pair_str,
-                2,
-                "—",
-                s["N"],
-                s["status"],
-            ), tags=("suspicious",))
 
     def populate_room_tab(self, tab, room_name, room_anomalies):
         self._room_buttons[room_name] = {}

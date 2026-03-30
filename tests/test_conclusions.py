@@ -141,7 +141,7 @@ class TestExclusivityDetection(unittest.TestCase):
         self.backend.difficulty = "Normal"
         results = self.backend.analyze_exclusivity()
         self.assertEqual(results["groups"], [])
-        self.assertEqual(results["suspicious"], [])
+        self.assertEqual(results["violations"], [])
 
     def test_difficulty_isolation(self):
         """Normal and Hard mode data should not bleed into each other."""
@@ -183,7 +183,7 @@ class TestExclusivityDetection(unittest.TestCase):
         results = self.backend.analyze_exclusivity()
         self.assertIsInstance(results, dict)
         self.assertIn("groups", results)
-        self.assertIn("suspicious", results)
+        self.assertIn("violations", results)
 
 
 class TestGenerateReport(unittest.TestCase):
@@ -236,6 +236,158 @@ class TestGenerateReport(unittest.TestCase):
 
         self.assertIn("Normal Mode", report)
         self.assertIn("Hard Mode", report)
+
+
+class TestGroupViolations(unittest.TestCase):
+    """Test that near-miss group members are detected as violations."""
+
+    def setUp(self):
+        self.test_dir = tempfile.mkdtemp()
+        create_mock_environment(self.test_dir)
+        self.backend = Backend(self.test_dir)
+        self.backend.set_game("game_8")
+
+    def tearDown(self):
+        shutil.rmtree(self.test_dir)
+
+    def test_violation_detected(self):
+        """Anomaly exclusive with most group members but co-occurring with one should be flagged."""
+        sessions = []
+        # 30 shifts. A1 in odd, A2 in even (interleaved → group {A1, A2}).
+        # A3 appears in shifts 21-30 only (no A1 or A2 there) = exclusive with both.
+        # Then A3 ALSO appears in shift 2 (co-occurs with A2 → violation).
+        # A3 never co-occurs with A1 → exclusive with A1.
+        # A3 vs A2 in window from shift 2: expected ≈ 11*15/29 ≈ 5.7, actual 1 → ratio 0.18
+        for i in range(1, 21):
+            fillers = ["Anomaly_4", "Anomaly_5"]
+            if i % 2 == 1:
+                sessions.append((i, "Normal", "TestMap", ["Anomaly_1"] + fillers))
+            else:
+                sessions.append((i, "Normal", "TestMap", ["Anomaly_2"] + fillers))
+        # Shifts 21-30: only fillers + A3 (no A1, no A2)
+        for i in range(21, 31):
+            sessions.append((i, "Normal", "TestMap", ["Anomaly_3", "Anomaly_4", "Anomaly_5"]))
+        # The violation: A3 co-occurs with A2 in shift 2
+        sessions.append((2, "Normal", "TestMap", ["Anomaly_3"]))
+
+        write_mock_csv(self.backend.logs_path, sessions)
+        self.backend.difficulty = "Normal"
+        results = self.backend.analyze_exclusivity()
+
+        violations = results["violations"]
+        # The system should find a group and flag a violation involving shift 2
+        # (A3 co-occurs with A2 in shift 2, but one of them should be exclusive with A1)
+        self.assertTrue(len(violations) > 0,
+                        "Should detect a group violation from the shift-2 co-occurrence")
+        v = violations[0]
+        self.assertIn("2", [str(s) for s in v["conflict_shifts"]])
+        # The candidate should conflict with exactly one group member
+        self.assertTrue(len(v["exclusive_with"]) >= 1)
+
+    def test_no_violation_when_clean(self):
+        """Anomalies with many co-occurrences should not be flagged as violations."""
+        sessions = []
+        # A1 and A2 never co-occur; A3 always appears with A2 — not a violation candidate
+        for i in range(1, 21):
+            if i % 2 == 1:
+                sessions.append((i, "Normal", "TestMap", ["Anomaly_1", "Anomaly_4"]))
+            else:
+                sessions.append((i, "Normal", "TestMap", ["Anomaly_2", "Anomaly_3", "Anomaly_4"]))
+
+        write_mock_csv(self.backend.logs_path, sessions)
+        self.backend.difficulty = "Normal"
+        results = self.backend.analyze_exclusivity()
+
+        a3_violations = [v for v in results["violations"] if v["candidate"] == "Anomaly_3"]
+        self.assertEqual(len(a3_violations), 0,
+                         "Anomaly_3 co-occurs with Anomaly_2 in every even shift — should not be a violation")
+
+
+class TestAnomalyFrequencies(unittest.TestCase):
+    """Test anomaly frequency calculation with condition breakdowns."""
+
+    def setUp(self):
+        self.test_dir = tempfile.mkdtemp()
+        create_mock_environment(self.test_dir)
+        self.backend = Backend(self.test_dir)
+        self.backend.set_game("game_8")
+
+    def tearDown(self):
+        shutil.rmtree(self.test_dir)
+
+    def _write_csv_with_flags(self, rows):
+        """Write CSV with Alt_Tabbed and Last_Cycled columns."""
+        with open(self.backend.logs_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(["Session_ID", "Difficulty", "Map", "Room", "Anomaly_Name",
+                             "Timestamp", "Alt_Tabbed", "Last_Cycled"])
+            for row in rows:
+                writer.writerow(row)
+
+    def test_basic_rates(self):
+        """Overall rate should be correct."""
+        rows = []
+        # A1 in shifts 1-5, A2 in shifts 1-10
+        for i in range(1, 11):
+            rows.append([i, "Normal", "TestMap", "Room1", "Anomaly_2", "", "False", ""])
+            if i <= 5:
+                rows.append([i, "Normal", "TestMap", "Room1", "Anomaly_1", "", "False", ""])
+
+        self._write_csv_with_flags(rows)
+        self.backend.difficulty = "Normal"
+        freqs = self.backend.get_anomaly_frequencies()
+
+        a1 = next(f for f in freqs if f["name"] == "Anomaly_1")
+        a2 = next(f for f in freqs if f["name"] == "Anomaly_2")
+        self.assertEqual(a1["total_shifts"], 5)
+        self.assertEqual(a2["total_shifts"], 10)
+        self.assertAlmostEqual(a2["overall_rate"], 1.0)
+
+    def test_alt_tab_breakdown(self):
+        """Clean and alt-tab rates should be calculated separately."""
+        rows = []
+        # Shift 1-3: clean (A1 appears)
+        for i in range(1, 4):
+            rows.append([i, "Normal", "TestMap", "Room1", "Anomaly_1", "", "False", ""])
+            rows.append([i, "Normal", "TestMap", "Room1", "Anomaly_2", "", "False", ""])
+        # Shift 4-6: alt-tabbed (A1 appears only in 4)
+        for i in range(4, 7):
+            rows.append([i, "Normal", "TestMap", "Room1", "Anomaly_2", "", "True", ""])
+        rows.append([4, "Normal", "TestMap", "Room1", "Anomaly_1", "", "True", ""])
+
+        self._write_csv_with_flags(rows)
+        self.backend.difficulty = "Normal"
+        freqs = self.backend.get_anomaly_frequencies(from_first_seen=False)
+
+        a1 = next(f for f in freqs if f["name"] == "Anomaly_1")
+        # Clean: appeared in 3 of 3 clean shifts
+        self.assertAlmostEqual(a1["clean_rate"], 1.0)
+        # Alt-tab: appeared in 1 of 3 alt-tab shifts
+        self.assertAlmostEqual(a1["alt_tab_rate"], 1/3, places=2)
+
+    def test_from_first_seen_toggle(self):
+        """from_first_seen should change the denominator."""
+        rows = []
+        # A1 first appears in shift 5 (out of 10 shifts)
+        for i in range(1, 11):
+            rows.append([i, "Normal", "TestMap", "Room1", "Anomaly_2", "", "False", ""])
+        rows.append([5, "Normal", "TestMap", "Room1", "Anomaly_1", "", "False", ""])
+        rows.append([8, "Normal", "TestMap", "Room1", "Anomaly_1", "", "False", ""])
+
+        self._write_csv_with_flags(rows)
+        self.backend.difficulty = "Normal"
+
+        # from_first_seen=True: eligible = shifts 5-10 = 6 shifts, appeared in 2
+        freqs_fs = self.backend.get_anomaly_frequencies(from_first_seen=True)
+        a1_fs = next(f for f in freqs_fs if f["name"] == "Anomaly_1")
+        self.assertEqual(a1_fs["eligible_shifts"], 6)
+        self.assertAlmostEqual(a1_fs["overall_rate"], 2/6, places=2)
+
+        # from_first_seen=False: eligible = all 10 shifts, appeared in 2
+        freqs_all = self.backend.get_anomaly_frequencies(from_first_seen=False)
+        a1_all = next(f for f in freqs_all if f["name"] == "Anomaly_1")
+        self.assertEqual(a1_all["eligible_shifts"], 10)
+        self.assertAlmostEqual(a1_all["overall_rate"], 2/10, places=2)
 
 
 if __name__ == "__main__":

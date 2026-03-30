@@ -860,38 +860,178 @@ class Backend:
                 "status": "CONFIRMED GROUP" if min_certainty > 0.95 else "LIKELY GROUP",
             })
 
-        # Suspicious co-occurrences (pair-based, windowed)
-        suspicious = []
-        for a1 in eligible:
-            s1 = anom_to_sessions[a1]
-            for a2 in eligible:
-                if a2 <= a1: continue
-                s2 = anom_to_sessions[a2]
-                fs = max(first_seen.get(a1, 0), first_seen.get(a2, 0))
-                N_eff = len({s for s in all_session_ids if s >= fs})
-                if N_eff < 3: continue
-                s1_w = {s for s in s1 if int(s) >= fs}
-                s2_w = {s for s in s2 if int(s) >= fs}
-                n1_w, n2_w = len(s1_w), len(s2_w)
-                overlap_sessions = s1_w & s2_w
-                actual_overlap = len(overlap_sessions)
-                expected_overlap = (n1_w * n2_w) / N_eff
-                if expected_overlap >= 2.0 and actual_overlap > 0 and actual_overlap / expected_overlap <= 0.35:
-                    flagged = sorted(overlap_sessions, key=lambda x: int(x))
-                    shift_label = ", ".join(f"#{s}" for s in flagged)
-                    suspicious.append({
-                        "pair": (a1, a2),
-                        "room1": format_rooms(a1),
-                        "room2": format_rooms(a2),
-                        "n1": n1_w, "n2": n2_w,
-                        "expected": expected_overlap,
-                        "actual": actual_overlap,
-                        "N": N_eff,
-                        "status": f"SUSPICIOUS (Shift {shift_label})",
-                        "flagged_sessions": flagged,
-                    })
+        # Group violations: find candidate members that almost fit a group
+        # but co-occur with 1-2 members in a small number of shifts
+        violations = []
+        group_members_all = set()
+        for g in groups:
+            group_members_all.update(m["name"] for m in g["members"])
+
+        for g in groups:
+            g_names = [m["name"] for m in g["members"]]
+            g_set = set(g_names)
+
+            for candidate in eligible - g_set:
+                s_cand = anom_to_sessions[candidate]
+                exclusive_with = []
+                conflicts = []
+
+                for member in g_names:
+                    s_mem = anom_to_sessions[member]
+                    fs = max(first_seen.get(candidate, 0), first_seen.get(member, 0))
+                    window = {s for s in all_session_ids if s >= fs}
+                    N_eff = len(window)
+                    if N_eff < 3:
+                        continue
+
+                    s_cand_w = {s for s in s_cand if int(s) >= fs}
+                    s_mem_w = {s for s in s_mem if int(s) >= fs}
+                    n_cand_w, n_mem_w = len(s_cand_w), len(s_mem_w)
+                    if n_cand_w < 2 or n_mem_w < 2:
+                        continue
+
+                    overlap = s_cand_w & s_mem_w
+                    actual = len(overlap)
+                    expected = (n_cand_w * n_mem_w) / N_eff
+
+                    if actual == 0:
+                        exclusive_with.append(member)
+                    elif actual <= 2 and expected >= 1.5 and (actual / expected) <= 0.4:
+                        conflicts.append({
+                            "member": member,
+                            "conflict_shifts": sorted(overlap, key=lambda x: int(x)),
+                            "expected_overlap": expected,
+                            "actual_overlap": actual,
+                        })
+                    else:
+                        # Too much co-occurrence — not a candidate for this group
+                        break
+                else:
+                    # Must be exclusive with at least one member AND have conflicts
+                    if exclusive_with and conflicts and not (len(conflicts) > len(g_names) // 2 + 1):
+                        for conflict in conflicts:
+                            violations.append({
+                                "group_names": g_names,
+                                "candidate": candidate,
+                                "candidate_rooms": format_rooms(candidate),
+                                "conflicts_with": conflict["member"],
+                                "conflict_shifts": conflict["conflict_shifts"],
+                                "exclusive_with": exclusive_with,
+                                "expected_overlap": conflict["expected_overlap"],
+                                "actual_overlap": conflict["actual_overlap"],
+                            })
 
         groups.sort(key=lambda x: (-x["size"], -x["certainty"]))
-        suspicious.sort(key=lambda x: -x["expected"])
-        return {"groups": groups, "suspicious": suspicious}
+        violations.sort(key=lambda x: (-len(x["exclusive_with"]), x["actual_overlap"]))
+        return {"groups": groups, "violations": violations, "suspicious": violations}
+
+    def get_anomaly_frequencies(self, target_difficulty=None, from_first_seen=True):
+        """Per-anomaly occurrence rates with condition breakdowns (alt-tab, cycling)."""
+        difficulty_filter = target_difficulty if target_difficulty else self.difficulty
+        if not os.path.exists(self.logs_path):
+            return []
+
+        # One pass through CSV to collect everything
+        all_shifts = set()
+        anom_shifts = defaultdict(set)          # anomaly -> set of shift IDs
+        anom_clean_shifts = defaultdict(set)     # anomaly -> shifts where it was logged clean
+        anom_alttab_shifts = defaultdict(set)    # anomaly -> shifts where it was logged alt-tabbed
+        anom_rooms = defaultdict(lambda: defaultdict(int))
+        first_seen = {}
+        shift_has_cycling = set()               # shifts where any observation has Last_Cycled
+        anom_cycled_shifts = defaultdict(set)    # anomaly -> shifts with cycling where it appeared
+        clean_shifts = set()                     # shifts that have at least one clean observation
+        alttab_shifts = set()                    # shifts that have at least one alt-tabbed observation
+
+        with open(self.logs_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if row["Difficulty"] != difficulty_filter:
+                    continue
+                s_id = int(row["Session_ID"])
+                a_name = row["Anomaly_Name"]
+                room = row["Room"]
+                alt_tabbed = row.get("Alt_Tabbed", "False") == "True"
+                last_cycled = row.get("Last_Cycled", "").strip()
+
+                all_shifts.add(s_id)
+                anom_shifts[a_name].add(s_id)
+                anom_rooms[a_name][room] += 1
+
+                if a_name not in first_seen or s_id < first_seen[a_name]:
+                    first_seen[a_name] = s_id
+
+                if alt_tabbed:
+                    anom_alttab_shifts[a_name].add(s_id)
+                    alttab_shifts.add(s_id)
+                else:
+                    anom_clean_shifts[a_name].add(s_id)
+                    clean_shifts.add(s_id)
+
+                if last_cycled:
+                    shift_has_cycling.add(s_id)
+                    anom_cycled_shifts[a_name].add(s_id)
+
+        if not all_shifts:
+            return []
+
+        results = []
+        for anom in sorted(anom_shifts.keys()):
+            fs = first_seen[anom]
+            if from_first_seen:
+                eligible = {s for s in all_shifts if s >= fs}
+            else:
+                eligible = all_shifts
+
+            total = len(anom_shifts[anom] & eligible)
+            n_eligible = len(eligible)
+            overall_rate = total / n_eligible if n_eligible else 0
+
+            # Clean rate: among eligible shifts that have clean observations
+            eligible_clean = eligible & clean_shifts
+            n_clean = len(eligible_clean)
+            clean_appeared = len(anom_clean_shifts[anom] & eligible_clean)
+            clean_rate = clean_appeared / n_clean if n_clean else None
+
+            # Alt-tab rate: among eligible shifts that have alt-tabbed observations
+            eligible_alttab = eligible & alttab_shifts
+            n_alttab = len(eligible_alttab)
+            alttab_appeared = len(anom_alttab_shifts[anom] & eligible_alttab)
+            alt_tab_rate = alttab_appeared / n_alttab if n_alttab else None
+
+            # Cycled shift rate: among eligible shifts where cycling happened
+            eligible_cycled = eligible & shift_has_cycling
+            n_cycled = len(eligible_cycled)
+            cycled_appeared = len(anom_cycled_shifts[anom] & eligible_cycled)
+            cycled_rate = cycled_appeared / n_cycled if n_cycled else None
+
+            # Non-cycled shift rate
+            eligible_noncycled = eligible - shift_has_cycling
+            n_noncycled = len(eligible_noncycled)
+            noncycled_appeared = len(anom_shifts[anom] & eligible_noncycled)
+            non_cycled_rate = noncycled_appeared / n_noncycled if n_noncycled else None
+
+            # Format rooms
+            rooms = anom_rooms[anom]
+            room_str = ", ".join(
+                f"{r}" for r, _ in sorted(rooms.items(), key=lambda x: x[1], reverse=True)
+            )
+
+            results.append({
+                "name": anom,
+                "rooms": room_str,
+                "first_seen": fs,
+                "total_shifts": total,
+                "eligible_shifts": n_eligible,
+                "overall_rate": overall_rate,
+                "clean_rate": clean_rate,
+                "alt_tab_rate": alt_tab_rate,
+                "cycled_shift_rate": cycled_rate,
+                "non_cycled_rate": non_cycled_rate,
+                "clean_shifts": n_clean,
+                "alt_tab_shifts": n_alttab,
+                "cycled_shifts": n_cycled,
+            })
+
+        return results
 

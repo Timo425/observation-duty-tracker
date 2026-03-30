@@ -1,0 +1,203 @@
+{
+    "Difficulties": [
+        "Normal",
+        "Hard"
+    ],
+    "Global": [
+        {
+            "name": "Abyss",
+            "type": "Global",
+            "description": "Black hole"
+        },
+        {
+            "name": "Rift",
+            "type": "Global",
+            "description": "Distortion"
+        }
+    ],
+    "Maps": {
+        "TestHouse": {
+            "Rooms": {
+                "Living Room": [
+                    {
+                        "name": "Wall color",
+                        "type": "Object Replacement",
+                        "description": "Walls change color"
+                    },
+                    {
+                        "name": "Painting",
+                        "type": "Object Replacement",
+                        "description": "Painting changes"
+                    },
+                    {
+                        "name": "Curtains",
+                        "type": "Object Movement",
+                        "description": "Curtains sway"
+                    },
+                    {
+                        "name": "Lamp",
+                        "type": "Light Anomaly",
+                        "description": "Lamp flickers"
+                    },
+                    {
+                        "name": "Clock",
+                        "type": "Object Movement",
+                        "description": "Clock hands spin"
+                    }
+                ],
+                "Kitchen": [
+                    {
+                        "name": "Fridge",
+                        "type": "Object Replacement",
+                        "description": "Fridge changes color"
+                    },
+                    {
+                        "name": "Dishes",
+                        "type": "Object Movement",
+                        "description": "Dishes move"
+                    },
+                    {
+                        "name": "Knife block",
+                        "type": "Object Movement",
+                        "description": "Knives rearrange"
+                    },
+                    {
+                        "name": "Oven light",
+                        "type": "Light Anomaly",
+                        "description": "Oven glows"
+                    },
+                    {
+                        "name": "Fruit bowl",
+                        "type": "Object Replacement",
+                        "description": "Fruit changes type"
+                    }
+                ],
+                "Bedroom": [
+                    {
+                        "name": "Bed sheets",
+                        "type": "Object Replacement",
+                        "description": "Sheets change color"
+                    },
+                    {
+                        "name": "Mirror",
+                        "type": "Object Replacement",
+                        "description": "Mirror reflection wrong"
+                    },
+                    {
+                        "name": "Wardrobe",
+                        "type": "Object Movement",
+                        "description": "Door opens"
+                    },
+                    {
+                        "name": "Nightstand",
+                        "type": "Object Movement",
+                        "description": "Items shift"
+                    },
+                    {
+                        "name": "Window view",
+                        "type": "Object Replacement",
+                        "description": "View changes"
+                    }
+                ],
+                "Bathroom": [
+                    {
+                        "name": "Tiles",
+                        "type": "Object Replacement",
+                        "description": "Tile pattern changes"
+                    },
+                    {
+                        "name": "Faucet",
+                        "type": "Object Movement",
+                        "description": "Faucet drips"
+                    },
+                    {
+                        "name": "Towels",
+                        "type": "Object Replacement",
+                        "description": "Towel color changes"
+                    },
+                    {
+                        "name": "Shower curtain",
+                        "type": "Object Movement",
+                        "description": "Curtain moves"
+                    },
+                    {
+                        "name": "Medicine cabinet",
+                        "type": "Object Movement",
+                        "description": "Door opens"
+                    }
+                ],
+                "Garage": [
+                    {
+                        "name": "Car color",
+                        "type": "Object Replacement",
+                        "description": "Car changes color"
+                    },
+                    {
+                        "name": "Tools",
+                        "type": "Object Movement",
+                        "description": "Tools rearrange"
+                    },
+                    {
+                        "name": "Workbench",
+                        "type": "Object Replacement",
+                        "description": "Items change"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "INTRUDER",
+                        "description": "Body appears"
+                    },
+                    {
+                        "name": "Oil stain",
+                        "type": "Object Movement",
+                        "description": "Stain spreads"
+                    }
+                ],
+                "Hallway": [
+                    {
+                        "name": "Coat rack",
+                        "type": "Object Movement",
+                        "description": "Coats rearrange"
+                    },
+                    {
+                        "name": "Umbrella stand",
+                        "type": "Object Replacement",
+                        "description": "Umbrellas change"
+                    },
+                    {
+                        "name": "Welcome mat",
+                        "type": "Object Replacement",
+                        "description": "Mat changes text"
+                    }
+                ],
+                "Attic": [
+                    {
+                        "name": "Dust cloud",
+                        "type": "Object Movement",
+                        "description": "Dust swirls"
+                    },
+                    {
+                        "name": "Old painting",
+                        "type": "Object Replacement",
+                        "description": "Subject changes"
+                    },
+                    {
+                        "name": "Trunk",
+                        "type": "Object Movement",
+                        "description": "Trunk opens"
+                    },
+                    {
+                        "name": "Rocking chair",
+                        "type": "Object Movement",
+                        "description": "Chair rocks"
+                    },
+                    {
+                        "name": "Music box",
+                        "type": "Light Anomaly",
+                        "description": "Box plays music"
+                    }
+                ]
+            }
+        }
+    }
+}
