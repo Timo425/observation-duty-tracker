@@ -179,18 +179,18 @@ class AnomalyTrackerApp:
         self.tree_wrapper = ttk.Frame(self.live_frame)
         self.tree_wrapper.pack(fill=tk.BOTH, expand=True)
         
-        cols = ("Anomaly", "Certainty", "Evidence", "Sightings", "Blockers")
-        self.live_tree = ttk.Treeview(self.tree_wrapper, columns=cols, show="headings", height=5)
-        self.live_tree.heading("Anomaly", text="Anomaly Name")
+        cols = ("Certainty", "Evidence", "Sightings", "Blockers")
+        self.live_tree = ttk.Treeview(self.tree_wrapper, columns=cols, show="tree headings", height=5)
+        self.live_tree.heading("#0", text="Anomaly / Group")
         self.live_tree.heading("Certainty", text="Certainty")
         self.live_tree.heading("Evidence", text="Evidence (Shifts)")
         self.live_tree.heading("Sightings", text="Sights")
-        self.live_tree.heading("Blockers", text="Conflict Triggered By")
-        self.live_tree.column("Anomaly", width=180)
+        self.live_tree.heading("Blockers", text="Triggered By")
+        self.live_tree.column("#0", width=250)
         self.live_tree.column("Certainty", width=120)
         self.live_tree.column("Evidence", width=110, anchor="center")
         self.live_tree.column("Sightings", width=60, anchor="center")
-        self.live_tree.column("Blockers", width=400)
+        self.live_tree.column("Blockers", width=330)
         
         tree_scroll = ttk.Scrollbar(self.tree_wrapper, orient="vertical", command=self.live_tree.yview)
         self.live_tree.configure(yscrollcommand=tree_scroll.set)
@@ -205,6 +205,7 @@ class AnomalyTrackerApp:
         
         # Tags for analysis coloring
         self.live_tree.tag_configure("REPORTED", background="#FFCC80") # Light Orange
+        self.live_tree.tag_configure("GROUP_HEADER", background="#E8EAF6", font=("Arial", 9, "bold")) # Light indigo
 
         # Bottom Frame: Status
         status_frame = ttk.Frame(self.root, padding="2")
@@ -671,33 +672,67 @@ class AnomalyTrackerApp:
         if not map_name: return
         
         current_anoms = self.backend.get_current_session_anomalies(map_name)
-        live_exclusions = self.backend.get_live_exclusions(map_name, current_anoms)
+        result = self.backend.get_live_exclusions_with_groups(map_name, current_anoms)
+        live_exclusions = result["exclusions"]
+        group_summaries = result["groups"]
         failure_details = self.backend.get_failure_details(map_name, self.backend.session_id)
-        
+
         for item in self.live_tree.get_children():
             self.live_tree.delete(item)
-            
+
         # 1. Update Failure Summary Frame
         if failure_details:
             summary_parts = []
             for f in failure_details:
                 name = f["linked_anomaly"] if f["linked_anomaly"] != "None" else f["type"]
                 summary_parts.append(f"• {name} in {f['room']}")
-            
+
             self.failure_label.config(text="\n".join(summary_parts))
             self.failure_frame.pack(fill=tk.X, pady=(5, 0), after=self.tree_wrapper)
         else:
             self.failure_frame.pack_forget()
 
-        # 2. Show Mutual Exclusivity Predictions
+        # 2. Show Mutual Exclusivity Predictions (grouped by exclusion group)
+        # Separate grouped vs ungrouped exclusions
+        grouped = {}  # group_idx -> [exclusions]
+        ungrouped = []
         for e in live_exclusions:
-            # Evidence: How many times was the blocker seen vs Total sessions
-            evidence_str = f"{e['n_blockers']} / {e['N']} shifts" 
+            gidx = e.get("group_idx", -1)
+            if gidx >= 0:
+                grouped.setdefault(gidx, []).append(e)
+            else:
+                ungrouped.append(e)
+
+        # Render grouped exclusions under collapsible parent nodes
+        group_summary_map = {g["idx"]: g for g in group_summaries}
+        for gidx in sorted(grouped.keys()):
+            members_in_group = grouped[gidx]
+            gs = group_summary_map.get(gidx, {})
+            all_members = gs.get("members", [])
+            active = gs.get("active_members", [])
+            status = gs.get("status", "")
+            group_certainty = gs.get("certainty", 0)
+
+            # Group header: show active members (logged) and overall status
+            active_str = ", ".join(active) if active else "?"
+            header_text = f"Group ({len(all_members)}): {', '.join(all_members)}"
+            status_str = f"{status} ({group_certainty:.0%})"
+            parent_id = self.live_tree.insert("", tk.END, text=header_text,
+                values=(status_str, "", "", f"Active: {active_str}"),
+                open=True, tags=("GROUP_HEADER",))
+
+            for e in members_in_group:
+                evidence_str = f"{e['n_blockers']} / {e['N']} shifts"
+                certainty_str = f"{e['certainty_status']} ({e['certainty']:.0%})"
+                self.live_tree.insert(parent_id, tk.END, text=e["name"],
+                    values=(certainty_str, evidence_str, e["count"], ", ".join(e["blockers"])))
+
+        # Render ungrouped exclusions as top-level items
+        for e in ungrouped:
+            evidence_str = f"{e['n_blockers']} / {e['N']} shifts"
             certainty_str = f"{e['certainty_status']} ({e['certainty']:.0%})"
-            
-            self.live_tree.insert("", tk.END, values=(
-                e["name"], certainty_str, evidence_str, e["count"], ", ".join(e["blockers"])
-            ))
+            self.live_tree.insert("", tk.END, text=e["name"],
+                values=(certainty_str, evidence_str, e["count"], ", ".join(e["blockers"])))
 
         stats = self.backend.get_stats(map_name, max_session_id=self.backend.session_id)
         self.live_frame.config(text=f"Live prediction analysis (Shifts 1-{self.backend.session_id}: {stats['total_sessions']} total)")

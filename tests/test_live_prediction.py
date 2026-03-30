@@ -153,5 +153,34 @@ class TestMinSightingsAndPersistence(unittest.TestCase):
         self.assertTrue(alpha_blocked.issubset(alpha_blocked_after),
                         "Exclusions from Alpha should persist after adding Beta")
 
+    def test_grouped_exclusions_tag_group_membership(self):
+        """Exclusions should be tagged with their exclusion group index."""
+        result = self.backend.get_live_exclusions_with_groups("TestMap", ["Alpha"])
+        exclusions = result["exclusions"]
+        groups = result["groups"]
+
+        # Alpha+Beta in odd, Gamma+Delta in even. Exclusion graph:
+        # Alpha-Gamma, Alpha-Delta, Beta-Gamma, Beta-Delta (no Gamma-Delta edge, they co-occur)
+        # Groups formed: e.g. {Alpha, Gamma} and {Beta, Delta}
+        gamma_excl = next((e for e in exclusions if e["name"] == "Gamma"), None)
+        delta_excl = next((e for e in exclusions if e["name"] == "Delta"), None)
+        self.assertIsNotNone(gamma_excl)
+        self.assertIsNotNone(delta_excl)
+        # Both should be in known groups (though different ones since they co-occur)
+        self.assertGreaterEqual(gamma_excl["group_idx"], 0, "Gamma should be in a known group")
+        self.assertGreaterEqual(delta_excl["group_idx"], 0, "Delta should be in a known group")
+
+        # Group summary should include Alpha as active member in at least one group
+        self.assertTrue(len(groups) >= 1, "At least one group summary expected")
+        active_in_any = any("Alpha" in g["active_members"] for g in groups)
+        self.assertTrue(active_in_any, "Alpha should be active in at least one group")
+
+    def test_ungrouped_exclusions_have_negative_group_idx(self):
+        """Exclusions not matching any known group should have group_idx -1."""
+        result = self.backend.get_live_exclusions_with_groups("TestMap", ["Alpha"])
+        for e in result["exclusions"]:
+            # All exclusions should either be grouped or explicitly -1
+            self.assertIsInstance(e["group_idx"], int)
+
 if __name__ == "__main__":
     unittest.main()

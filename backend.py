@@ -709,6 +709,51 @@ class Backend:
         exclusions.sort(key=lambda x: (x["certainty"], x["expected_overlap"]), reverse=True)
         return exclusions
 
+    def get_live_exclusions_with_groups(self, map_name, current_anoms):
+        """Enriches live exclusions with known group membership context.
+
+        Returns exclusions tagged with their exclusion group (if known),
+        plus a list of group summaries for display.
+        """
+        exclusions = self.get_live_exclusions(map_name, current_anoms)
+        if not exclusions:
+            return {"exclusions": [], "groups": []}
+
+        analysis = self.analyze_exclusivity()
+        known_groups = analysis.get("groups", [])
+
+        # Build anomaly -> group index mapping
+        anom_to_group = {}
+        for i, group in enumerate(known_groups):
+            for member in group["members"]:
+                anom_to_group[member["name"]] = i
+
+        # Tag each exclusion with its group index (or -1 for ungrouped)
+        for excl in exclusions:
+            excl["group_idx"] = anom_to_group.get(excl["name"], -1)
+
+        # Build group summaries relevant to current exclusions
+        # Only include groups that have at least one excluded member
+        active_group_indices = {e["group_idx"] for e in exclusions if e["group_idx"] >= 0}
+        group_summaries = []
+        for idx in sorted(active_group_indices):
+            g = known_groups[idx]
+            members = [m["name"] for m in g["members"]]
+            # Which members from this group are in the current logged anomalies?
+            active_members = [m for m in members if m in current_anoms]
+            excluded_members = [m for m in members if m not in current_anoms]
+            group_summaries.append({
+                "idx": idx,
+                "members": members,
+                "active_members": active_members,
+                "excluded_members": excluded_members,
+                "size": g["size"],
+                "certainty": g["certainty"],
+                "status": g["status"],
+            })
+
+        return {"exclusions": exclusions, "groups": group_summaries}
+
     def analyze_exclusivity(self, target_difficulty=None):
         """Analyzes historical logs to find exclusion groups and flag suspicious co-occurrences.
 

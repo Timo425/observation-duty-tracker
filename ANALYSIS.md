@@ -8,8 +8,19 @@ Terminology: we say **shift** (not session) throughout.
 **Purpose:** Gameplay aid — "what's excluded from THIS shift right now?"
 
 Shows anomalies predicted to be absent from the current shift based on what you've already logged.
-Updates in real-time as you log anomalies. Uses exclusion groups: if you logged anomaly A
-and A is in a group with B, then B is predicted excluded.
+Updates in real-time as you log anomalies. Cross-references pair-based exclusion detection
+with known exclusion groups to present predictions in context.
+
+**Display:** Uses a hierarchical tree view:
+- **Grouped exclusions:** When excluded anomalies belong to a known exclusion group, they appear
+  under a collapsible group header showing all members, certainty, and which members are active
+  (logged this shift). This gives the user immediate context: "these exclusions are part of the
+  same pattern."
+- **Ungrouped exclusions:** Pair-based exclusions that don't yet belong to a confirmed group
+  appear as standalone items with their individual blockers.
+
+This gradual presentation means early data shows raw pair exclusions, and as groups mature
+they are automatically clustered under their group headers.
 
 This is actionable during gameplay — you check it to narrow down what's left.
 
