@@ -663,12 +663,23 @@ class Backend:
             if k < 0 or k > n: return -float('inf')
             return math.lgamma(n + 1) - math.lgamma(k + 1) - math.lgamma(n - k + 1)
 
-        for a_name in all_possible_anoms:
+        pending = []  # Near-threshold candidates
+
+        for a_name in sorted(all_possible_anoms):
             if a_name in current_anoms: continue
 
             S_a = stats["anomaly_sessions"].get(a_name, set())
             n_a = len(S_a)
-            if n_a < 2: continue  # Need at least 2 sightings to form patterns
+
+            # Track near-threshold: seen only once (need 2)
+            if n_a < 2:
+                if n_a == 1:
+                    pending.append({
+                        "name": a_name,
+                        "reason": f"1 sighting (need 2)",
+                        "count": n_a,
+                    })
+                continue
 
             # Direct Blocker Logic: An anomaly is excluded if it conflicts with ANY individual report.
             blockers = []
@@ -689,7 +700,14 @@ class Backend:
             fs_blockers = min(first_seen.get(b, 0) for b in blockers)
             fs_effective = max(fs_a, fs_blockers)
             N_eff = len({s for s in all_sessions if s >= fs_effective})
-            if N_eff < 3: continue  # Not enough data in the shared window
+
+            if N_eff < 3:
+                pending.append({
+                    "name": a_name,
+                    "reason": f"{N_eff} shifts since first seen (need 3)",
+                    "count": n_a,
+                })
+                continue
 
             S_a_eff = {s for s in S_a if s >= fs_effective}
             n_a_eff = len(S_a_eff)
@@ -697,7 +715,17 @@ class Backend:
             expected_overlap = (n_blockers * n_a_eff) / N_eff
 
             # Skip if zero overlap isn't surprising (expected < 1.5 means sparse data)
-            if expected_overlap < 1.5: continue
+            if expected_overlap < 1.5:
+                pending.append({
+                    "name": a_name,
+                    "reason": f"expected overlap {expected_overlap:.1f} (need > 1.5)",
+                    "count": n_a,
+                    "expected_overlap": expected_overlap,
+                    "blockers": blockers,
+                    "n_blockers": n_blockers,
+                    "N": N_eff,
+                })
+                continue
 
             # Probability of zero intersection by chance (Hypergeometric p-value)
             if N_eff - n_blockers < n_a_eff:
@@ -728,7 +756,21 @@ class Backend:
             })
         # Sort by Certainty first, then by Surprise (overlap)
         exclusions.sort(key=lambda x: (x["certainty"], x["expected_overlap"]), reverse=True)
-        return exclusions
+
+        # Pick the single closest-to-threshold candidate
+        # Priority: expected_overlap failures (closest to graduating), then shifts, then sightings
+        def pending_rank(p):
+            r = p["reason"]
+            if "expected overlap" in r:
+                return (0, -p.get("expected_overlap", 0))  # closest to 1.5 first
+            elif "shifts since first seen" in r:
+                return (1, -p["count"])
+            else:
+                return (2, -p["count"])
+        pending.sort(key=pending_rank)
+        best_pending = pending[0] if pending else None
+
+        return exclusions, best_pending
 
     def get_live_exclusions_with_groups(self, map_name, current_anoms):
         """Enriches live exclusions with known group membership context.
@@ -736,9 +778,9 @@ class Backend:
         Returns exclusions tagged with their exclusion group (if known),
         plus a list of group summaries for display.
         """
-        exclusions = self.get_live_exclusions(map_name, current_anoms)
-        if not exclusions:
-            return {"exclusions": [], "groups": []}
+        exclusions, best_pending = self.get_live_exclusions(map_name, current_anoms)
+        if not exclusions and not best_pending:
+            return {"exclusions": [], "groups": [], "best_pending": None}
 
         analysis = self.analyze_exclusivity()
         known_groups = analysis.get("groups", [])
@@ -773,9 +815,9 @@ class Backend:
                 "status": g["status"],
             })
 
-        return {"exclusions": exclusions, "groups": group_summaries}
+        return {"exclusions": exclusions, "groups": group_summaries, "best_pending": best_pending}
 
-    def analyze_exclusivity(self, target_difficulty=None):
+    def analyze_exclusivity(self, target_difficulty=None, target_map=None):
         """Analyzes historical logs to find exclusion groups and flag suspicious co-occurrences.
 
         Finds groups of anomalies where seeing any one member excludes all others
@@ -795,6 +837,7 @@ class Backend:
             reader = csv.DictReader(f)
             for row in reader:
                 if row["Difficulty"] != difficulty_filter: continue
+                if target_map and row.get("Map", "") != target_map: continue
                 s_id = row["Session_ID"]; a_name = row["Anomaly_Name"]; room = row["Room"]
                 s_id_int = int(s_id)
                 sessions[s_id].add(a_name)
@@ -810,6 +853,7 @@ class Backend:
                 reader = csv.DictReader(f)
                 for row in reader:
                     if row.get("Difficulty") != difficulty_filter: continue
+                    if target_map and row.get("Map", "") != target_map: continue
                     s_id = row["Session_ID"]
                     s_id_int = int(s_id)
                     if s_id not in sessions: continue
@@ -838,6 +882,20 @@ class Backend:
         # Build exclusion graph: edge between a,b if they never co-occur
         # Only count sessions from when both anomalies have been seen
         excl_edges = set()  # frozenset pairs
+        best_developing = None  # closest pair to forming a group edge
+
+        def _update_developing(members, certainty, N_eff, reason, score):
+            """Track the single best developing pair (highest score = closest to graduating)."""
+            nonlocal best_developing
+            if best_developing is None or score > best_developing["_score"]:
+                best_developing = {
+                    "members": members,
+                    "certainty": certainty,
+                    "N": N_eff,
+                    "reason": reason,
+                    "_score": score,
+                }
+
         for a1 in eligible:
             s1 = anom_to_sessions[a1]
             for a2 in eligible:
@@ -858,7 +916,12 @@ class Backend:
                 if n1_w < 2 or n2_w < 2: continue
 
                 expected_overlap = (n1_w * n2_w) / N_eff
-                if expected_overlap < 1.5: continue
+                if expected_overlap < 1.5:
+                    # Score: how close to 1.5 (higher = closer)
+                    _update_developing(sorted([a1, a2]), 0, N_eff,
+                        f"expected overlap {expected_overlap:.1f} (need > 1.5)",
+                        expected_overlap / 1.5)  # 0..1 range
+                    continue
 
                 # Certainty check
                 if N_eff - n1_w >= n2_w:
@@ -867,7 +930,13 @@ class Backend:
                     certainty = 1 - math.exp(lp) if lp != -float('inf') else 1.0
                 else:
                     certainty = 1.0
-                if certainty < 0.7: continue
+
+                if certainty < 0.7:
+                    # Score: 1.0 + certainty (always beats expected_overlap failures)
+                    _update_developing(sorted([a1, a2]), certainty, N_eff,
+                        f"certainty {certainty:.0%} (need > 70%)",
+                        1.0 + certainty)
+                    continue
 
                 excl_edges.add(frozenset((a1, a2)))
 
@@ -989,9 +1058,10 @@ class Backend:
 
         groups.sort(key=lambda x: (-x["size"], -x["certainty"]))
         violations.sort(key=lambda x: (-len(x["exclusive_with"]), x["actual_overlap"]))
-        return {"groups": groups, "violations": violations, "suspicious": violations}
+        return {"groups": groups, "violations": violations, "suspicious": violations,
+                "best_developing": best_developing}
 
-    def get_anomaly_frequencies(self, target_difficulty=None, from_first_seen=True):
+    def get_anomaly_frequencies(self, target_difficulty=None, from_first_seen=True, target_map=None):
         """Per-anomaly occurrence rates with condition breakdowns (alt-tab, cycling)."""
         difficulty_filter = target_difficulty if target_difficulty else self.difficulty
         if not os.path.exists(self.logs_path):
@@ -1008,11 +1078,15 @@ class Backend:
         anom_cycled_shifts = defaultdict(set)    # anomaly -> shifts with cycling where it appeared
         clean_shifts = set()                     # shifts that have at least one clean observation
         alttab_shifts = set()                    # shifts that have at least one alt-tabbed observation
+        logged_maps = set()                     # maps that have log entries for this difficulty
 
         with open(self.logs_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 if row["Difficulty"] != difficulty_filter:
+                    continue
+                map_name = row.get("Map", "")
+                if target_map and map_name != target_map:
                     continue
                 s_id = int(row["Session_ID"])
                 a_name = row["Anomaly_Name"]
@@ -1023,6 +1097,8 @@ class Backend:
                 all_shifts.add(s_id)
                 anom_shifts[a_name].add(s_id)
                 anom_rooms[a_name][room] += 1
+                if map_name:
+                    logged_maps.add(map_name)
 
                 if a_name not in first_seen or s_id < first_seen[a_name]:
                     first_seen[a_name] = s_id
@@ -1041,9 +1117,45 @@ class Backend:
         if not all_shifts:
             return []
 
+        # Collect all known anomaly names from maps that have log data (+ Global)
+        all_known = set()
+        maps_data = self.data.get("Maps", {})
+        for m_name in logged_maps:
+            if m_name in maps_data:
+                for room_anoms in maps_data[m_name].get("Rooms", {}).values():
+                    for a in room_anoms:
+                        all_known.add(a["name"])
+        for a in self.data.get("Global", []):
+            all_known.add(a["name"])
+
+        all_anom_names = sorted(all_known | set(anom_shifts.keys()))
+
+        n_total_shifts = len(all_shifts)
+
         results = []
-        for anom in sorted(anom_shifts.keys()):
-            fs = first_seen[anom]
+        for anom in all_anom_names:
+            fs = first_seen.get(anom)
+
+            if fs is None:
+                # Never seen — use the room from game data
+                room_str = self.anomaly_to_room.get(anom, "")
+                results.append({
+                    "name": anom,
+                    "rooms": room_str,
+                    "first_seen": None,
+                    "total_shifts": 0,
+                    "eligible_shifts": n_total_shifts,
+                    "overall_rate": 0,
+                    "clean_rate": None,
+                    "alt_tab_rate": None,
+                    "cycled_shift_rate": None,
+                    "non_cycled_rate": None,
+                    "clean_shifts": 0,
+                    "alt_tab_shifts": 0,
+                    "cycled_shifts": 0,
+                })
+                continue
+
             if from_first_seen:
                 eligible = {s for s in all_shifts if s >= fs}
             else:

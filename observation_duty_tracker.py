@@ -2,8 +2,91 @@ import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 import json
 import os
+import re
 import colorsys
 from backend import Backend
+
+
+def _parse_sort_key(value):
+    """Extract a numeric sort key from display values like '45%', '#12', '3.2 / 5', '1/10 shifts'."""
+    s = str(value).strip()
+    if s in ("", "\u2014", "—"):
+        return (1, 0)  # blanks sort last
+    # Percentage: "85%" or "CONFIRMED (95%)"
+    m = re.search(r'(\d+(?:\.\d+)?)\s*%', s)
+    if m:
+        return (0, float(m.group(1)))
+    # Fraction with slash: "3.2 / 5" or "8/12" or "3 / 10 shifts"
+    m = re.match(r'(\d+(?:\.\d+)?)\s*/\s*(\d+(?:\.\d+)?)', s)
+    if m:
+        return (0, float(m.group(1)))
+    # Leading number: "#12", "5", "3.7"
+    m = re.match(r'#?(\d+(?:\.\d+)?)', s)
+    if m:
+        return (0, float(m.group(1)))
+    # Fall back to case-insensitive string
+    return (0, s.lower())
+
+
+def _treeview_sort(tree, col, reverse, is_tree_col=False):
+    """Sort a Treeview by column. Tracks sort state and shows arrow indicator."""
+    items = [(tree.set(k, col) if not is_tree_col else tree.item(k, "text"), k)
+             for k in tree.get_children("")]
+    items.sort(key=lambda t: _parse_sort_key(t[0]), reverse=reverse)
+    for idx, (_, k) in enumerate(items):
+        tree.move(k, "", idx)
+
+    # Update heading labels: clear old arrow, add new one
+    arrow = " \u25bc" if reverse else " \u25b2"
+    for c in tree._sort_columns:
+        base = tree._sort_base_texts[c]
+        tc = tree._sort_is_tree_col.get(c, False)
+        if c == col:
+            if tc:
+                tree.heading("#0", text=base + arrow)
+            else:
+                tree.heading(c, text=base + arrow)
+        else:
+            if tc:
+                tree.heading("#0", text=base)
+            else:
+                tree.heading(c, text=base)
+
+    # Store current sort state for re-apply after data refresh
+    tree._sort_state = (col, reverse, is_tree_col)
+
+    # Toggle direction on next click
+    cmd = lambda _col=col, _rev=not reverse, _tc=is_tree_col: _treeview_sort(tree, _col, _rev, _tc)
+    if is_tree_col:
+        tree.heading("#0", command=cmd)
+    else:
+        tree.heading(col, command=cmd)
+
+
+def _reapply_sort(tree):
+    """Re-apply the last sort after data has been refreshed."""
+    state = getattr(tree, "_sort_state", None)
+    if state:
+        col, reverse, is_tree_col = state
+        _treeview_sort(tree, col, reverse, is_tree_col)
+
+
+def _bind_sort_headings(tree, columns, include_tree_col=False):
+    """Bind click-to-sort on all column headings of a Treeview."""
+    tree._sort_columns = list(columns)
+    tree._sort_base_texts = {}
+    tree._sort_is_tree_col = {}
+    tree._sort_state = None
+
+    if include_tree_col:
+        tree._sort_columns.insert(0, "#0")
+        tree._sort_base_texts["#0"] = tree.heading("#0", "text")
+        tree._sort_is_tree_col["#0"] = True
+        tree.heading("#0", command=lambda: _treeview_sort(tree, "#0", False, is_tree_col=True))
+
+    for col in columns:
+        tree._sort_base_texts[col] = tree.heading(col, "text")
+        tree.heading(col, command=lambda c=col: _treeview_sort(tree, c, False))
 
 class ToolTip:
     def __init__(self, widget, text):
@@ -189,7 +272,7 @@ class AnomalyTrackerApp:
         self.notebook.pack(fill=tk.BOTH, expand=False, pady=(0, 5))
 
         # Live Analysis Panel
-        self.live_frame = ttk.LabelFrame(pane, text="Live prediction analysis (Mutual exclusivity)", padding="5")
+        self.live_frame = ttk.LabelFrame(pane, text="Anomalies likely excluded in this shift", padding="5")
         self.live_frame.pack(fill=tk.BOTH, expand=True)
         self.tree_wrapper = ttk.Frame(self.live_frame)
         self.tree_wrapper.pack(fill=tk.BOTH, expand=True)
@@ -201,17 +284,18 @@ class AnomalyTrackerApp:
         self.live_tree.heading("Evidence", text="Evidence (Shifts)")
         self.live_tree.heading("Sightings", text="Sights")
         self.live_tree.heading("Blockers", text="Triggered By")
-        self.live_tree.column("#0", width=250)
-        self.live_tree.column("Certainty", width=120)
-        self.live_tree.column("Evidence", width=110, anchor="center")
-        self.live_tree.column("Sightings", width=60, anchor="center")
-        self.live_tree.column("Blockers", width=330)
+        self.live_tree.column("#0", width=220, minwidth=20, stretch=True)
+        self.live_tree.column("Certainty", width=150, minwidth=20, stretch=False)
+        self.live_tree.column("Evidence", width=100, minwidth=20, anchor="center", stretch=False)
+        self.live_tree.column("Sightings", width=50, minwidth=20, anchor="center", stretch=False)
+        self.live_tree.column("Blockers", width=300, minwidth=20, stretch=True)
         
         tree_scroll = ttk.Scrollbar(self.tree_wrapper, orient="vertical", command=self.live_tree.yview)
         self.live_tree.configure(yscrollcommand=tree_scroll.set)
-        
+
         tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self.live_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        _bind_sort_headings(self.live_tree, cols, include_tree_col=True)
 
         # Failure Summary Section (Hidden by default)
         self.failure_frame = ttk.LabelFrame(self.live_frame, text="⚠️ Anomalies took over this shift", padding="5")
@@ -222,7 +306,13 @@ class AnomalyTrackerApp:
         self.live_tree.tag_configure("REPORTED", background="#FFCC80") # Light Orange
         self.live_tree.tag_configure("GROUP_HEADER", background="#E8EAF6", font=("Arial", 9, "bold")) # Light indigo
         self.live_tree.tag_configure("HOVER_HIGHLIGHT", background="#B3E5FC") # Light blue highlight
+        self.live_tree.tag_configure("PENDING", foreground="#999999")
         self._tree_item_map = {} # anomaly_name -> list of tree item IDs
+
+        self.threshold_label = ttk.Label(self.live_frame,
+            text="Thresholds: \u22652 sightings, \u22653 shifts since first seen, expected overlap > 1.5",
+            foreground="gray", font=("Arial", 8))
+        self.threshold_label.pack(padx=5, pady=(0, 2))
 
         # Bottom Frame: Status
         status_frame = ttk.Frame(self.root, padding="2")
@@ -413,7 +503,7 @@ class AnomalyTrackerApp:
         if not map_name: return
         
         current_session_anoms = self.backend.get_current_session_anomalies(map_name)
-        live_exclusions = self.backend.get_live_exclusions(map_name, current_session_anoms)
+        live_exclusions, _ = self.backend.get_live_exclusions(map_name, current_session_anoms)
         exclusions_map = {e["name"]: e for e in live_exclusions}
         missed_names = self.backend.get_missed_anomalies(map_name, self.backend.session_id)
 
@@ -494,8 +584,14 @@ class AnomalyTrackerApp:
 
         filter_frame = ttk.Frame(header)
         filter_frame.pack(side=tk.RIGHT)
-        ttk.Label(filter_frame, text="Difficulty:").pack(side=tk.LEFT, padx=5)
 
+        ttk.Label(filter_frame, text="Map:").pack(side=tk.LEFT, padx=5)
+        map_names = list(self.data.get("Maps", {}).keys())
+        audit_map = tk.StringVar(value=self.current_map.get())
+        map_combo = ttk.Combobox(filter_frame, textvariable=audit_map, values=map_names, width=20, state="readonly")
+        map_combo.pack(side=tk.LEFT)
+
+        ttk.Label(filter_frame, text="Difficulty:").pack(side=tk.LEFT, padx=5)
         supported_diffs = self.data.get("Difficulties", ["Normal", "Hard"])
         audit_diff = tk.StringVar(value=self.backend.difficulty)
         diff_combo = ttk.Combobox(filter_frame, textvariable=audit_diff, values=supported_diffs, width=10, state="readonly")
@@ -515,21 +611,29 @@ class AnomalyTrackerApp:
             foreground="gray", font=("Arial", 10))
 
         v_cols = ("group", "candidate", "conflicts", "shifts", "expected_actual")
-        violations_tree = ttk.Treeview(violations_frame, columns=v_cols, show="headings")
+        v_wrapper = ttk.Frame(violations_frame)
+        v_wrapper.pack(fill="both", expand=True, padx=5, pady=5)
+        violations_tree = ttk.Treeview(v_wrapper, columns=v_cols, show="headings")
         violations_tree.heading("group", text="Exclusion Group")
         violations_tree.heading("candidate", text="Candidate")
         violations_tree.heading("conflicts", text="Conflicts With")
         violations_tree.heading("shifts", text="Flagged Shifts")
         violations_tree.heading("expected_actual", text="Expected / Actual")
 
-        violations_tree.column("group", width=300)
-        violations_tree.column("candidate", width=180)
-        violations_tree.column("conflicts", width=150)
-        violations_tree.column("shifts", width=150, anchor="center")
-        violations_tree.column("expected_actual", width=130, anchor="center")
-        violations_tree.pack(fill="both", expand=True, padx=5, pady=5)
+        violations_tree.column("group", width=300, minwidth=20, stretch=True)
+        violations_tree.column("candidate", width=180, minwidth=20, stretch=False)
+        violations_tree.column("conflicts", width=150, minwidth=20, stretch=False)
+        violations_tree.column("shifts", width=150, minwidth=20, anchor="center", stretch=False)
+        violations_tree.column("expected_actual", width=130, minwidth=20, anchor="center", stretch=False)
+        v_scroll = ttk.Scrollbar(v_wrapper, orient="vertical", command=violations_tree.yview)
+        violations_tree.configure(yscrollcommand=v_scroll.set)
+        v_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        violations_tree.pack(side=tk.LEFT, fill="both", expand=True)
+        _bind_sort_headings(violations_tree, v_cols)
 
         violations_tree.tag_configure("violation", background="#ffcccc")
+        ttk.Label(violations_frame, text="Thresholds: actual overlap \u2264 2, overlap ratio \u2264 0.4, min expected overlap > 1.5",
+                  foreground="gray", font=("Arial", 8)).pack(padx=5, pady=(0, 3))
 
         # --- Tab 2: Anomaly Frequency ---
         freq_frame = ttk.Frame(notebook)
@@ -542,7 +646,9 @@ class AnomalyTrackerApp:
                         variable=first_seen_var).pack(side=tk.LEFT)
 
         f_cols = ("name", "rooms", "rate", "clean", "alttab", "cycled", "first_seen", "shifts")
-        freq_tree = ttk.Treeview(freq_frame, columns=f_cols, show="headings")
+        f_wrapper = ttk.Frame(freq_frame)
+        f_wrapper.pack(fill="both", expand=True, padx=5, pady=5)
+        freq_tree = ttk.Treeview(f_wrapper, columns=f_cols, show="headings")
         freq_tree.heading("name", text="Anomaly")
         freq_tree.heading("rooms", text="Room(s)")
         freq_tree.heading("rate", text="Rate")
@@ -552,37 +658,55 @@ class AnomalyTrackerApp:
         freq_tree.heading("first_seen", text="First Seen")
         freq_tree.heading("shifts", text="Shifts")
 
-        freq_tree.column("name", width=180)
-        freq_tree.column("rooms", width=150)
-        freq_tree.column("rate", width=70, anchor="center")
-        freq_tree.column("clean", width=90, anchor="center")
-        freq_tree.column("alttab", width=100, anchor="center")
-        freq_tree.column("cycled", width=100, anchor="center")
-        freq_tree.column("first_seen", width=80, anchor="center")
-        freq_tree.column("shifts", width=70, anchor="center")
-        freq_tree.pack(fill="both", expand=True, padx=5, pady=5)
+        freq_tree.column("name", width=180, minwidth=20, stretch=True)
+        freq_tree.column("rooms", width=150, minwidth=20, stretch=True)
+        freq_tree.column("rate", width=70, minwidth=50, anchor="center", stretch=False)
+        freq_tree.column("clean", width=90, minwidth=70, anchor="center", stretch=False)
+        freq_tree.column("alttab", width=100, minwidth=70, anchor="center", stretch=False)
+        freq_tree.column("cycled", width=100, minwidth=70, anchor="center", stretch=False)
+        freq_tree.column("first_seen", width=80, minwidth=60, anchor="center", stretch=False)
+        freq_tree.column("shifts", width=70, minwidth=50, anchor="center", stretch=False)
+        f_scroll = ttk.Scrollbar(f_wrapper, orient="vertical", command=freq_tree.yview)
+        freq_tree.configure(yscrollcommand=f_scroll.set)
+        f_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        freq_tree.pack(side=tk.LEFT, fill="both", expand=True)
+        _bind_sort_headings(freq_tree, f_cols)
+        # Default sort by rate descending
+        freq_tree._sort_state = ("rate", True, False)
+        freq_tree.tag_configure("never_seen", foreground="#999999")
+        ttk.Label(freq_frame, text="Shows all known anomalies. Grey = never seen. Rates count from first sighting when toggled.",
+                  foreground="gray", font=("Arial", 8)).pack(padx=5, pady=(0, 3))
 
         # --- Tab 3: Exclusion Groups ---
         groups_frame = ttk.Frame(notebook)
         notebook.add(groups_frame, text="Exclusion Groups")
 
         g_cols = ("members", "size", "certainty", "analyzed", "status")
-        groups_tree = ttk.Treeview(groups_frame, columns=g_cols, show="headings")
+        g_wrapper = ttk.Frame(groups_frame)
+        g_wrapper.pack(fill="both", expand=True, padx=5, pady=5)
+        groups_tree = ttk.Treeview(g_wrapper, columns=g_cols, show="headings")
         groups_tree.heading("members", text="Group Members")
         groups_tree.heading("size", text="Size")
         groups_tree.heading("certainty", text="Certainty")
         groups_tree.heading("analyzed", text="Shifts Analyzed")
         groups_tree.heading("status", text="Status")
 
-        groups_tree.column("members", width=550)
-        groups_tree.column("size", width=50, anchor="center")
-        groups_tree.column("certainty", width=80, anchor="center")
-        groups_tree.column("analyzed", width=110, anchor="center")
-        groups_tree.column("status", width=160)
-        groups_tree.pack(fill="both", expand=True, padx=5, pady=5)
+        groups_tree.column("members", width=400, minwidth=20, stretch=True)
+        groups_tree.column("size", width=50, minwidth=40, anchor="center", stretch=False)
+        groups_tree.column("certainty", width=80, minwidth=70, anchor="center", stretch=False)
+        groups_tree.column("analyzed", width=110, minwidth=20, anchor="center", stretch=False)
+        groups_tree.column("status", width=200, minwidth=20, stretch=False)
+        g_scroll = ttk.Scrollbar(g_wrapper, orient="vertical", command=groups_tree.yview)
+        groups_tree.configure(yscrollcommand=g_scroll.set)
+        g_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        groups_tree.pack(side=tk.LEFT, fill="both", expand=True)
+        _bind_sort_headings(groups_tree, g_cols)
 
         groups_tree.tag_configure("confirmed", background="#ccffcc")
         groups_tree.tag_configure("likely", background="#fff0cc")
+        groups_tree.tag_configure("developing", foreground="#999999")
+        ttk.Label(groups_frame, text="Thresholds: confirmed > 95% certainty (p < 0.05). Min 2 sightings per anomaly, min 3 shifts since first seen.",
+                  foreground="gray", font=("Arial", 8)).pack(padx=5, pady=(0, 3))
 
         # Store references for refresh
         self._audit_trees = {
@@ -592,15 +716,18 @@ class AnomalyTrackerApp:
         }
         self._audit_first_seen_var = first_seen_var
 
+        self._audit_map_var = audit_map
+
         def refresh(*args):
-            self._refresh_audit(audit_diff.get())
+            self._refresh_audit(audit_diff.get(), audit_map.get())
 
         ttk.Button(header, text="Refresh", command=refresh).pack(side=tk.RIGHT, padx=5)
         audit_diff.trace_add("write", refresh)
+        audit_map.trace_add("write", refresh)
         first_seen_var.trace_add("write", refresh)
         refresh()
 
-    def _refresh_audit(self, target_diff):
+    def _refresh_audit(self, target_diff, target_map=None):
         trees = self._audit_trees
 
         # --- Violations tab ---
@@ -608,7 +735,7 @@ class AnomalyTrackerApp:
         for item in vt.get_children():
             vt.delete(item)
 
-        results = self.backend.analyze_exclusivity(target_difficulty=target_diff)
+        results = self.backend.analyze_exclusivity(target_difficulty=target_diff, target_map=target_map)
 
         violations = results.get("violations", [])
         if violations:
@@ -634,12 +761,15 @@ class AnomalyTrackerApp:
 
         from_first = self._audit_first_seen_var.get()
         freqs = self.backend.get_anomaly_frequencies(
-            target_difficulty=target_diff, from_first_seen=from_first)
+            target_difficulty=target_diff, from_first_seen=from_first, target_map=target_map)
 
         def fmt_rate(val):
             return f"{val:.0%}" if val is not None else "\u2014"
 
         for f in freqs:
+            fs = f["first_seen"]
+            fs_str = f"#{fs}" if fs is not None else "\u2014"
+            tag = ("never_seen",) if fs is None else ()
             ft.insert("", tk.END, values=(
                 f["name"],
                 f["rooms"],
@@ -647,9 +777,9 @@ class AnomalyTrackerApp:
                 fmt_rate(f["clean_rate"]),
                 fmt_rate(f["alt_tab_rate"]),
                 fmt_rate(f["cycled_shift_rate"]),
-                f"#{f['first_seen']}",
+                fs_str,
                 f"{f['total_shifts']}/{f['eligible_shifts']}",
-            ))
+            ), tags=tag)
 
         # --- Groups tab ---
         gt = trees["groups"]
@@ -667,6 +797,22 @@ class AnomalyTrackerApp:
                 g["N"],
                 g["status"],
             ), tags=(tag,))
+
+        # Ghost row: closest pair to forming a group
+        developing = results.get("best_developing")
+        if developing:
+            members_str = ", ".join(developing["members"])
+            gt.insert("", tk.END, values=(
+                members_str,
+                2,
+                f"{developing['certainty']:.0%}",
+                developing["N"],
+                developing["reason"],
+            ), tags=("developing",))
+
+        # Re-apply column sort after data refresh
+        for t in trees.values():
+            _reapply_sort(t)
 
     def populate_room_tab(self, tab, room_name, room_anomalies):
         self._room_buttons[room_name] = {}
@@ -818,8 +964,16 @@ class AnomalyTrackerApp:
                 values=(certainty_str, evidence_str, e["count"], ", ".join(e["blockers"])))
             self._tree_item_map.setdefault(e["name"], []).append(item_id)
 
+        # 3. Show closest-to-threshold candidate as a ghost row (only if no real data yet)
+        best_pending = result.get("best_pending")
+        if best_pending and not live_exclusions:
+            blockers_str = ", ".join(best_pending.get("blockers", []))
+            self.live_tree.insert("", tk.END, text=f"{best_pending['name']}",
+                values=(best_pending["reason"], "", best_pending["count"], blockers_str),
+                tags=("PENDING",))
+
         stats = self.backend.get_stats(map_name, max_session_id=self.backend.session_id)
-        self.live_frame.config(text=f"Live prediction analysis (Shifts 1-{self.backend.session_id}: {stats['total_sessions']} total)")
+        self.live_frame.config(text=f"Anomalies likely excluded in this shift (Shifts 1-{self.backend.session_id}: {stats['total_sessions']} total)")
 
     def log_anomaly(self, name, room_name):
         if self.backend.is_current_session_locked():

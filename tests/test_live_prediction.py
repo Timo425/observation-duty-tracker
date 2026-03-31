@@ -57,13 +57,13 @@ class TestLiveExclusionLogic(unittest.TestCase):
     def test_pairwise_exclusion_persistence(self):
         """Adding a compatible anomaly should not collapse exclusions from another blocker."""
         # Rope never co-occurs with AnomalyA or AnomalyB
-        exclusions = self.backend.get_live_exclusions("TestMap", ["Rope"])
+        exclusions, _ = self.backend.get_live_exclusions("TestMap", ["Rope"])
         excl_names = [e["name"] for e in exclusions]
         self.assertIn("AnomalyA", excl_names, "AnomalyA should be excluded by Rope")
         self.assertIn("AnomalyB", excl_names, "AnomalyB should be excluded by Rope")
 
         # Adding AnomalyA: AnomalyB should STILL be excluded because Rope blocks it
-        exclusions = self.backend.get_live_exclusions("TestMap", ["Rope", "AnomalyA"])
+        exclusions, _ = self.backend.get_live_exclusions("TestMap", ["Rope", "AnomalyA"])
         excl_names = [e["name"] for e in exclusions]
         self.assertIn("AnomalyB", excl_names, "AnomalyB should still be excluded by Rope")
         b_excl = next(e for e in exclusions if e["name"] == "AnomalyB")
@@ -71,14 +71,14 @@ class TestLiveExclusionLogic(unittest.TestCase):
 
     def test_min_sightings_filter(self):
         """Anomalies seen only once should not appear in exclusion results."""
-        exclusions = self.backend.get_live_exclusions("TestMap", ["AnomalyA"])
+        exclusions, _ = self.backend.get_live_exclusions("TestMap", ["AnomalyA"])
         excl_names = {e["name"] for e in exclusions}
         self.assertNotIn("Epsilon", excl_names, "Epsilon has 1 sighting, should be filtered")
 
     def test_low_expected_overlap_filtered(self):
         """Pairs with expected overlap < 1.5 should not be flagged."""
         # Epsilon(1) vs Rope(4): expected = 1*4/8 = 0.5 — should be filtered
-        exclusions = self.backend.get_live_exclusions("TestMap", ["Rope"])
+        exclusions, _ = self.backend.get_live_exclusions("TestMap", ["Rope"])
         excl_names = {e["name"] for e in exclusions}
         self.assertNotIn("Epsilon", excl_names)
 
@@ -132,21 +132,21 @@ class TestMinSightingsAndPersistence(unittest.TestCase):
 
     def test_min_sightings_filter(self):
         """Anomalies seen only once should not appear in exclusion results."""
-        exclusions = self.backend.get_live_exclusions("TestMap", ["Alpha"])
+        exclusions, _ = self.backend.get_live_exclusions("TestMap", ["Alpha"])
         excl_names = {e["name"] for e in exclusions}
         self.assertNotIn("Epsilon", excl_names, "Epsilon has only 1 sighting, should be filtered out")
 
     def test_clear_exclusion_pattern(self):
         """Alpha (S1-5) should exclude Gamma/Delta (S6-10) since they never co-occur."""
-        exclusions = self.backend.get_live_exclusions("TestMap", ["Alpha"])
+        exclusions, _ = self.backend.get_live_exclusions("TestMap", ["Alpha"])
         excl_names = {e["name"] for e in exclusions}
         self.assertIn("Gamma", excl_names)
         self.assertIn("Delta", excl_names)
 
     def test_exclusion_persistence_on_add(self):
         """Adding Beta should not collapse exclusions caused by Alpha."""
-        first = self.backend.get_live_exclusions("TestMap", ["Alpha"])
-        second = self.backend.get_live_exclusions("TestMap", ["Alpha", "Beta"])
+        first, _ = self.backend.get_live_exclusions("TestMap", ["Alpha"])
+        second, _ = self.backend.get_live_exclusions("TestMap", ["Alpha", "Beta"])
 
         alpha_blocked = {e["name"] for e in first if "Alpha" in e["blockers"]}
         alpha_blocked_after = {e["name"] for e in second if "Alpha" in e["blockers"]}
