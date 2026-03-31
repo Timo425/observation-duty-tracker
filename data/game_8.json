@@ -1870,7 +1870,7 @@
                         "description": "Leftmost mousetrap disappears"
                     },
                     {
-                        "name": "Mousetrap: Right of left pair",
+                        "name": "Mousetrap: Left of right pair",
                         "type": "Missing Object",
                         "description": "Second mousetrap from left disappears"
                     },
