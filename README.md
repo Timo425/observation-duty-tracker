@@ -24,7 +24,7 @@ The game selects anomalies per shift such that certain anomalies are mutually ex
 
 ### How the Math Works
 - Anomalies need **at least 2 sightings** before they enter any analysis (first sighting just proves it exists).
-- Pairs need an **expected overlap >= 1.5** before zero co-occurrence becomes statistically noteworthy (prevents false positives from sparse data).
+- Pairs need an **expected overlap >= 2.5** before zero co-occurrence becomes statistically noteworthy (prevents false positives from sparse data).
 - Groups are found by building a graph of never-co-occurring anomaly pairs and finding cliques (fully connected subgroups).
 - With ~5 sessions, expect nothing. With 15-20+ sessions per difficulty, real patterns start emerging.
 

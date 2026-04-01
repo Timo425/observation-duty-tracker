@@ -714,11 +714,11 @@ class Backend:
             n_blockers = len(S_blockers_union)
             expected_overlap = (n_blockers * n_a_eff) / N_eff
 
-            # Skip if zero overlap isn't surprising (expected < 1.5 means sparse data)
-            if expected_overlap < 1.5:
+            # Skip if zero overlap isn't surprising (expected < 2.5 means sparse data)
+            if expected_overlap < 2.5:
                 pending.append({
                     "name": a_name,
-                    "reason": f"expected overlap {expected_overlap:.1f} (need > 1.5)",
+                    "reason": f"expected overlap {expected_overlap:.1f} (need > 2.5)",
                     "count": n_a,
                     "expected_overlap": expected_overlap,
                     "blockers": blockers,
@@ -762,7 +762,7 @@ class Backend:
         def pending_rank(p):
             r = p["reason"]
             if "expected overlap" in r:
-                return (0, -p.get("expected_overlap", 0))  # closest to 1.5 first
+                return (0, -p.get("expected_overlap", 0))  # closest to 2.5 first
             elif "shifts since first seen" in r:
                 return (1, -p["count"])
             else:
@@ -916,11 +916,11 @@ class Backend:
                 if n1_w < 2 or n2_w < 2: continue
 
                 expected_overlap = (n1_w * n2_w) / N_eff
-                if expected_overlap < 1.5:
-                    # Score: how close to 1.5 (higher = closer)
+                if expected_overlap < 2.5:
+                    # Score: how close to 2.5 (higher = closer)
                     _update_developing(sorted([a1, a2]), 0, N_eff,
-                        f"expected overlap {expected_overlap:.1f} (need > 1.5)",
-                        expected_overlap / 1.5)  # 0..1 range
+                        f"expected overlap {expected_overlap:.1f} (need > 2.5)",
+                        expected_overlap / 2.5)  # 0..1 range
                     continue
 
                 # Certainty check
@@ -1031,7 +1031,7 @@ class Backend:
 
                     if actual == 0:
                         exclusive_with.append(member)
-                    elif actual <= 2 and expected >= 1.5 and (actual / expected) <= 0.4:
+                    elif actual <= 2 and expected >= 2.5 and (actual / expected) <= 0.4:
                         conflicts.append({
                             "member": member,
                             "conflict_shifts": sorted(overlap, key=lambda x: int(x)),

@@ -87,15 +87,29 @@ criteria without needing to reference documentation.
 
 | Threshold | Value | Why |
 |-----------|-------|-----|
-| Min sightings | 2 | First sighting just proves it exists |
-| Min expected overlap | 1.5 | Fixed per-pair value: `(n_blockers * n_a_eff) / N_eff`. Not map-dependent. |
-| Min shifts since first seen | 3 | Need enough data for statistics |
-| Group edge certainty | >70% | Minimum certainty for a pair to form an exclusion edge |
-| Confirmed group certainty | >95% | Hypergeometric p-value < 0.05 |
-| Violation detection | actual <= 2 AND ratio <= 0.4 | Catches near-misses without noise |
+| Min sightings | 2 | First sighting just proves existence. Need at least 2 before the anomaly enters any analysis. |
+| Min expected overlap | 2.5 | Per-pair: `(n_blockers * n_a_eff) / N_eff` = "if independent, how many times would we expect them in the same shift?" If < 2.5, zero co-occurrence isn't surprising enough to flag. |
+| Min shifts in window | 3 | The window (see below) must contain at least 3 shifts total before a pair is evaluated. With only 1-2 shifts, "never appeared together" is meaningless. |
+| Group edge certainty | >70% | Minimum hypergeometric certainty for a pair to form an exclusion graph edge. Below this = "developing" (ghost row). |
+| Confirmed group certainty | >95% | Weakest pair in a group needs p < 0.05 for CONFIRMED label. Below = LIKELY GROUP. |
+| Violation detection | actual ≤ 2 AND ratio ≤ 0.4 | Flags anomalies that almost fit a group but co-occur with one member in 1-2 shifts. |
 
 ## Windowing
 
-Both systems count shifts since first seen: for any pair of anomalies, only count shifts
-from when both were first observed. This prevents early shifts (before the user learned
-to spot an anomaly) from inflating exclusion evidence.
+For any pair of anomalies (A, B), the system only looks at shifts from when **both**
+were first observed. This is the "window" for that pair.
+
+**How it works:**
+1. Window starts at whichever anomaly was seen later: `max(first_seen(A), first_seen(B))`
+2. Window includes **every shift** from that point to the current shift — not just
+   shifts where A or B appeared
+3. The window must have at least 3 shifts before the pair is evaluated at all
+
+**Example:** A first seen shift 3, B first seen shift 7. You're on shift 14.
+- Window = shifts 7 through 14 = **8 shifts** in the window
+- The pair became evaluable at shift 9 (that's when the window first had 3 shifts)
+- If A appeared in 4 of those 8 shifts and B in 3, expected overlap = (4 × 3) / 8 = 1.5
+- Since 1.5 < 2.5 threshold, this pair is NOT flagged yet despite never co-occurring
+
+**Why window?** Prevents early shifts (before you learned to spot an anomaly) from
+inflating exclusion evidence.

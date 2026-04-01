@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backend import Backend
 
 class TestLiveExclusionLogic(unittest.TestCase):
-    """Tests with enough sessions for expected_overlap >= 1.5 threshold."""
+    """Tests with enough sessions for expected_overlap >= 2.5 threshold."""
     def setUp(self):
         self.tmp_dir = tempfile.mkdtemp()
         os.makedirs(os.path.join(self.tmp_dir, "data"))
@@ -33,12 +33,12 @@ class TestLiveExclusionLogic(unittest.TestCase):
         with open(os.path.join(self.tmp_dir, "data", "game_test.json"), "w") as f:
             json.dump(game_data, f)
 
-        # 8 sessions: Rope in odd, AnomalyA+B in even (interleaved, never overlap)
+        # 16 sessions: Rope in odd, AnomalyA+B in even (interleaved, never overlap)
         # Epsilon only in S1 (single sighting)
         with open(os.path.join(self.tmp_dir, "logs", "game_test.csv"), "w", newline='') as f:
             w = csv.writer(f)
             w.writerow(["Session_ID", "Difficulty", "Map", "Room", "Anomaly_Name", "Timestamp"])
-            for s in range(1, 9):
+            for s in range(1, 17):
                 if s % 2 == 1:
                     w.writerow([str(s), "Hard", "TestMap", "Room1", "Rope", ""])
                 else:
@@ -49,7 +49,7 @@ class TestLiveExclusionLogic(unittest.TestCase):
         self.backend = Backend(self.tmp_dir)
         self.backend.set_game("game_test")
         self.backend.set_difficulty("Hard")
-        self.backend.session_id = 9
+        self.backend.session_id = 17
 
     def tearDown(self):
         shutil.rmtree(self.tmp_dir)
@@ -76,8 +76,8 @@ class TestLiveExclusionLogic(unittest.TestCase):
         self.assertNotIn("Epsilon", excl_names, "Epsilon has 1 sighting, should be filtered")
 
     def test_low_expected_overlap_filtered(self):
-        """Pairs with expected overlap < 1.5 should not be flagged."""
-        # Epsilon(1) vs Rope(4): expected = 1*4/8 = 0.5 — should be filtered
+        """Pairs with expected overlap < 2.5 should not be flagged."""
+        # Epsilon(1) vs Rope(8): expected = 1*8/16 = 0.5 — should be filtered
         exclusions, _ = self.backend.get_live_exclusions("TestMap", ["Rope"])
         excl_names = {e["name"] for e in exclusions}
         self.assertNotIn("Epsilon", excl_names)
@@ -108,12 +108,12 @@ class TestMinSightingsAndPersistence(unittest.TestCase):
         with open(os.path.join(self.tmp_dir, "data", "game_test.json"), "w") as f:
             json.dump(game_data, f)
 
-        # 10 sessions: Alpha+Beta in odd, Gamma+Delta in even (interleaved)
+        # 20 sessions: Alpha+Beta in odd, Gamma+Delta in even (interleaved)
         # Epsilon only in S1 (single sighting)
         with open(os.path.join(self.tmp_dir, "logs", "game_test.csv"), "w", newline='') as f:
             w = csv.writer(f)
             w.writerow(["Session_ID", "Difficulty", "Map", "Room", "Anomaly_Name", "Timestamp"])
-            for s in range(1, 11):
+            for s in range(1, 21):
                 if s % 2 == 1:
                     w.writerow([str(s), "Normal", "TestMap", "Room1", "Alpha", ""])
                     w.writerow([str(s), "Normal", "TestMap", "Room1", "Beta", ""])
@@ -125,7 +125,7 @@ class TestMinSightingsAndPersistence(unittest.TestCase):
         self.backend = Backend(self.tmp_dir)
         self.backend.set_game("game_test")
         self.backend.set_difficulty("Normal")
-        self.backend.session_id = 11
+        self.backend.session_id = 21
 
     def tearDown(self):
         shutil.rmtree(self.tmp_dir)

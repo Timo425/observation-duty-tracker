@@ -85,7 +85,7 @@ class TestExclusivityDetection(unittest.TestCase):
         """Two anomalies that never co-occur should be detected as an exclusion group of size 2."""
         sessions = []
         # Interleaved: A1 in odd sessions, A2 in even, same fillers in all
-        for i in range(1, 11):
+        for i in range(1, 21):
             anom = "Anomaly_1" if i % 2 == 1 else "Anomaly_2"
             sessions.append((i, "Normal", "TestMap", [anom, "Anomaly_3", "Anomaly_4"]))
 
@@ -101,8 +101,8 @@ class TestExclusivityDetection(unittest.TestCase):
     def test_group_of_three(self):
         """A group of 3 anomalies where none co-occur should form a single group."""
         sessions = []
-        # Round-robin: A1, A2, A3 cycling (18 sessions = 6 each), with shared fillers
-        for i in range(1, 19):
+        # Round-robin: A1, A2, A3 cycling (30 sessions = 10 each), with shared fillers
+        for i in range(1, 31):
             pick = ["Anomaly_1", "Anomaly_2", "Anomaly_3"][(i - 1) % 3]
             sessions.append((i, "Normal", "TestMap", [pick, "Anomaly_4", "Anomaly_5", "Anomaly_6"]))
 
@@ -146,12 +146,12 @@ class TestExclusivityDetection(unittest.TestCase):
     def test_difficulty_isolation(self):
         """Normal and Hard mode data should not bleed into each other."""
         sessions = []
-        # Normal: Anomaly_1 and Anomaly_2 never co-occur (interleaved)
-        for i in range(1, 11):
+        # Normal: Anomaly_1 and Anomaly_2 never co-occur (interleaved, 20 sessions)
+        for i in range(1, 21):
             anom = "Anomaly_1" if i % 2 == 1 else "Anomaly_2"
             sessions.append((i, "Normal", "TestMap", [anom, "Anomaly_3"]))
         # Hard: Anomaly_1 and Anomaly_2 ALWAYS co-occur
-        for i in range(11, 21):
+        for i in range(21, 31):
             sessions.append((i, "Hard", "TestMap", ["Anomaly_1", "Anomaly_2", "Anomaly_3"]))
 
         write_mock_csv(self.backend.logs_path, sessions)
