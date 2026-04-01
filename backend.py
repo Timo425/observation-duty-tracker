@@ -639,11 +639,11 @@ class Backend:
         return reports
 
     def get_live_exclusions(self, map_name, current_anoms):
-        if not current_anoms: return []
+        if not current_anoms: return [], None
         # 'Truly LIVE': include everything up to and including the current session
         stats = self.get_stats(map_name, max_session_id=self.session_id)
         N = stats["total_sessions"]
-        if N < 1: return []
+        if N < 1: return [], None
 
         all_sessions = stats["all_sessions"]
         first_seen = stats["first_seen"]
