@@ -310,7 +310,7 @@ class AnomalyTrackerApp:
         self._tree_item_map = {} # anomaly_name -> list of tree item IDs
 
         self.threshold_label = ttk.Label(self.live_frame,
-            text="Thresholds: \u22652 sightings, \u22653 shifts since first seen, expected overlap > 2.5",
+            text="Thresholds: \u22652 sightings, \u22653 shifts since first seen, expected overlap > 5",
             foreground="gray", font=("Arial", 8))
         self.threshold_label.pack(padx=5, pady=(0, 2))
 
@@ -632,7 +632,7 @@ class AnomalyTrackerApp:
         _bind_sort_headings(violations_tree, v_cols)
 
         violations_tree.tag_configure("violation", background="#ffcccc")
-        ttk.Label(violations_frame, text="Thresholds: actual overlap \u2264 2, overlap ratio \u2264 0.4, min expected overlap > 2.5",
+        ttk.Label(violations_frame, text="Thresholds: actual overlap \u2264 2, overlap ratio \u2264 0.4, min expected overlap > 5",
                   foreground="gray", font=("Arial", 8)).pack(padx=5, pady=(0, 3))
 
         # --- Tab 2: Anomaly Frequency ---

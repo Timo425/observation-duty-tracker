@@ -88,7 +88,7 @@ criteria without needing to reference documentation.
 | Threshold | Value | Why |
 |-----------|-------|-----|
 | Min sightings | 2 | First sighting just proves existence. Need at least 2 before the anomaly enters any analysis. |
-| Min expected overlap | 2.5 | Per-pair: `(n_blockers * n_a_eff) / N_eff` = "if independent, how many times would we expect them in the same shift?" If < 2.5, zero co-occurrence isn't surprising enough to flag. |
+| Min expected overlap | 5 | Per-pair: `(n_blockers * n_a_eff) / N_eff` = "if independent, how many times would we expect them in the same shift?" If < 5, zero co-occurrence isn't surprising enough to flag. |
 | Min shifts in window | 3 | The window (see below) must contain at least 3 shifts total before a pair is evaluated. With only 1-2 shifts, "never appeared together" is meaningless. |
 | Group edge certainty | >70% | Minimum hypergeometric certainty for a pair to form an exclusion graph edge. Below this = "developing" (ghost row). |
 | Confirmed group certainty | >95% | Weakest pair in a group needs p < 0.05 for CONFIRMED label. Below = LIKELY GROUP. |
@@ -109,7 +109,7 @@ were first observed. This is the "window" for that pair.
 - Window = shifts 7 through 14 = **8 shifts** in the window
 - The pair became evaluable at shift 9 (that's when the window first had 3 shifts)
 - If A appeared in 4 of those 8 shifts and B in 3, expected overlap = (4 × 3) / 8 = 1.5
-- Since 1.5 < 2.5 threshold, this pair is NOT flagged yet despite never co-occurring
+- Since 1.5 < 5 threshold, this pair is NOT flagged yet despite never co-occurring
 
 **Why window?** Prevents early shifts (before you learned to spot an anomaly) from
 inflating exclusion evidence.

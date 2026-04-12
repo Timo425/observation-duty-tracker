@@ -85,7 +85,7 @@ class TestExclusivityDetection(unittest.TestCase):
         """Two anomalies that never co-occur should be detected as an exclusion group of size 2."""
         sessions = []
         # Interleaved: A1 in odd sessions, A2 in even, same fillers in all
-        for i in range(1, 21):
+        for i in range(1, 41):
             anom = "Anomaly_1" if i % 2 == 1 else "Anomaly_2"
             sessions.append((i, "Normal", "TestMap", [anom, "Anomaly_3", "Anomaly_4"]))
 
@@ -101,8 +101,8 @@ class TestExclusivityDetection(unittest.TestCase):
     def test_group_of_three(self):
         """A group of 3 anomalies where none co-occur should form a single group."""
         sessions = []
-        # Round-robin: A1, A2, A3 cycling (30 sessions = 10 each), with shared fillers
-        for i in range(1, 31):
+        # Round-robin: A1, A2, A3 cycling (60 sessions = 20 each), with shared fillers
+        for i in range(1, 61):
             pick = ["Anomaly_1", "Anomaly_2", "Anomaly_3"][(i - 1) % 3]
             sessions.append((i, "Normal", "TestMap", [pick, "Anomaly_4", "Anomaly_5", "Anomaly_6"]))
 
@@ -146,12 +146,12 @@ class TestExclusivityDetection(unittest.TestCase):
     def test_difficulty_isolation(self):
         """Normal and Hard mode data should not bleed into each other."""
         sessions = []
-        # Normal: Anomaly_1 and Anomaly_2 never co-occur (interleaved, 20 sessions)
-        for i in range(1, 21):
+        # Normal: Anomaly_1 and Anomaly_2 never co-occur (interleaved, 40 sessions)
+        for i in range(1, 41):
             anom = "Anomaly_1" if i % 2 == 1 else "Anomaly_2"
             sessions.append((i, "Normal", "TestMap", [anom, "Anomaly_3"]))
         # Hard: Anomaly_1 and Anomaly_2 ALWAYS co-occur
-        for i in range(21, 31):
+        for i in range(41, 51):
             sessions.append((i, "Hard", "TestMap", ["Anomaly_1", "Anomaly_2", "Anomaly_3"]))
 
         write_mock_csv(self.backend.logs_path, sessions)
@@ -202,7 +202,7 @@ class TestGenerateReport(unittest.TestCase):
         """Report should contain group info when exclusions exist."""
         sessions = []
         # Interleaved so both anomalies are active in the same window
-        for i in range(1, 21):
+        for i in range(1, 41):
             anom = "Anomaly_1" if i % 2 == 1 else "Anomaly_2"
             sessions.append((i, "Normal", "TestMap", [anom, "Anomaly_3", "Anomaly_4"]))
 
@@ -253,19 +253,19 @@ class TestGroupViolations(unittest.TestCase):
     def test_violation_detected(self):
         """Anomaly exclusive with most group members but co-occurring with one should be flagged."""
         sessions = []
-        # 30 shifts. A1 in odd, A2 in even (interleaved → group {A1, A2}).
-        # A3 appears in shifts 21-30 only (no A1 or A2 there) = exclusive with both.
+        # 60 shifts. A1 in odd, A2 in even (interleaved → group {A1, A2}).
+        # A3 appears in shifts 41-60 only (no A1 or A2 there) = exclusive with both.
         # Then A3 ALSO appears in shift 2 (co-occurs with A2 → violation).
         # A3 never co-occurs with A1 → exclusive with A1.
-        # A3 vs A2 in window from shift 2: expected ≈ 11*15/29 ≈ 5.7, actual 1 → ratio 0.18
-        for i in range(1, 21):
+        # A3 vs A2 in window from shift 2: expected ≈ 21*30/59 ≈ 10.7, actual 1 → ratio 0.09
+        for i in range(1, 41):
             fillers = ["Anomaly_4", "Anomaly_5"]
             if i % 2 == 1:
                 sessions.append((i, "Normal", "TestMap", ["Anomaly_1"] + fillers))
             else:
                 sessions.append((i, "Normal", "TestMap", ["Anomaly_2"] + fillers))
-        # Shifts 21-30: only fillers + A3 (no A1, no A2)
-        for i in range(21, 31):
+        # Shifts 41-60: only fillers + A3 (no A1, no A2)
+        for i in range(41, 61):
             sessions.append((i, "Normal", "TestMap", ["Anomaly_3", "Anomaly_4", "Anomaly_5"]))
         # The violation: A3 co-occurs with A2 in shift 2
         sessions.append((2, "Normal", "TestMap", ["Anomaly_3"]))
@@ -288,7 +288,7 @@ class TestGroupViolations(unittest.TestCase):
         """Anomalies with many co-occurrences should not be flagged as violations."""
         sessions = []
         # A1 and A2 never co-occur; A3 always appears with A2 — not a violation candidate
-        for i in range(1, 21):
+        for i in range(1, 41):
             if i % 2 == 1:
                 sessions.append((i, "Normal", "TestMap", ["Anomaly_1", "Anomaly_4"]))
             else:
