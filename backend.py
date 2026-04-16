@@ -1062,23 +1062,35 @@ class Backend:
                 "best_developing": best_developing}
 
     def get_anomaly_frequencies(self, target_difficulty=None, from_first_seen=True, target_map=None):
-        """Per-anomaly occurrence rates with condition breakdowns (alt-tab, cycling)."""
+        """Per-anomaly occurrence rates with condition breakdowns (alt-tab, cycling).
+
+        Anomalies are keyed by (name, room) because the same name can refer to
+        distinct anomalies in different rooms (e.g. "Dead body" in Pier vs Basement).
+        Global anomalies are keyed by (name, "Global") and aggregate across rooms,
+        since the same Global anomaly can manifest in any room.
+        """
         difficulty_filter = target_difficulty if target_difficulty else self.difficulty
         if not os.path.exists(self.logs_path):
             return []
 
+        global_names = {a["name"] for a in self.data.get("Global", [])}
+
+        def make_key(name, room):
+            if name in global_names:
+                return (name, "Global")
+            return (name, room)
+
         # One pass through CSV to collect everything
         all_shifts = set()
-        anom_shifts = defaultdict(set)          # anomaly -> set of shift IDs
-        anom_clean_shifts = defaultdict(set)     # anomaly -> shifts where it was logged clean
-        anom_alttab_shifts = defaultdict(set)    # anomaly -> shifts where it was logged alt-tabbed
-        anom_rooms = defaultdict(lambda: defaultdict(int))
-        first_seen = {}
-        shift_has_cycling = set()               # shifts where any observation has Last_Cycled
-        anom_cycled_shifts = defaultdict(set)    # anomaly -> shifts with cycling where it appeared
-        clean_shifts = set()                     # shifts that have at least one clean observation
-        alttab_shifts = set()                    # shifts that have at least one alt-tabbed observation
-        logged_maps = set()                     # maps that have log entries for this difficulty
+        key_shifts = defaultdict(set)          # (name, room) -> set of shift IDs
+        key_clean_shifts = defaultdict(set)
+        key_alttab_shifts = defaultdict(set)
+        first_seen = {}                         # (name, room) -> earliest shift ID
+        shift_has_cycling = set()
+        key_cycled_shifts = defaultdict(set)
+        clean_shifts = set()
+        alttab_shifts = set()
+        logged_maps = set()
 
         with open(self.logs_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
@@ -1094,54 +1106,54 @@ class Backend:
                 alt_tabbed = row.get("Alt_Tabbed", "False") == "True"
                 last_cycled = row.get("Last_Cycled", "").strip()
 
+                key = make_key(a_name, room)
+
                 all_shifts.add(s_id)
-                anom_shifts[a_name].add(s_id)
-                anom_rooms[a_name][room] += 1
+                key_shifts[key].add(s_id)
                 if map_name:
                     logged_maps.add(map_name)
 
-                if a_name not in first_seen or s_id < first_seen[a_name]:
-                    first_seen[a_name] = s_id
+                if key not in first_seen or s_id < first_seen[key]:
+                    first_seen[key] = s_id
 
                 if alt_tabbed:
-                    anom_alttab_shifts[a_name].add(s_id)
+                    key_alttab_shifts[key].add(s_id)
                     alttab_shifts.add(s_id)
                 else:
-                    anom_clean_shifts[a_name].add(s_id)
+                    key_clean_shifts[key].add(s_id)
                     clean_shifts.add(s_id)
 
                 if last_cycled:
                     shift_has_cycling.add(s_id)
-                    anom_cycled_shifts[a_name].add(s_id)
+                    key_cycled_shifts[key].add(s_id)
 
         if not all_shifts:
             return []
 
-        # Collect all known anomaly names from maps that have log data (+ Global)
-        all_known = set()
+        # Collect all known (name, room) pairs from game data for maps that have log data
+        all_known_keys = set()
         maps_data = self.data.get("Maps", {})
         for m_name in logged_maps:
             if m_name in maps_data:
-                for room_anoms in maps_data[m_name].get("Rooms", {}).values():
-                    for a in room_anoms:
-                        all_known.add(a["name"])
+                for r_name, r_anoms in maps_data[m_name].get("Rooms", {}).items():
+                    for a in r_anoms:
+                        all_known_keys.add(make_key(a["name"], r_name))
         for a in self.data.get("Global", []):
-            all_known.add(a["name"])
+            all_known_keys.add((a["name"], "Global"))
 
-        all_anom_names = sorted(all_known | set(anom_shifts.keys()))
+        all_keys = sorted(all_known_keys | set(key_shifts.keys()))
 
         n_total_shifts = len(all_shifts)
 
         results = []
-        for anom in all_anom_names:
-            fs = first_seen.get(anom)
+        for key in all_keys:
+            a_name, room = key
+            fs = first_seen.get(key)
 
             if fs is None:
-                # Never seen — use the room from game data
-                room_str = self.anomaly_to_room.get(anom, "")
                 results.append({
-                    "name": anom,
-                    "rooms": room_str,
+                    "name": a_name,
+                    "rooms": room,
                     "first_seen": None,
                     "total_shifts": 0,
                     "eligible_shifts": n_total_shifts,
@@ -1161,43 +1173,33 @@ class Backend:
             else:
                 eligible = all_shifts
 
-            total = len(anom_shifts[anom] & eligible)
+            total = len(key_shifts[key] & eligible)
             n_eligible = len(eligible)
             overall_rate = total / n_eligible if n_eligible else 0
 
-            # Clean rate: among eligible shifts that have clean observations
             eligible_clean = eligible & clean_shifts
             n_clean = len(eligible_clean)
-            clean_appeared = len(anom_clean_shifts[anom] & eligible_clean)
+            clean_appeared = len(key_clean_shifts[key] & eligible_clean)
             clean_rate = clean_appeared / n_clean if n_clean else None
 
-            # Alt-tab rate: among eligible shifts that have alt-tabbed observations
             eligible_alttab = eligible & alttab_shifts
             n_alttab = len(eligible_alttab)
-            alttab_appeared = len(anom_alttab_shifts[anom] & eligible_alttab)
+            alttab_appeared = len(key_alttab_shifts[key] & eligible_alttab)
             alt_tab_rate = alttab_appeared / n_alttab if n_alttab else None
 
-            # Cycled shift rate: among eligible shifts where cycling happened
             eligible_cycled = eligible & shift_has_cycling
             n_cycled = len(eligible_cycled)
-            cycled_appeared = len(anom_cycled_shifts[anom] & eligible_cycled)
+            cycled_appeared = len(key_cycled_shifts[key] & eligible_cycled)
             cycled_rate = cycled_appeared / n_cycled if n_cycled else None
 
-            # Non-cycled shift rate
             eligible_noncycled = eligible - shift_has_cycling
             n_noncycled = len(eligible_noncycled)
-            noncycled_appeared = len(anom_shifts[anom] & eligible_noncycled)
+            noncycled_appeared = len(key_shifts[key] & eligible_noncycled)
             non_cycled_rate = noncycled_appeared / n_noncycled if n_noncycled else None
 
-            # Format rooms
-            rooms = anom_rooms[anom]
-            room_str = ", ".join(
-                f"{r}" for r, _ in sorted(rooms.items(), key=lambda x: x[1], reverse=True)
-            )
-
             results.append({
-                "name": anom,
-                "rooms": room_str,
+                "name": a_name,
+                "rooms": room,
                 "first_seen": fs,
                 "total_shifts": total,
                 "eligible_shifts": n_eligible,
