@@ -166,6 +166,7 @@ class AnomalyTrackerApp:
             "game_6": "I'm on Observation Duty 6",
             "game_7": "I'm on Observation Duty 7",
             "game_8": "I'm on Observation Duty 8",
+            "game_8_demo": "I'm on Observation Duty 8 Demo",
         }
         # Mapping back from nice name to ID
         self.NAME_TO_ID = {v: k for k, v in self.GAME_NAMES.items()}
@@ -271,6 +272,7 @@ class AnomalyTrackerApp:
         # Content: Notebook + Live Panel
         pane = ttk.Frame(self.root)
         pane.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        self._content_pane = pane
 
         self.notebook = ttk.Notebook(pane)
         self.notebook.pack(fill=tk.BOTH, expand=False, pady=(0, 5))
@@ -484,7 +486,7 @@ class AnomalyTrackerApp:
             self.collectibles_frame.pack_forget()
             return
 
-        self.collectibles_frame.pack(fill=tk.X, padx=10, pady=(2, 0))
+        self.collectibles_frame.pack(fill=tk.X, padx=10, pady=(2, 0), before=self._content_pane)
 
         for c in collectibles:
             name, room = c["name"], c["room"]

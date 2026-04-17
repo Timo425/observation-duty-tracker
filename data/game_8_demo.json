@@ -1,0 +1,447 @@
+{
+    "Difficulties": [
+        "Normal",
+        "Hard"
+    ],
+    "Global": [
+        {
+            "name": "Abyss",
+            "description": "Black hole that grows over time",
+            "type": "Global",
+            "report": "RMB \u2192 \"Abyss\""
+        },
+        {
+            "name": "Rift",
+            "description": "Translucent distortion that grows",
+            "type": "Global",
+            "report": "RMB \u2192 \"Rift\""
+        },
+        {
+            "name": "Camera Malfunction",
+            "description": "Room disappears from rotation (count your rooms!)",
+            "type": "Global",
+            "report": "RMB \u2192 \"Camera Malfunction\""
+        }
+    ],
+    "Maps": {
+        "Lighthouse": {
+            "Rooms": {
+                "Pier": [
+                    {
+                        "name": "Naked Man",
+                        "type": "INTRUDER",
+                        "description": "Naked Man is taking a piss"
+                    },
+                    {
+                        "name": "Dock extended",
+                        "type": "Room Manipulation",
+                        "description": "Dock has been extended plus extra lamppost"
+                    },
+                    {
+                        "name": "Tall piling",
+                        "type": "Object Replacement",
+                        "description": "Tall piling on the right side is shorter"
+                    },
+                    {
+                        "name": "Titan",
+                        "type": "INTRUDER",
+                        "description": "Titan is slowly approaching the dock, click on the faces looking upward"
+                    },
+                    {
+                        "name": "Wood boards",
+                        "type": "Missing Object",
+                        "description": "Wood boards on the roof are gone"
+                    },
+                    {
+                        "name": "Preserver",
+                        "type": "Missing Object",
+                        "description": "Preserver on the cross is gone"
+                    },
+                    {
+                        "name": "Short piling",
+                        "type": "Object Replacement",
+                        "description": "Short piling next to the lamppost is taller"
+                    },
+                    {
+                        "name": "Rubber ducky",
+                        "type": "Secret Object",
+                        "description": "Rubber ducky in the water"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Body floating in the water"
+                    },
+                    {
+                        "name": "Fog",
+                        "type": "Steam/Smoke/Fog",
+                        "description": "There is fog everywhere"
+                    },
+                    {
+                        "name": "Extra buoy",
+                        "type": "Extra Object",
+                        "description": "Extra buoy in the pile on right"
+                    },
+                    {
+                        "name": "Bottle",
+                        "type": "Object Movement",
+                        "description": "Bottle closest to shed will turn other way"
+                    },
+                    {
+                        "name": "Life jacket",
+                        "type": "Extra Object",
+                        "description": "Life jacket in the dinghy"
+                    }
+                ],
+                "Yard": [
+                    {
+                        "name": "Drum",
+                        "type": "Extra Object",
+                        "description": "Drum on the top of left hill"
+                    },
+                    {
+                        "name": "Man in window",
+                        "type": "INTRUDER",
+                        "description": "Man in the lighthouse window"
+                    },
+                    {
+                        "name": "Wires",
+                        "type": "Object Movement",
+                        "description": "Wires are swaying"
+                    },
+                    {
+                        "name": "Siren",
+                        "type": "INTRUDER",
+                        "description": "Siren is singing, time sensitive"
+                    },
+                    {
+                        "name": "Flooded yard",
+                        "type": "Water Anomaly",
+                        "description": "Everything is underwater"
+                    },
+                    {
+                        "name": "Chimney smoke",
+                        "type": "Smoke",
+                        "description": "Smoke coming from cabin chimney"
+                    },
+                    {
+                        "name": "Wine bottle",
+                        "type": "Extra Object",
+                        "description": "Second wine bottle"
+                    },
+                    {
+                        "name": "Flares",
+                        "type": "Light Anomaly",
+                        "description": "Flares going off in the sky"
+                    },
+                    {
+                        "name": "Deflated man",
+                        "type": "INTRUDER",
+                        "description": "Deflated man behind the crates"
+                    },
+                    {
+                        "name": "Yellow/gray buoy",
+                        "type": "Object Replacement",
+                        "description": "Replaced with green/blue buoy"
+                    },
+                    {
+                        "name": "Yellow/blue buoy",
+                        "type": "Object Replacement",
+                        "description": "Replaced with red/white buoy"
+                    },
+                    {
+                        "name": "Outhouse",
+                        "type": "Missing Object",
+                        "description": "Outhouse at top of hill disappears"
+                    }
+                ],
+                "Cabin": [
+                    {
+                        "name": "Man outside",
+                        "type": "INTRUDER",
+                        "description": "Man outside the window"
+                    },
+                    {
+                        "name": "TV screen",
+                        "type": "Image Anomaly",
+                        "description": "Static on TV screen"
+                    },
+                    {
+                        "name": "Ice on windows",
+                        "type": "Frosted Glass",
+                        "description": "Ice on the windows"
+                    },
+                    {
+                        "name": "Dentures",
+                        "type": "Object Replacement",
+                        "description": "Dentures turn into eyeballs"
+                    },
+                    {
+                        "name": "Firewood",
+                        "type": "Extra Object",
+                        "description": "More firewood than normal"
+                    },
+                    {
+                        "name": "Gramophone",
+                        "type": [
+                            "Object Movement",
+                            "Object Manipulation"
+                        ],
+                        "description": "Gramophone starts playing",
+                        "game_end_type": "Object Movement"
+                    },
+                    {
+                        "name": "Stove smoke",
+                        "type": "Smoke",
+                        "description": "Smoke coming from stove"
+                    },
+                    {
+                        "name": "Brick walls",
+                        "type": "Object Replacement",
+                        "description": "Brick walls have changed to stucco"
+                    },
+                    {
+                        "name": "Board",
+                        "type": "Image Anomaly",
+                        "description": "Pics of mustachioed man all over board"
+                    },
+                    {
+                        "name": "Keeper",
+                        "type": "INTRUDER",
+                        "description": "Keeper is holding a knife, answer nay for all"
+                    }
+                ],
+                "Interior": [
+                    {
+                        "name": "Ropes",
+                        "type": "Object Manipulation",
+                        "description": "Lots of ropes hanging everywhere"
+                    },
+                    {
+                        "name": "Lantern",
+                        "type": "Object Movement",
+                        "description": "Lantern has shifted to right side of the sill"
+                    },
+                    {
+                        "name": "Radio",
+                        "type": "Strange Broadcast",
+                        "description": "Radio is playing a weird message"
+                    },
+                    {
+                        "name": "Light switch",
+                        "type": "Missing Object",
+                        "description": "Light switch is gone"
+                    },
+                    {
+                        "name": "Typewriter",
+                        "type": "Missing Object",
+                        "description": "Typewriter is gone"
+                    },
+                    {
+                        "name": "Gnawer",
+                        "type": "INTRUDER",
+                        "description": "Appears from behind the pipe near top of screen and leaps toward camera"
+                    },
+                    {
+                        "name": "Map",
+                        "type": "Image Anomaly",
+                        "description": "Extra continent appears on the map",
+                        "game_end_type": "Image Anomaly"
+                    },
+                    {
+                        "name": "Ladder",
+                        "type": "Object Movement",
+                        "description": "Bottom rung of ladder shifts downward"
+                    },
+                    {
+                        "name": "Cloth",
+                        "type": "Missing Object",
+                        "description": "Blue/green cloth under the stairs disappears"
+                    },
+                    {
+                        "name": "Bottle",
+                        "type": "Extra Object",
+                        "description": "Bottle on windowsill near top of screen"
+                    },
+                    {
+                        "name": "Rope",
+                        "type": "Object Replacement",
+                        "description": "One of the ropes becomes a noose"
+                    },
+                    {
+                        "name": "Trapdoor man",
+                        "type": "INTRUDER",
+                        "description": "Man peeking from the trapdoor"
+                    },
+                    {
+                        "name": "Mousetrap",
+                        "type": "Object Movement",
+                        "description": "Mousetrap flips around, cheese on right"
+                    }
+                ],
+                "Stairwell": [
+                    {
+                        "name": "Tower height",
+                        "type": "Room Manipulation",
+                        "description": "Light house is much taller than before"
+                    },
+                    {
+                        "name": "Stairs",
+                        "type": "Room Manipulation",
+                        "description": "Stairs have been rotated, lower floor on left side"
+                    },
+                    {
+                        "name": "Black pawn",
+                        "type": "Extra Object",
+                        "description": "Black pawn appears, location varies"
+                    },
+                    {
+                        "name": "Rear guardrail",
+                        "type": "Missing Object",
+                        "description": "Rear guardrail is gone"
+                    },
+                    {
+                        "name": "Earthworm",
+                        "type": "INTRUDER",
+                        "description": "Giant earthworm slithering up the stairs, needs to be reported twice"
+                    },
+                    {
+                        "name": "Axel",
+                        "type": "Object Movement",
+                        "description": "Axel begins rotating counterclockwise"
+                    },
+                    {
+                        "name": "Thing under stairs",
+                        "type": "Extra Object",
+                        "description": "Thing under stairs on right"
+                    },
+                    {
+                        "name": "Crate",
+                        "type": "Object Replacement",
+                        "description": "Crate with symbol turns into a barrel"
+                    },
+                    {
+                        "name": "Left guardrail",
+                        "type": "Object Movement",
+                        "description": "Left guardrail shifts up so gap at bottom"
+                    }
+                ],
+                "Lantern": [
+                    {
+                        "name": "Purple scarf",
+                        "type": "Object Replacement",
+                        "description": "Turns black and white"
+                    },
+                    {
+                        "name": "Oilcan",
+                        "type": "Missing Object",
+                        "description": "Oilcan is gone"
+                    },
+                    {
+                        "name": "Seagulls",
+                        "type": "Hold LMB",
+                        "description": "Report the 4 seagulls"
+                    },
+                    {
+                        "name": "Nixie",
+                        "type": "INTRUDER",
+                        "description": "Slowly approaches from lower level until he pounces"
+                    },
+                    {
+                        "name": "Green mug",
+                        "type": "Extra Object",
+                        "description": "Green mug appears on the small table"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Man on the rocks down below"
+                    },
+                    {
+                        "name": "Lantern",
+                        "type": "Object Movement",
+                        "description": "Lantern begins rotating counterclockwise"
+                    },
+                    {
+                        "name": "Ladder",
+                        "type": "Object Movement",
+                        "description": "Ladder is wriggling"
+                    },
+                    {
+                        "name": "Stool",
+                        "type": "Object Movement",
+                        "description": "Stool next to green bucket turned 90 degrees"
+                    }
+                ],
+                "Basement": [
+                    {
+                        "name": "Drum: Front left",
+                        "type": "Object Movement",
+                        "description": "Tipped over"
+                    },
+                    {
+                        "name": "Handprint",
+                        "type": "Handprint",
+                        "description": "On the stairs",
+                        "game_end_type": "Handprint"
+                    },
+                    {
+                        "name": "Stairs",
+                        "type": "Object Movement",
+                        "description": "Stairs are wriggling"
+                    },
+                    {
+                        "name": "Flooded",
+                        "type": "Water Anomaly",
+                        "description": "Basement is flooded"
+                    },
+                    {
+                        "name": "Hole",
+                        "type": "Hole",
+                        "description": "Opens up at the bottom of the stairs"
+                    },
+                    {
+                        "name": "Dead body",
+                        "type": "Dead Body",
+                        "description": "Corpse is thrown down the stairs. REQUIRES 2 REPORTS: first as 'Dead Body', then second as 'Intruder' (mumbling corpse)!"
+                    },
+                    {
+                        "name": "Drum: Rear left",
+                        "type": "Object Movement",
+                        "description": "Rotates, you can see the flammable sign"
+                    },
+                    {
+                        "name": "Sack: Top right",
+                        "type": "Missing Object",
+                        "description": "Top sack from right stack is gone"
+                    },
+                    {
+                        "name": "Sack: Top middle",
+                        "type": "Missing Object",
+                        "description": "Top sack from middle stack is gone"
+                    },
+                    {
+                        "name": "Sack: Top left",
+                        "type": "Missing Object",
+                        "description": "Top sack from left stack is gone"
+                    },
+                    {
+                        "name": "Mousetrap: Left of left pair",
+                        "type": "Missing Object",
+                        "description": "Leftmost mousetrap disappears"
+                    },
+                    {
+                        "name": "Mousetrap: Left of right pair",
+                        "type": "Missing Object",
+                        "description": "Second mousetrap from left disappears"
+                    },
+                    {
+                        "name": "Mousetrap: Right of right pair",
+                        "type": "Missing Object",
+                        "description": "Third mousetrap from left disappears"
+                    }
+                ]
+            }
+        }
+    }
+}

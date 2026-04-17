@@ -3,6 +3,7 @@ __pycache__/
 app_config.json
 .DS_Store
 logs/*.csv
+tests/logs/*.csv
 tests/mock_session_logs.csv
 .stfolder/
 .stversions/

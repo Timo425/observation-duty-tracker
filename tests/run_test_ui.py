@@ -2,7 +2,7 @@
 Test UI launcher — generates deterministic test data, then launches the real tracker.
 
 Uses a temp directory for app_config.json so the real config is never touched.
-Data and logs live in the real project dirs (game_test files only).
+Data and logs live under tests/data and tests/logs (isolated from the main tool).
 """
 import sys
 import os
@@ -11,17 +11,18 @@ import tempfile
 import shutil
 
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+tests_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, base_dir)
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, tests_dir)
 
 # 1. Generate deterministic test data
 from generate_test_data import generate
 generate(base_dir)
 
-# 2. Temp dir for config only (symlink data + logs from real project)
+# 2. Temp dir for config only (symlink tests/data + tests/logs as the app's data/logs)
 tmpdir = tempfile.mkdtemp(prefix="obs_test_")
-os.symlink(os.path.join(base_dir, "data"), os.path.join(tmpdir, "data"))
-os.symlink(os.path.join(base_dir, "logs"), os.path.join(tmpdir, "logs"))
+os.symlink(os.path.join(tests_dir, "data"), os.path.join(tmpdir, "data"))
+os.symlink(os.path.join(tests_dir, "logs"), os.path.join(tmpdir, "logs"))
 
 from generate_test_data import NUM_SHIFTS
 config = {

@@ -35,9 +35,10 @@ CYCLED_SHIFTS = {10, 14, 18, 22}
 def generate(base_dir):
     rng = random.Random(SEED)
 
-    data_path = os.path.join(base_dir, "data", "game_test.json")
-    csv_path = os.path.join(base_dir, "logs", "game_test.csv")
-    fail_path = os.path.join(base_dir, "logs", "game_test_failures.csv")
+    tests_dir = os.path.join(base_dir, "tests")
+    data_path = os.path.join(tests_dir, "data", "game_test.json")
+    csv_path = os.path.join(tests_dir, "logs", "game_test.csv")
+    fail_path = os.path.join(tests_dir, "logs", "game_test_failures.csv")
 
     with open(data_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
