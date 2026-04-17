@@ -303,7 +303,8 @@
                     {
                         "name": "Earthworm",
                         "type": "INTRUDER",
-                        "description": "Giant earthworm slithering up the stairs, needs to be reported twice"
+                        "description": "Giant earthworm slithering up the stairs, needs to be reported twice",
+                        "counts_as": 2
                     },
                     {
                         "name": "Axel",
@@ -403,7 +404,8 @@
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Corpse is thrown down the stairs. REQUIRES 2 REPORTS: first as 'Dead Body', then second as 'Intruder' (mumbling corpse)!"
+                        "description": "Corpse is thrown down the stairs. REQUIRES 2 REPORTS: first as 'Dead Body', then second as 'Intruder' (mumbling corpse)!",
+                        "counts_as": 2
                     },
                     {
                         "name": "Drum: Rear left",

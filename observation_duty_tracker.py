@@ -575,7 +575,7 @@ class AnomalyTrackerApp:
 
     def update_anomaly_count(self):
         map_name = self.current_map.get()
-        count = len(self.backend.get_current_session_anomalies(map_name)) if map_name else 0
+        count = self.backend.get_current_session_count(map_name) if map_name else 0
         self.anomaly_count_label.config(text=f"({count})")
 
     def show_analytics_window(self):
