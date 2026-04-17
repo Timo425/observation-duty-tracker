@@ -121,6 +121,10 @@ class AnomalyTrackerApp:
         self.root.title("Observation Duty Tracker")
         self.root.geometry(self.backend.window_size)
         self.root.minsize(1000, 700) # Ensure it's never too tiny
+        icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.png")
+        if os.path.exists(icon_path):
+            self._icon = tk.PhotoImage(file=icon_path)
+            self.root.iconphoto(True, self._icon)
         
         # Check if window is off-screen (Windows specific)
         self.root.update_idletasks()
