@@ -261,48 +261,53 @@ class Backend:
         return self.is_current_session_locked()
 
     # --- Debug: glitch tracking ---
+    # Alt-tab and camera cycling are both assumed ON by default. The UI lets
+    # the user flag a shift as "not doing this" — e.g. a deliberately clean
+    # recording. Cycling, when on, is assumed to happen right after each
+    # anomaly is reported (Last_Cycled = that row's Timestamp).
 
-    def mark_alt_tabbed(self):
-        """One-way toggle: marks that alt-tabbing happened in this shift from now on."""
+    def is_alt_tab_disabled(self):
+        return bool(self.session_configs.get(str(self.session_id), {}).get("Alt_Tab_Disabled"))
+
+    def is_cycling_disabled(self):
+        return bool(self.session_configs.get(str(self.session_id), {}).get("Cycling_Disabled"))
+
+    def set_alt_tab_disabled(self, disabled):
         cfg = self.session_configs.setdefault(str(self.session_id), {})
-        if not cfg.get("Alt_Tabbed_At"):
-            cfg["Alt_Tabbed_At"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-            self.save_config()
-        return cfg["Alt_Tabbed_At"]
-
-    def undo_alt_tabbed(self):
-        """Undo alt-tab flag: clear from config and retroactively unflag CSV rows for this session."""
-        cfg = self.session_configs.get(str(self.session_id), {})
-        if not cfg.get("Alt_Tabbed_At"):
-            return
-        del cfg["Alt_Tabbed_At"]
+        if disabled:
+            cfg["Alt_Tab_Disabled"] = True
+        else:
+            cfg.pop("Alt_Tab_Disabled", None)
         self.save_config()
-        # Retroactively set Alt_Tabbed=False on all rows for this session
+        self._rewrite_session_flag_rows()
+
+    def set_cycling_disabled(self, disabled):
+        cfg = self.session_configs.setdefault(str(self.session_id), {})
+        if disabled:
+            cfg["Cycling_Disabled"] = True
+        else:
+            cfg.pop("Cycling_Disabled", None)
+        self.save_config()
+        self._rewrite_session_flag_rows()
+
+    def _rewrite_session_flag_rows(self):
+        """Rewrite Alt_Tabbed and Last_Cycled on all CSV rows of the current session
+        to match the current session flags."""
         if not os.path.exists(self.logs_path):
             return
+        alt_val = "False" if self.is_alt_tab_disabled() else "True"
+        cyc_off = self.is_cycling_disabled()
         rows = []
         with open(self.logs_path, 'r', encoding='utf-8') as f:
             for row in csv.DictReader(f):
                 if int(row["Session_ID"]) == self.session_id:
-                    row["Alt_Tabbed"] = "False"
+                    row["Alt_Tabbed"] = alt_val
+                    row["Last_Cycled"] = "" if cyc_off else row.get("Timestamp", "")
                 rows.append(row)
         with open(self.logs_path, 'w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=self.CSV_FIELDS)
             writer.writeheader()
             writer.writerows(rows)
-
-    def get_alt_tabbed_at(self):
-        return self.session_configs.get(str(self.session_id), {}).get("Alt_Tabbed_At", "")
-
-    def mark_camera_cycled(self):
-        """Records current timestamp as last camera cycling event for this shift."""
-        cfg = self.session_configs.setdefault(str(self.session_id), {})
-        cfg["Last_Cycled"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-        self.save_config()
-        return cfg["Last_Cycled"]
-
-    def get_last_cycled(self):
-        return self.session_configs.get(str(self.session_id), {}).get("Last_Cycled", "")
 
     def delete_current_session(self):
         if not os.path.exists(self.logs_path):
@@ -323,8 +328,8 @@ class Backend:
             return False
         timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         cfg = self.session_configs.get(str(self.session_id), {})
-        alt_tabbed = "True" if cfg.get("Alt_Tabbed_At") else "False"
-        last_cycled = cfg.get("Last_Cycled", "")
+        alt_tabbed = "False" if cfg.get("Alt_Tab_Disabled") else "True"
+        last_cycled = "" if cfg.get("Cycling_Disabled") else timestamp
         with open(self.logs_path, 'a', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             writer.writerow([self.session_id, self.difficulty, map_name, room_name, anomaly_name, timestamp, alt_tabbed, last_cycled])

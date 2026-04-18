@@ -245,14 +245,13 @@ class AnomalyTrackerApp:
         # Debug: Glitch tracking toggles
         debug_frame = ttk.LabelFrame(top_frame, text="Debug", padding="5")
 
-        self.alt_tab_btn = tk.Button(debug_frame, text="Alt-Tabbed", width=12, command=self.on_alt_tab_toggle, relief=tk.RAISED, bg="#d9d9d9")
+        self.alt_tab_btn = tk.Button(debug_frame, text="Alt-tab: ON", width=14, command=self.on_alt_tab_toggle, relief=tk.SUNKEN, bg="#c8e6c9")
         self.alt_tab_btn.pack(side=tk.LEFT, padx=3)
-        self.alt_tab_btn.bind("<Button-3>", self.on_alt_tab_undo)
-        ToolTip(self.alt_tab_btn, "Left-click: mark alt-tab. Right-click: undo")
+        ToolTip(self.alt_tab_btn, "Alt-tabbing is assumed ON by default. Click to mark this shift as NOT alt-tabbing.")
 
-        self.cycle_btn = tk.Button(debug_frame, text="Cycled cams", width=12, command=self.on_camera_cycle, relief=tk.RAISED, bg="#d9d9d9")
+        self.cycle_btn = tk.Button(debug_frame, text="Cycling: ON", width=14, command=self.on_camera_cycle, relief=tk.SUNKEN, bg="#c8e6c9")
         self.cycle_btn.pack(side=tk.LEFT, padx=3)
-        ToolTip(self.cycle_btn, "Record a camera cycling event (each press updates timestamp)")
+        ToolTip(self.cycle_btn, "Camera cycling is assumed ON (done right after each anomaly). Click to mark this shift as NOT cycling.")
 
         self.debug_status = ttk.Label(debug_frame, text="", font=("Arial", 8, "italic"), foreground="gray")
         self.debug_status.pack(side=tk.LEFT, padx=5)
@@ -1068,44 +1067,32 @@ class AnomalyTrackerApp:
     def on_alt_tab_toggle(self):
         if self.backend.is_current_session_locked():
             return
-        ts = self.backend.mark_alt_tabbed()
-        self.alt_tab_btn.config(relief=tk.SUNKEN, bg="#ffaaaa")
-        self.debug_status.config(text=f"Alt-tabbed at {ts}")
-
-    def on_alt_tab_undo(self, event=None):
-        if self.backend.is_current_session_locked():
-            return
-        if not self.backend.get_alt_tabbed_at():
-            self.flash_status("Alt-tab not active, nothing to undo")
-            return
-        self.backend.undo_alt_tabbed()
-        self.alt_tab_btn.config(relief=tk.RAISED, bg="#d9d9d9")
-        self.debug_status.config(text="Alt-tab undone")
+        new_disabled = not self.backend.is_alt_tab_disabled()
+        self.backend.set_alt_tab_disabled(new_disabled)
+        self.update_debug_ui()
 
     def on_camera_cycle(self):
         if self.backend.is_current_session_locked():
             return
-        ts = self.backend.mark_camera_cycled()
-        self.cycle_btn.config(relief=tk.SUNKEN, bg="#aaaaff")
-        self.debug_status.config(text=f"Last cycled: {ts}")
+        new_disabled = not self.backend.is_cycling_disabled()
+        self.backend.set_cycling_disabled(new_disabled)
+        self.update_debug_ui()
 
     def update_debug_ui(self):
         """Refresh debug button states for current session."""
-        alt_at = self.backend.get_alt_tabbed_at()
-        if alt_at:
-            self.alt_tab_btn.config(relief=tk.SUNKEN, bg="#ffaaaa")
+        if self.backend.is_alt_tab_disabled():
+            self.alt_tab_btn.config(text="Alt-tab: OFF", relief=tk.RAISED, bg="#d9d9d9")
         else:
-            self.alt_tab_btn.config(relief=tk.RAISED, bg="#d9d9d9")
+            self.alt_tab_btn.config(text="Alt-tab: ON", relief=tk.SUNKEN, bg="#c8e6c9")
 
-        cycled = self.backend.get_last_cycled()
-        if cycled:
-            self.cycle_btn.config(relief=tk.SUNKEN, bg="#aaaaff")
+        if self.backend.is_cycling_disabled():
+            self.cycle_btn.config(text="Cycling: OFF", relief=tk.RAISED, bg="#d9d9d9")
         else:
-            self.cycle_btn.config(relief=tk.RAISED, bg="#d9d9d9")
+            self.cycle_btn.config(text="Cycling: ON", relief=tk.SUNKEN, bg="#c8e6c9")
 
         parts = []
-        if alt_at: parts.append(f"Alt-tabbed at {alt_at}")
-        if cycled: parts.append(f"Last cycled: {cycled}")
+        if self.backend.is_alt_tab_disabled(): parts.append("Alt-tab disabled for this shift")
+        if self.backend.is_cycling_disabled(): parts.append("Cycling disabled for this shift")
         self.debug_status.config(text=" | ".join(parts))
 
     def prompt_add_anomaly(self, room_name):

@@ -59,10 +59,15 @@ in grey). This makes it easy to spot which anomalies you haven't encountered yet
 are genuinely rare. Default sort: by rate (descending).
 
 Per-anomaly occurrence rates with breakdowns:
-- **Clean rate**: observations logged before alt-tab was pressed in that shift
-- **Alt-tab rate**: observations logged after alt-tab was pressed
-- **Cycled shift rate**: rate in shifts where camera cycling happened vs didn't
+- **Clean rate**: rate in shifts where alt-tabbing was explicitly disabled (deliberately clean recording)
+- **Alt-tab rate**: rate in shifts where alt-tabbing was on (the default)
+- **Cycled shift rate**: rate in shifts where camera cycling was on (the default)
 - Toggle: count from first sighting (default) vs all shifts
+
+Alt-tabbing and cycling are both assumed ON by default because they match regular
+play — alt-tab happens naturally, and when cycling is on we assume it's done right
+after each anomaly is reported. The toggles flip either off for an entire shift if
+you want a deliberately clean recording.
 
 Helps answer: "does alt-tabbing create phantom sightings?" and "am I getting better at
 spotting this anomaly over time?"
