@@ -326,6 +326,7 @@ class AnomalyTrackerApp:
         self.status_label.pack(side=tk.LEFT)
 
         self.update_title()
+        self._apply_difficulty_filter()
         if map_names:
             saved_map = self.current_map.get()
             if saved_map in map_names:
@@ -336,6 +337,20 @@ class AnomalyTrackerApp:
 
     def update_title(self):
         self.root.title(f"{self.current_game_display.get()} Anomaly Tracker")
+
+    def _apply_difficulty_filter(self):
+        """Show/hide the difficulty combobox based on what the current game supports."""
+        supported_diffs = self.data.get("Difficulties", ["Normal", "Hard"])
+        self.difficulty_combo.config(values=supported_diffs)
+        if len(supported_diffs) < 2:
+            self.diff_label.grid_remove()
+            self.difficulty_combo.grid_remove()
+            self.current_difficulty.set(supported_diffs[0])
+        else:
+            self.diff_label.grid()
+            self.difficulty_combo.grid()
+            if self.current_difficulty.get() not in supported_diffs:
+                self.current_difficulty.set(supported_diffs[0])
 
     def _reflow_top_bar(self, event=None):
         """Arrange top bar sections into rows based on available width."""
@@ -393,20 +408,8 @@ class AnomalyTrackerApp:
         self.backend.set_game(target_id)
         self.data = self.backend.data
         self.update_title()
-        
-        # Smart Difficulty: Filter based on what the game supports
-        supported_diffs = self.data.get("Difficulties", ["Normal", "Hard"])
-        self.difficulty_combo.config(values=supported_diffs)
-        
-        if len(supported_diffs) < 2:
-            self.diff_label.grid_remove()
-            self.difficulty_combo.grid_remove()
-            self.current_difficulty.set(supported_diffs[0])
-        else:
-            self.diff_label.grid()
-            self.difficulty_combo.grid()
-            if self.current_difficulty.get() not in supported_diffs:
-                self.current_difficulty.set(supported_diffs[0])
+
+        self._apply_difficulty_filter()
             
         # Refresh map list
         map_names = list(self.data.get("Maps", {}).keys())
