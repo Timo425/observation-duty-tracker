@@ -16,7 +16,7 @@ class Backend:
             self.base_dir = base_dir
 
         self.config_path = os.path.join(self.base_dir, "app_config.json")
-        self.game_id = "game_8"
+        self.game_id = None  # Populated by load_config
         self.session_id = 1
         self.max_session_id = 1
         self.session_configs = {} # {str(id): {"Map": str, "Difficulty": str}}
@@ -26,23 +26,68 @@ class Backend:
         self.unlocked_sessions = set()
         self.manually_locked_sessions = set()
         self.window_size = "1200x800"
-        
+
+        # Per-game persisted state: {game_id: {Session_ID, Max_Session_ID, Session_Configs, ...}}
+        self.games_state = {}
+
         # Performance Cache
         self._cache = {} # {path: list_of_dicts}
         self._cache_mtimes = {} # {path: float}
-        
+
         self.load_config() # This will set game_id and paths
+
+    def _default_game_state(self):
+        return {
+            "Session_ID": 1,
+            "Max_Session_ID": 1,
+            "Session_Configs": {},
+            "Difficulty": "Normal",
+            "Last_Map": "",
+            "Unlocked_Sessions": [],
+            "Manually_Locked_Sessions": [],
+        }
+
+    def _sync_active_to_games_state(self):
+        """Push the active in-memory attributes back into games_state[game_id]."""
+        if not self.game_id:
+            return
+        self.games_state[self.game_id] = {
+            "Session_ID": self.session_id,
+            "Max_Session_ID": self.max_session_id,
+            "Session_Configs": self.session_configs,
+            "Difficulty": self.difficulty,
+            "Last_Map": self.last_map,
+            "Unlocked_Sessions": sorted(self.unlocked_sessions),
+            "Manually_Locked_Sessions": sorted(self.manually_locked_sessions),
+        }
+
+    def _load_active_from_games_state(self):
+        """Populate the active attributes from games_state[game_id]."""
+        state = self.games_state.setdefault(self.game_id, self._default_game_state())
+        self.session_id = state.get("Session_ID", 1)
+        self.max_session_id = state.get("Max_Session_ID", self.session_id)
+        self.session_configs = state.setdefault("Session_Configs", {})
+        self.difficulty = state.get("Difficulty", "Normal")
+        self.last_map = state.get("Last_Map", "")
+        self.unlocked_sessions = set(state.get("Unlocked_Sessions", []))
+        self.manually_locked_sessions = set(state.get("Manually_Locked_Sessions", []))
+        self.max_session_id = max(self.max_session_id, self.session_id)
+
     def set_game(self, game_id):
+        # Switching games: flush the current game's active state back to its slot first
+        if self.game_id and self.game_id != game_id:
+            self._sync_active_to_games_state()
+
         self.game_id = game_id
         self.data_path = os.path.join(self.base_dir, "data", f"{self.game_id}.json")
         self.logs_path = os.path.join(self.base_dir, "logs", f"{self.game_id}.csv")
         self.failures_path = os.path.join(self.base_dir, "logs", f"{self.game_id}_failures.csv")
-        
+
         os.makedirs(os.path.dirname(self.data_path), exist_ok=True)
         os.makedirs(os.path.dirname(self.logs_path), exist_ok=True)
         self.ensure_csv_header()
         self.ensure_failures_header()
-        
+
         self.data = self.load_master_data()
         self.anomaly_to_room = {}
         if self.data:
@@ -53,18 +98,16 @@ class Backend:
                     for anom in room_anoms:
                         self.anomaly_to_room[anom["name"]] = room_name
 
+        # Pull this game's saved state into the active attributes
+        self._load_active_from_games_state()
+
     def save_config(self):
+        self._sync_active_to_games_state()
         with open(self.config_path, 'w') as f:
             json.dump({
-                "Session_ID": self.session_id,
-                "Max_Session_ID": self.max_session_id,
-                "Session_Configs": self.session_configs,
-                "Difficulty": self.difficulty,
-                "Last_Map": self.last_map,
                 "Game_ID": self.game_id,
                 "Window_Size": self.window_size,
-                "Unlocked_Sessions": list(self.unlocked_sessions),
-                "Manually_Locked_Sessions": list(self.manually_locked_sessions)
+                "Games": self.games_state,
             }, f)
 
     def load_config(self):
@@ -74,25 +117,162 @@ class Backend:
                 with open(self.config_path, 'r') as f:
                     config = json.load(f)
             except: pass
-        
-        self.session_id = config.get("Session_ID", 1)
-        self.max_session_id = config.get("Max_Session_ID", self.session_id)
-        self.session_configs = config.get("Session_Configs", {})
-        
-        # Pull current session defaults from session_configs if they exist
-        curr_cfg = self.session_configs.get(str(self.session_id), {})
-        self.difficulty = curr_cfg.get("Difficulty", config.get("Difficulty", "Normal"))
-        self.last_map = curr_cfg.get("Map", config.get("Last_Map", ""))
-        
-        # Ensure max_session_id syncs with current if current is somehow higher
-        self.max_session_id = max(self.max_session_id, self.session_id)
-        
+
         self.window_size = config.get("Window_Size", "1200x800")
-        self.game_id = config.get("Game_ID", "game_8")
-        self.unlocked_sessions = set(config.get("Unlocked_Sessions", []))
-        self.manually_locked_sessions = set(config.get("Manually_Locked_Sessions", []))
+
+        if "Games" in config:
+            self.games_state = config.get("Games", {}) or {}
+            self.game_id = config.get("Game_ID", "game_8")
+        else:
+            # Migrate old single-game-at-top-level shape into per-game Games dict
+            self.games_state, self.game_id, migrated = self._migrate_old_config(config)
+            if migrated:
+                # Persist the new shape immediately so the old keys are gone
+                # set_game below will call save_config via first write
+                pass
+
         self.set_game(self.game_id)
+        # Always save after load so the on-disk shape is canonical
+        self.save_config()
         return config
+
+    def _migrate_old_config(self, config):
+        """Convert pre-Games config (keys at top level) into per-game Games dict.
+
+        Splits Session_Configs and lock lists by which game's CSV contains each
+        Session_ID. If a game's IDs don't start at 1, renumbers both its
+        Session_Configs and CSV rows so each game's shift IDs start at 1.
+        """
+        game_id = config.get("Game_ID", "game_8")
+        has_old_keys = any(k in config for k in (
+            "Session_ID", "Max_Session_ID", "Session_Configs",
+            "Unlocked_Sessions", "Manually_Locked_Sessions", "Difficulty", "Last_Map"))
+        if not has_old_keys:
+            # Brand new config: no migration, just a single default slot for the current game
+            return {game_id: self._default_game_state()}, game_id, False
+
+        old_session_configs = dict(config.get("Session_Configs", {}) or {})
+        collectibles = old_session_configs.pop("_collectibles", None)
+        unlocked = set(config.get("Unlocked_Sessions", []) or [])
+        manual_locked = set(config.get("Manually_Locked_Sessions", []) or [])
+
+        # Map each session ID to the game whose CSV contains it
+        session_to_game = {}
+        logs_dir = os.path.join(self.base_dir, "logs")
+        if os.path.isdir(logs_dir):
+            for fn in sorted(os.listdir(logs_dir)):
+                if not fn.endswith(".csv") or fn.endswith("_failures.csv"):
+                    continue
+                g = fn[:-len(".csv")]
+                path = os.path.join(logs_dir, fn)
+                try:
+                    with open(path, 'r', encoding='utf-8') as f:
+                        for row in csv.DictReader(f):
+                            try: sid = int(row["Session_ID"])
+                            except: continue
+                            session_to_game[sid] = g
+                except: pass
+
+        # Bucket session_configs / locks by target game
+        game_configs = defaultdict(dict)
+        for sid_str, cfg in old_session_configs.items():
+            try: sid = int(sid_str)
+            except: continue
+            target = session_to_game.get(sid, game_id)
+            game_configs[target][sid_str] = cfg
+
+        game_unlocked = defaultdict(set)
+        game_manual = defaultdict(set)
+        for sid in unlocked:
+            game_unlocked[session_to_game.get(sid, game_id)].add(sid)
+        for sid in manual_locked:
+            game_manual[session_to_game.get(sid, game_id)].add(sid)
+
+        all_games = set(game_configs) | set(game_unlocked) | set(game_manual) | {game_id}
+
+        games_state = {}
+        for g in all_games:
+            sids = [int(s) for s in game_configs[g].keys()]
+            sids.extend(game_unlocked[g])
+            sids.extend(game_manual[g])
+            # Also include any CSV-known sessions for this game (so renumbering covers the full range)
+            for sid, target in session_to_game.items():
+                if target == g:
+                    sids.append(sid)
+
+            if sids:
+                offset = min(sids) - 1 if min(sids) > 1 else 0
+                max_sid = max(sids) - offset
+            else:
+                offset = 0
+                max_sid = 1
+
+            def shift(sid_int):
+                return sid_int - offset
+
+            renumbered = {str(shift(int(s))): cfg for s, cfg in game_configs[g].items()}
+
+            # Infer defaults for non-active games from their most recent session_config
+            if g == game_id:
+                default_diff = config.get("Difficulty", "Normal")
+                default_map = config.get("Last_Map", "")
+            else:
+                default_diff = "Normal"
+                default_map = ""
+                for s_key in sorted((int(s) for s in renumbered.keys()), reverse=True):
+                    entry = renumbered.get(str(s_key), {})
+                    if not default_map and entry.get("Map"):
+                        default_map = entry["Map"]
+                    if default_diff == "Normal" and entry.get("Difficulty"):
+                        default_diff = entry["Difficulty"]
+                    if default_map and default_diff != "Normal":
+                        break
+
+            state = {
+                "Session_ID": max_sid,
+                "Max_Session_ID": max_sid,
+                "Session_Configs": renumbered,
+                "Difficulty": default_diff,
+                "Last_Map": default_map,
+                "Unlocked_Sessions": sorted(shift(s) for s in game_unlocked[g]),
+                "Manually_Locked_Sessions": sorted(shift(s) for s in game_manual[g]),
+            }
+
+            if offset:
+                self._renumber_csv_rows(g, offset)
+
+            games_state[g] = state
+
+        # _collectibles is per-map but was stored as a single blob — keep it with the active game
+        if collectibles:
+            games_state.setdefault(game_id, self._default_game_state())
+            games_state[game_id].setdefault("Session_Configs", {})["_collectibles"] = collectibles
+
+        return games_state, game_id, True
+
+    def _renumber_csv_rows(self, game_id, offset):
+        """Subtract offset from all Session_ID fields in this game's main + failures CSV."""
+        for fn in (f"{game_id}.csv", f"{game_id}_failures.csv"):
+            path = os.path.join(self.base_dir, "logs", fn)
+            if not os.path.exists(path):
+                continue
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    rows = list(csv.reader(f))
+            except:
+                continue
+            if not rows:
+                continue
+            header = rows[0]
+            try: sid_idx = header.index("Session_ID")
+            except ValueError: continue
+            for row in rows[1:]:
+                if len(row) <= sid_idx: continue
+                try:
+                    row[sid_idx] = str(int(row[sid_idx]) - offset)
+                except: pass
+            with open(path, 'w', newline='', encoding='utf-8') as f:
+                csv.writer(f).writerows(rows)
 
     def set_map(self, map_name):
         self.last_map = map_name

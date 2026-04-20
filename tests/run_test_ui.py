@@ -26,13 +26,19 @@ os.symlink(os.path.join(tests_dir, "logs"), os.path.join(tmpdir, "logs"))
 
 from generate_test_data import NUM_SHIFTS
 config = {
-    "Session_ID": NUM_SHIFTS,
-    "Max_Session_ID": NUM_SHIFTS,
-    "Session_Configs": {str(i): {"Map": "TestHouse", "Difficulty": "Normal"} for i in range(1, NUM_SHIFTS + 1)},
-    "Difficulty": "Normal",
-    "Last_Map": "TestHouse",
     "Game_ID": "game_test",
-    "Window_Size": "1200x800"
+    "Window_Size": "1200x800",
+    "Games": {
+        "game_test": {
+            "Session_ID": NUM_SHIFTS,
+            "Max_Session_ID": NUM_SHIFTS,
+            "Session_Configs": {str(i): {"Map": "TestHouse", "Difficulty": "Normal"} for i in range(1, NUM_SHIFTS + 1)},
+            "Difficulty": "Normal",
+            "Last_Map": "TestHouse",
+            "Unlocked_Sessions": [],
+            "Manually_Locked_Sessions": [],
+        }
+    }
 }
 with open(os.path.join(tmpdir, "app_config.json"), 'w') as f:
     json.dump(config, f)

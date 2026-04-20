@@ -404,23 +404,28 @@ class AnomalyTrackerApp:
         if not target_id:
             # Fallback: reverse the formatting if possible
             target_id = nice_name.lower().replace(' ', '_')
-            
+
         self.backend.set_game(target_id)
         self.data = self.backend.data
         self.update_title()
 
         self._apply_difficulty_filter()
-            
-        # Refresh map list
+
+        # Refresh map list — prefer the new game's own last_map so switching
+        # lands on the map the user last used for that game
         map_names = list(self.data.get("Maps", {}).keys())
         self.map_combo.config(values=map_names)
         if map_names:
-            self.current_map.set(map_names[0])
+            preferred = self.backend.last_map if self.backend.last_map in map_names else map_names[0]
+            self.current_map.set(preferred)
         else:
             self.current_map.set("")
-        
+
+        # Force full rebuild — rooms/anomalies differ across games even when map names match
+        self._last_rendered_map = None
+
         self._updating_ui = False
-        self.refresh_map_ui()
+        self.update_session_view()
 
     def on_difficulty_change(self, *args):
         if self._updating_ui: return
