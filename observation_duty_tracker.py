@@ -980,8 +980,14 @@ class AnomalyTrackerApp:
                 values=(best_pending["reason"], "", best_pending["count"], blockers_str),
                 tags=("PENDING",))
 
-        stats = self.backend.get_stats(map_name, max_session_id=self.backend.session_id)
-        self.live_frame.config(text=f"Anomalies likely excluded in this shift (Shifts 1-{self.backend.session_id}: {stats['total_sessions']} total)")
+        map_shifts = self.backend.get_map_shifts(map_name)
+        if map_shifts:
+            min_s, max_s = min(map_shifts), max(map_shifts)
+            range_str = f"Shift {min_s}" if min_s == max_s else f"Shifts {min_s}-{max_s}"
+            range_str += f": {len(map_shifts)} total"
+        else:
+            range_str = f"Shift {self.backend.session_id}: no data yet"
+        self.live_frame.config(text=f"Anomalies likely excluded in this shift ({range_str})")
 
     def log_anomaly(self, name, room_name):
         if self.backend.is_current_session_locked():

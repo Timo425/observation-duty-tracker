@@ -592,6 +592,21 @@ class Backend:
                 total += count
         return total
 
+    def get_map_shifts(self, map_name):
+        """All session IDs for this game on this map, across difficulties.
+        Used for the shift-count display — analysis logic stays per-difficulty."""
+        ids = set()
+        for row in self._get_csv_data(self.logs_path):
+            if row["Map"] == map_name:
+                try: ids.add(int(row["Session_ID"]))
+                except: continue
+        if os.path.exists(self.failures_path):
+            for row in self._get_csv_data(self.failures_path):
+                if row.get("Map") == map_name:
+                    try: ids.add(int(row["Session_ID"]))
+                    except: continue
+        return ids
+
     def get_stats(self, map_name, max_session_id=None):
         stats = {"total_sessions": 0, "anomaly_sessions": defaultdict(set), "first_seen": {}}
         sessions = set()
