@@ -62,11 +62,6 @@
                         "description": "Short piling next to the lamppost is taller"
                     },
                     {
-                        "name": "Rubber ducky",
-                        "type": "Secret Object",
-                        "description": "Rubber ducky in the water"
-                    },
-                    {
                         "name": "Dead body",
                         "type": "Dead Body",
                         "description": "Body floating in the water"
