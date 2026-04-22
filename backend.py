@@ -753,25 +753,6 @@ class Backend:
                 anoms.append(row["Anomaly_Name"])
         return anoms
 
-    def get_current_session_count(self, map_name):
-        """Sum of counts_as for anomalies logged this shift (matches game's end-screen count)."""
-        total = 0
-        rooms = self.data.get("Maps", {}).get(map_name, {}).get("Rooms", {})
-        global_anoms = self.data.get("Global", [])
-        for row in self._get_csv_data(self.logs_path):
-            if int(row["Session_ID"]) == self.session_id and \
-               row["Difficulty"] == self.difficulty and \
-               row["Map"] == map_name:
-                name = row["Anomaly_Name"]
-                room = row["Room"]
-                count = 1
-                for a in rooms.get(room, []) + global_anoms:
-                    if a["name"] == name:
-                        count = a.get("counts_as", 1)
-                        break
-                total += count
-        return total
-
     def get_map_shifts(self, map_name):
         """All session IDs for this game on this map, across difficulties.
         Used for the shift-count display — analysis logic stays per-difficulty."""
