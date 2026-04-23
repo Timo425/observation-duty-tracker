@@ -2179,9 +2179,9 @@
                         "description": "Creature having spasms in containment room (can be Image Anomaly)"
                     },
                     {
-                        "name": "Bottles",
+                        "name": "Metal jars",
                         "type": "Object Replacement",
-                        "description": "Both bottles on counter turn into red cups"
+                        "description": "Both metal jars on counter turn into red cups"
                     }
                 ],
                 "Exterior": [
