@@ -412,7 +412,7 @@ class Backend:
         max_id = max(existing)
 
         # Check if it has a failure report (means it is 'finished')
-        has_failure = len(self.get_missed_anomalies(self.last_map, self.session_id)) > 0
+        has_failure = self.has_failure_report(self.session_id)
 
         if self.session_id < max_id or has_failure:
             # It's an old or finished session. Is it in the override list?
@@ -423,7 +423,7 @@ class Backend:
         """Toggles lock status. For current/latest session: manual lock. For old sessions: unlock override."""
         existing = self.get_all_sessions()
         max_id = max(existing) if existing else 0
-        has_failure = len(self.get_missed_anomalies(self.last_map, self.session_id)) > 0
+        has_failure = self.has_failure_report(self.session_id)
 
         if self.session_id < max_id or has_failure:
             # Old/finished session: toggle unlock override
@@ -800,6 +800,16 @@ class Backend:
         stats["total_sessions"] = len(sessions)
         stats["all_sessions"] = sessions
         return stats
+
+    def has_failure_report(self, session_id):
+        """Returns True if the given session has any 'It's over' report, regardless of whether its failures were linked to master-DB anomalies."""
+        if not os.path.exists(self.failures_path): return False
+        with open(self.failures_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if int(row["Session_ID"]) == session_id:
+                    return True
+        return False
 
     def get_missed_anomalies(self, map_name, session_id):
         """Returns a list of anomaly names reported as missed in the given session."""

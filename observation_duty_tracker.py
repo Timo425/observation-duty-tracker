@@ -1305,9 +1305,9 @@ class FailureDialog:
             msg = f"Failure report saved for shift ID {self.backend.session_id}."
             if any(r["linked_anomaly"] != "None" for r in reports):
                 msg += "\n\nMaster database updated for linked anomalies."
-            messagebox.showinfo("Success", msg)
             self.dialog.destroy()
             self.parent.update_session_view()
+            messagebox.showinfo("Success", msg)
         else:
             messagebox.showerror("Error", "Failed to save report.")
 
