@@ -2248,7 +2248,7 @@
                         "description": "Almost invisible creature walks towards the camera"
                     },
                     {
-                        "name": "Top container",
+                        "name": "Top container (door)",
                         "type": "Door Anomaly",
                         "description": "Top container door opens"
                     },
@@ -2258,7 +2258,7 @@
                         "description": "Changes color"
                     },
                     {
-                        "name": "Top container",
+                        "name": "Top container (missing)",
                         "type": "Missing Object",
                         "description": "Disappears"
                     },
