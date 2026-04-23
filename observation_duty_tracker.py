@@ -153,7 +153,10 @@ class AnomalyTrackerApp:
             pass
 
         self.root.bind("<Configure>", self.on_window_resize)
-        
+        # Ensure any unsaved in-memory state is flushed before the window closes —
+        # a single backstop for every mutation path that forgets to call save_config.
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
         # Game State
         self.data = self.backend.data
         
@@ -395,6 +398,14 @@ class AnomalyTrackerApp:
                 self.backend.window_size = geom
                 # Performance: only save if it's a stable change, but resize is manual so it's fine.
                 self.backend.save_config()
+
+    def on_close(self):
+        """Final save before shutdown — catches any in-memory state that the
+        per-action save_config calls missed."""
+        try:
+            self.backend.save_config()
+        finally:
+            self.root.destroy()
 
     def on_game_change(self, *args):
         self._updating_ui = True
