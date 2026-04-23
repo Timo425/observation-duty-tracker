@@ -2124,7 +2124,7 @@
                     {
                         "name": "Huge Spider",
                         "type": "INTRUDER",
-                        "description": "On right bed or top of first aid cabinet"
+                        "description": "On right bed, top of first aid cabinet, or hanging from ceiling between the beds"
                     },
                     {
                         "name": "Wardrobe handle",
