@@ -321,6 +321,8 @@ class Backend:
         s_map, s_diff = self.get_session_info(session_id)
         if s_diff: self.difficulty = s_diff
         if s_map: self.last_map = s_map
+        # Persist so closing the app right after navigation reopens on this shift.
+        self.save_config()
 
     def _get_csv_data(self, path):
         """Helper to get CSV data from cache or disk if changed."""
