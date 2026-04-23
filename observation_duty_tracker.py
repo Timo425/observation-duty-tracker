@@ -438,9 +438,7 @@ class AnomalyTrackerApp:
         if self._updating_ui: return
         map_name = self.current_map.get()
         if map_name:
-            self.backend.last_map = map_name
-            self.backend.session_configs.setdefault(str(self.backend.session_id), {})["Map"] = map_name
-            self.backend.save_config()
+            self.backend.set_map(map_name)
             self.refresh_map_ui()
 
     def refresh_map_ui(self):

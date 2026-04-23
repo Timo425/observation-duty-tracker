@@ -101,6 +101,11 @@ class Backend:
         # Pull this game's saved state into the active attributes
         self._load_active_from_games_state()
 
+        # One-shot cleanup: drop Map/Difficulty from any Session_Configs entry
+        # whose shift already has CSV rows (CSV is the source of truth).
+        if self._cleanup_stale_session_configs():
+            self.save_config()
+
     def save_config(self):
         self._sync_active_to_games_state()
         with open(self.config_path, 'w') as f:
@@ -276,8 +281,66 @@ class Backend:
 
     def set_map(self, map_name):
         self.last_map = map_name
-        self.session_configs.setdefault(str(self.session_id), {})["Map"] = map_name
+        # Only persist Map into Session_Configs for empty (not-yet-logged) shifts.
+        # Once the shift has CSV rows, the CSV is the ground truth and a config
+        # copy can only cause drift (see get_session_info).
+        if not self._session_has_logged_rows(self.session_id):
+            self.session_configs.setdefault(str(self.session_id), {})["Map"] = map_name
         self.save_config()
+
+    def _session_has_logged_rows(self, session_id):
+        """True if the given shift has at least one row in either the main
+        logs CSV or the failures CSV. Used to decide when Session_Configs
+        should stop storing Map/Difficulty for that shift (the CSVs become
+        the source of truth)."""
+        for row in self._get_csv_data(self.logs_path):
+            try:
+                if int(row["Session_ID"]) == session_id: return True
+            except: pass
+        for row in self._get_csv_data(self.failures_path):
+            try:
+                if int(row["Session_ID"]) == session_id: return True
+            except: pass
+        return False
+
+    def _strip_map_diff_from_session_config(self, session_id):
+        """Remove Map/Difficulty from a single shift's Session_Configs entry
+        (the CSV is now the ground truth for those). Delete the entry if it
+        becomes empty. Idempotent."""
+        key = str(session_id)
+        entry = self.session_configs.get(key)
+        if not isinstance(entry, dict): return
+        changed = False
+        for field in ("Map", "Difficulty"):
+            if field in entry:
+                entry.pop(field)
+                changed = True
+        if not entry:
+            del self.session_configs[key]
+            changed = True
+        return changed
+
+    def _cleanup_stale_session_configs(self):
+        """One-shot cleanup: for any shift that already has CSV rows, drop the
+        Map/Difficulty fields from its Session_Configs entry — the CSVs are the
+        ground truth for those fields. Other fields (Alt_Tabbed_At, Last_Cycled,
+        Alt_Tab_Disabled, Cycling_Disabled) are preserved since they have no
+        CSV counterpart. Runs every startup; idempotent."""
+        changed = False
+        for key in list(self.session_configs.keys()):
+            if not key.isdigit(): continue  # skip _collectibles etc.
+            try: sid = int(key)
+            except: continue
+            if not self._session_has_logged_rows(sid): continue
+            entry = self.session_configs[key]
+            for field in ("Map", "Difficulty"):
+                if field in entry:
+                    entry.pop(field)
+                    changed = True
+            if not entry:
+                del self.session_configs[key]
+                changed = True
+        return changed
 
     def load_master_data(self):
         if not os.path.exists(self.data_path):
@@ -310,7 +373,10 @@ class Backend:
 
     def set_difficulty(self, difficulty):
         self.difficulty = difficulty
-        self.session_configs.setdefault(str(self.session_id), {})["Difficulty"] = difficulty
+        # Only persist Difficulty into Session_Configs for empty (not-yet-logged)
+        # shifts. Once the shift has CSV rows, the CSV is the ground truth.
+        if not self._session_has_logged_rows(self.session_id):
+            self.session_configs.setdefault(str(self.session_id), {})["Difficulty"] = difficulty
         self.save_config()
 
     def set_session(self, session_id):
@@ -520,6 +586,9 @@ class Backend:
         with open(self.logs_path, 'a', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             writer.writerow([self.session_id, self.difficulty, map_name, room_name, anomaly_name, timestamp, alt_tabbed, last_cycled])
+        # Shift now has a CSV row — drop any stale Map/Difficulty from its
+        # Session_Configs entry so the CSV is the only copy from here on.
+        self._strip_map_diff_from_session_config(self.session_id)
         return True
 
     def add_failure_report(self, map_name, failures):
@@ -546,10 +615,14 @@ class Backend:
         with open(self.failures_path, 'a', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             writer.writerow(row)
-            
+
+        # Shift is recorded in a CSV now — drop any stale Map/Difficulty copy
+        # from Session_Configs so the failures CSV is the only source.
+        self._strip_map_diff_from_session_config(self.session_id)
+
         if updated_any_json:
             self.save_master_data()
-            
+
         return True
 
     def update_anomaly_end_game_type(self, map_name, room_name, anomaly_name, end_game_type):
