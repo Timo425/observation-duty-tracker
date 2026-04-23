@@ -2181,7 +2181,7 @@
                     {
                         "name": "Metal jars",
                         "type": "Object Replacement",
-                        "description": "Both metal jars on counter turn into red cups"
+                        "description": "Both metal jars on desk turn into red cups"
                     }
                 ],
                 "Exterior": [
