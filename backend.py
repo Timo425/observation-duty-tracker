@@ -315,10 +315,12 @@ class Backend:
 
     def set_session(self, session_id):
         self.session_id = session_id
-        # Update current state from saved session config if available
-        cfg = self.session_configs.get(str(session_id), {})
-        if "Difficulty" in cfg: self.difficulty = cfg["Difficulty"]
-        if "Map" in cfg: self.last_map = cfg["Map"]
+        # Restore from the same source get_session_info uses (CSV logs first,
+        # config fallback) so an accidental config write on a logged session can't
+        # resurrect a stale difficulty/map here.
+        s_map, s_diff = self.get_session_info(session_id)
+        if s_diff: self.difficulty = s_diff
+        if s_map: self.last_map = s_map
 
     def _get_csv_data(self, path):
         """Helper to get CSV data from cache or disk if changed."""
@@ -376,22 +378,25 @@ class Backend:
         return self.session_id
 
     def get_session_info(self, session_id):
-        """Returns (Map, Difficulty) for a given session ID by checking configs first, then logs."""
-        # 1. Check manual configs first (user's intent)
-        cfg = self.session_configs.get(str(session_id), {})
-        if "Map" in cfg and "Difficulty" in cfg:
-            return cfg["Map"], cfg["Difficulty"]
-            
-        # 2. Check main logs fallback
+        """Returns (Map, Difficulty) for a given session ID. Main CSV logs are the
+        ground truth and win when present — the config's Session_Configs entry is
+        only a fallback for sessions that have no logged rows yet (e.g. a newly
+        created empty shift). This prevents a stale or accidental combobox change
+        on a historical session from silently overwriting what was actually logged."""
+        # 1. Main logs are authoritative (anomalies were actually logged against these values)
         for row in self._get_csv_data(self.logs_path):
             if int(row["Session_ID"]) == session_id:
                 return row["Map"], row["Difficulty"]
-        
-        # 3. Check failure logs
+
+        # 2. Config fallback — covers sessions with no logged rows yet
+        cfg = self.session_configs.get(str(session_id), {})
+        if "Map" in cfg and "Difficulty" in cfg:
+            return cfg["Map"], cfg["Difficulty"]
+
+        # 3. Failure logs as last resort (session ended in 'It's over' with no prior reports)
         fail_path = os.path.join(self.base_dir, "logs", f"{self.game_id}_failures.csv")
         for row in self._get_csv_data(fail_path):
             if int(row["Session_ID"]) == session_id:
-                # Assuming at least one reported failure has a valid Map/Difficulty
                 return row["Map"], row["Difficulty"]
         return None, None
 

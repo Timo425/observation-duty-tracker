@@ -2223,7 +2223,8 @@
                     {
                         "name": "Snow",
                         "type": "Weather Anomaly",
-                        "description": "Snow defies gravity as it floats upward"
+                        "description": "Snow defies gravity as it floats upward",
+                        "game_end_type": "Weather Anomaly"
                     },
                     {
                         "name": "Snow shoes",
