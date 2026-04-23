@@ -1886,7 +1886,7 @@
             "Rooms": {
                 "Monitoring Room": [
                     {
-                        "name": "Post-it notes",
+                        "name": "Post-it notes (extra)",
                         "type": "Extra Object",
                         "description": "More post-it notes appear on the white board"
                     },
@@ -1911,7 +1911,7 @@
                         "description": "Fatal if not reported on time"
                     },
                     {
-                        "name": "Post-it notes",
+                        "name": "Post-it notes (floating)",
                         "type": "Object Movement",
                         "description": "Post-it notes levitating"
                     },
