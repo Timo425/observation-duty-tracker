@@ -1336,6 +1336,9 @@ class AnomalyTrackerApp:
             description = desc_text.get("1.0", tk.END).strip()
             
             if self.backend.add_new_anomaly(self.current_map.get(), room_name, name, anom_type, description):
+                # Force a full grid rebuild so the new button actually appears —
+                # refresh_map_ui short-circuits when the map name hasn't changed.
+                self._last_rendered_map = None
                 self.on_map_change(None)
                 dialog.destroy()
             else:

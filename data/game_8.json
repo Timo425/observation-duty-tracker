@@ -2724,7 +2724,7 @@
                         "id": "04f27bab-e7cf-46fc-86f9-635dc1189a88"
                     },
                     {
-                        "name": "Dead body",
+                        "name": "Dead body (crane)",
                         "type": "Dead Body",
                         "description": "On top of crane (glass looks weird)",
                         "id": "85919ec8-4fd4-4771-891c-6a8ad50d4d7c"
@@ -2734,6 +2734,12 @@
                         "type": "Missing Object",
                         "description": "Leaning against the crane disappears",
                         "id": "94ce7b73-71c8-467c-8fbb-b0fdfcae977c"
+                    },
+                    {
+                        "id": "461b5cc3-9c72-4eb1-941c-6b26b7f6a807",
+                        "name": "Dead body (railing)",
+                        "type": "Dead body",
+                        "description": "Dead body slumped on the wooden railing at the door"
                     }
                 ],
                 "Underwater": [
