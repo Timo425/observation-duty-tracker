@@ -1055,6 +1055,59 @@ class Backend:
                 last_time = row.get("Timestamp", "N/A")
         return last_time
 
+    def get_per_difficulty_sightings(self, map_name):
+        """Cross-difficulty 'have I ever seen this?' view for a given map.
+
+        Returns a list of per-anomaly dicts, one per anomaly defined in the
+        map's rooms (plus all Global anomalies, which can manifest on any map):
+            {
+                "id": str,              # stable UUID
+                "name": str,            # current display name
+                "room": str,            # "Global" for Global anomalies
+                "sightings_by_diff": {"Normal": int, "Hard": int, ...},
+                                        # unique-shift count per difficulty
+                "total_shifts": int,    # unique shifts across all difficulties
+            }
+        Never-seen anomalies are still included (with zeros) so the UI can
+        present them as 'outstanding' without a separate lookup."""
+        sightings = defaultdict(lambda: defaultdict(set))
+        for row in self._get_csv_data(self.logs_path):
+            if row.get("Map") != map_name: continue
+            aid = row.get("Anomaly_ID", "")
+            if not aid: continue
+            diff = row.get("Difficulty", "")
+            try: sid = int(row.get("Session_ID", ""))
+            except: continue
+            sightings[aid][diff].add(sid)
+
+        supported_diffs = self.data.get("Difficulties", ["Normal", "Hard"])
+
+        def summarize(aid, name, room):
+            per_diff = sightings.get(aid, {})
+            # Shifts are difficulty-exclusive, so set union == sum; either works.
+            total = sum(len(s) for s in per_diff.values())
+            return {
+                "id": aid,
+                "name": name,
+                "room": room,
+                "sightings_by_diff": {d: len(per_diff.get(d, set())) for d in supported_diffs},
+                "total_shifts": total,
+            }
+
+        # Collectibles are tracked via toggle (not CSV logs), so including them
+        # would show perpetual 'never seen' — filtered out to keep the tab
+        # focused on what the CSV actually reflects.
+        results = []
+        map_data = self.data.get("Maps", {}).get(map_name, {})
+        for room_name, anoms in map_data.get("Rooms", {}).items():
+            for a in anoms:
+                if "id" in a and not self.is_collectible(a):
+                    results.append(summarize(a["id"], a["name"], room_name))
+        for a in self.data.get("Global", []):
+            if "id" in a and not self.is_collectible(a):
+                results.append(summarize(a["id"], a["name"], "Global"))
+        return results
+
     def get_counts(self, map_name=None, room_name=None, max_session_id=None):
         counts = defaultdict(int)
         for row in self._get_csv_data(self.logs_path):

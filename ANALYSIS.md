@@ -41,9 +41,14 @@ This is actionable during gameplay — you check it to narrow down what's left.
 
 NOT a repeat of live prediction. This is for between-shift analysis.
 
-**Scoping:** All audit tabs are filtered by both the selected **map** and **difficulty**.
-Each map has its own anomaly pool and shift history, so mixing maps would produce
-misleading statistics. The map defaults to whatever is currently selected in the main window.
+**Scoping:** All audit tabs are filtered by the selected **map**. Most tabs are also
+filtered by the selected **difficulty** — each map has its own anomaly pool and shift
+history per difficulty, so mixing them would produce misleading statistics.
+The one exception is **Anomalies Seen** (Tab 3), which is deliberately cross-difficulty
+because the question it answers — "have I ever seen this anomaly at all?" — only
+makes sense across modes. For that tab the difficulty dropdown does not filter;
+it just moves a column highlight. The map defaults to whatever is currently
+selected in the main window.
 
 ### Tab 1: Group Violations (primary)
 Finds probable user errors. After discovering exclusion groups, checks for anomalies that
@@ -72,7 +77,30 @@ you want a deliberately clean recording.
 Helps answer: "does alt-tabbing create phantom sightings?" and "am I getting better at
 spotting this anomaly over time?"
 
-### Tab 3: Exclusion Groups (reference)
+### Tab 3: Anomalies Seen (completion view)
+Cross-difficulty "have I ever caught this?" view. Lists every anomaly defined for the
+selected map (including Globals; excluding collectibles, which are tracked via toggle
+not via CSV logs). Each row shows per-difficulty ✓/— marks plus a total-shifts count.
+
+**Three visual tiers (using foreground colour):**
+- **Grey** — never seen on any difficulty. The primary signal: anomalies still
+  outstanding. Default sort brings these to the top.
+- **Faded** — seen on another difficulty but not the currently selected one.
+  Secondary signal: you've caught it once, but still need it on this mode.
+- **Normal** — seen on the currently selected difficulty. "Done" on this mode.
+
+**Difficulty dropdown behaviour:** The dropdown does NOT filter this tab (that would
+defeat its purpose). Instead, it (a) prepends a ▶ marker to the matching "Seen on X"
+column header and (b) drives the faded-vs-normal row split above. Switching the
+dropdown re-renders the highlight without reloading the underlying data.
+
+**Single-difficulty games (e.g. demo's `N/A`):** The per-difficulty split collapses
+to a single "Seen" column since the split would be meaningless.
+
+Helps answer: "which anomalies haven't I caught yet at all?" and "which have I
+caught on Normal but still need on Hard (or vice versa)?"
+
+### Tab 4: Exclusion Groups (reference)
 List of discovered groups with certainty levels. Reference view of what the system knows.
 
 **Ghost row:** When no confirmed or likely groups exist yet, shows the single closest pair

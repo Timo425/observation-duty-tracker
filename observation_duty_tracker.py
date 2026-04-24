@@ -711,7 +711,59 @@ class AnomalyTrackerApp:
         ttk.Label(freq_frame, text="Shows all known anomalies. Grey = never seen. Rates count from first sighting when toggled.",
                   foreground="gray", font=("Arial", 8)).pack(padx=5, pady=(0, 3))
 
-        # --- Tab 3: Exclusion Groups ---
+        # --- Tab 3: Anomalies Seen (cross-difficulty completion) ---
+        seen_frame = ttk.Frame(notebook)
+        notebook.add(seen_frame, text="Anomalies Seen")
+
+        # Column layout adapts to how many difficulties the game supports. For
+        # single-difficulty games (e.g. the demo's "N/A") the per-difficulty
+        # split is meaningless, so we collapse to a single "Seen" column.
+        seen_diffs = list(supported_diffs)
+        if len(seen_diffs) > 1:
+            s_cols = tuple(["name", "room"] + [f"seen_{d.lower()}" for d in seen_diffs] + ["total"])
+        else:
+            s_cols = ("name", "room", "seen", "total")
+
+        s_wrapper = ttk.Frame(seen_frame)
+        s_wrapper.pack(fill="both", expand=True, padx=5, pady=5)
+        seen_tree = ttk.Treeview(s_wrapper, columns=s_cols, show="headings")
+        seen_tree.heading("name", text="Anomaly")
+        seen_tree.heading("room", text="Room")
+        if len(seen_diffs) > 1:
+            for d in seen_diffs:
+                seen_tree.heading(f"seen_{d.lower()}", text=f"Seen on {d}")
+        else:
+            seen_tree.heading("seen", text="Seen")
+        seen_tree.heading("total", text="Total Shifts")
+
+        seen_tree.column("name", width=220, minwidth=120, stretch=True)
+        seen_tree.column("room", width=150, minwidth=80, stretch=True)
+        if len(seen_diffs) > 1:
+            for d in seen_diffs:
+                seen_tree.column(f"seen_{d.lower()}", width=110, minwidth=80, anchor="center", stretch=False)
+        else:
+            seen_tree.column("seen", width=90, minwidth=60, anchor="center", stretch=False)
+        seen_tree.column("total", width=100, minwidth=70, anchor="center", stretch=False)
+
+        s_scroll = ttk.Scrollbar(s_wrapper, orient="vertical", command=seen_tree.yview)
+        seen_tree.configure(yscrollcommand=s_scroll.set)
+        s_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        seen_tree.pack(side=tk.LEFT, fill="both", expand=True)
+        _bind_sort_headings(seen_tree, s_cols)
+        # Default sort: lowest Total Shifts first → never-seen rows top the list.
+        seen_tree._sort_state = ("total", False, False)
+
+        # Three visual tiers: never seen anywhere (grey), seen elsewhere but
+        # not on the selected difficulty (faded), seen on selected (normal).
+        seen_tree.tag_configure("seen_never", foreground="#999999")
+        seen_tree.tag_configure("seen_other", foreground="#aaaaaa")
+        seen_tree.tag_configure("seen_here", foreground="black")
+
+        ttk.Label(seen_frame,
+                  text="Cross-difficulty completion view. Ignores the difficulty dropdown for filtering — the dropdown only highlights which column corresponds to the currently selected mode. Grey = never seen anywhere; faded = seen on other difficulty only; normal = seen on the selected difficulty.",
+                  foreground="gray", font=("Arial", 8), wraplength=1000, justify="left").pack(padx=5, pady=(0, 3), anchor="w")
+
+        # --- Tab 4: Exclusion Groups ---
         groups_frame = ttk.Frame(notebook)
         notebook.add(groups_frame, text="Exclusion Groups")
 
@@ -746,8 +798,10 @@ class AnomalyTrackerApp:
         self._audit_trees = {
             "violations": violations_tree,
             "freq": freq_tree,
+            "seen": seen_tree,
             "groups": groups_tree,
         }
+        self._audit_seen_diffs = seen_diffs
         self._audit_first_seen_var = first_seen_var
 
         self._audit_map_var = audit_map
@@ -814,6 +868,40 @@ class AnomalyTrackerApp:
                 fs_str,
                 f"{f['total_shifts']}/{f['eligible_shifts']}",
             ), tags=tag)
+
+        # --- Anomalies Seen tab (cross-difficulty completion) ---
+        st = trees.get("seen")
+        if st is not None:
+            for item in st.get_children():
+                st.delete(item)
+            seen_diffs = self._audit_seen_diffs
+            # Re-label headings so the selected difficulty's 'Seen on X' column
+            # is visually pointed at. We use a ▶ prefix rather than font/colour
+            # changes because ttk heading text is the lowest-friction knob we
+            # actually control portably.
+            if len(seen_diffs) > 1:
+                for d in seen_diffs:
+                    prefix = "▶ " if d == target_diff else ""
+                    st.heading(f"seen_{d.lower()}", text=f"{prefix}Seen on {d}")
+            seen_rows = self.backend.get_per_difficulty_sightings(target_map)
+            for r in seen_rows:
+                sb = r["sightings_by_diff"]
+                total = r["total_shifts"]
+                selected_seen = sb.get(target_diff, 0) > 0
+                if total == 0:
+                    tag = "seen_never"
+                elif not selected_seen:
+                    tag = "seen_other"
+                else:
+                    tag = "seen_here"
+                if len(seen_diffs) > 1:
+                    values = [r["name"], r["room"]]
+                    for d in seen_diffs:
+                        values.append("✓" if sb.get(d, 0) > 0 else "—")
+                    values.append(total)
+                else:
+                    values = [r["name"], r["room"], "✓" if total > 0 else "—", total]
+                st.insert("", tk.END, values=tuple(values), tags=(tag,))
 
         # --- Groups tab ---
         gt = trees["groups"]
