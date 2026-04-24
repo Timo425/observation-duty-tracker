@@ -38,6 +38,7 @@ class Backend:
         self.unlocked_sessions = set()
         self.manually_locked_sessions = set()
         self.window_size = "1200x800"
+        self.show_all_candidates = False
 
         # Per-game persisted state: {game_id: {Session_ID, Max_Session_ID, Session_Configs, ...}}
         self.games_state = {}
@@ -149,6 +150,7 @@ class Backend:
             json.dump({
                 "Game_ID": self.game_id,
                 "Window_Size": self.window_size,
+                "Show_All_Candidates": self.show_all_candidates,
                 "Games": self.games_state,
             }, f)
 
@@ -161,6 +163,14 @@ class Backend:
             except: pass
 
         self.window_size = config.get("Window_Size", "1200x800")
+        # UI preference: when False, room buttons hide anomalies that are
+        # confirmed to only appear on the OTHER difficulty (≥1 sighting on
+        # other, zero on current). When True, they're still visible but
+        # rendered muted so the user can still read descriptions mid-game
+        # or log them if the sighting history turns out to have misled us.
+        # Never-seen anomalies (zero sightings anywhere) are always shown
+        # regardless, so a first sighting is always reachable.
+        self.show_all_candidates = bool(config.get("Show_All_Candidates", False))
 
         if "Games" in config:
             self.games_state = config.get("Games", {}) or {}

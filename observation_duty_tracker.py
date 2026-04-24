@@ -245,11 +245,28 @@ class AnomalyTrackerApp:
         self.difficulty_combo = ttk.Combobox(mode_frame, textvariable=self.current_difficulty, values=["Normal", "Hard"], state="readonly", width=10)
         self.difficulty_combo.grid(row=0, column=3, padx=5)
 
+        # Show-all-candidates toggle. Off (default) hides anomalies that the
+        # CSV history confirms appear only on the OTHER difficulty — i.e.
+        # zero sightings on the currently selected mode but ≥1 on another
+        # mode. Never-seen anomalies stay visible either way so you can
+        # always log a first sighting.
+        self.show_all_var = tk.BooleanVar(value=self.backend.show_all_candidates)
+        self.show_all_check = ttk.Checkbutton(
+            mode_frame, text="Show all candidates",
+            variable=self.show_all_var, command=self.on_show_all_toggle,
+        )
+        self.show_all_check.grid(row=0, column=4, padx=5)
+        ToolTip(self.show_all_check,
+                "Off: hide anomalies confirmed to appear only on the other difficulty\n"
+                "(zero sightings here, ≥1 elsewhere). Never-seen anomalies stay visible.\n"
+                "On: show all, with 'other-difficulty-only' ones rendered muted for\n"
+                "reference. Saved between launches.")
+
         self.map_label = ttk.Label(mode_frame, text="Map:")
-        self.map_label.grid(row=0, column=4, padx=5)
+        self.map_label.grid(row=0, column=5, padx=5)
         map_names = list(self.data.get("Maps", {}).keys())
         self.map_combo = ttk.Combobox(mode_frame, textvariable=self.current_map, values=map_names, state="readonly", width=20)
-        self.map_combo.grid(row=0, column=5, padx=5)
+        self.map_combo.grid(row=0, column=6, padx=5)
         self.map_combo.bind("<<ComboboxSelected>>", self.on_map_change)
 
         # Debug: Glitch tracking toggles
@@ -449,6 +466,17 @@ class AnomalyTrackerApp:
         if self._updating_ui: return
         self.backend.set_difficulty(self.current_difficulty.get())
         self.status_label.config(text=f"Mode switched to {self.backend.difficulty}")
+        # Difficulty change can change which anomalies are eligible, so force
+        # a full room rebuild rather than just restyling existing buttons.
+        self._last_rendered_map = None
+        self.refresh_map_ui()
+
+    def on_show_all_toggle(self):
+        """Persist the toggle and rebuild the room grid so eligibility
+        filtering takes immediate effect."""
+        self.backend.show_all_candidates = self.show_all_var.get()
+        self.backend.save_config()
+        self._last_rendered_map = None
         self.refresh_map_ui()
 
     def on_map_change(self, *args):
@@ -463,13 +491,21 @@ class AnomalyTrackerApp:
         """Updates the room buttons and live analysis. Uses recycling to stay fast."""
         map_name = self.current_map.get()
         if not map_name: return
-        
+
+        # Cache per-difficulty sightings for this map once per full rebuild —
+        # create_buttons reads this to decide which anomalies to hide vs mute.
+        # Cheap to recompute because _get_csv_data hits its own cache.
+        self._sightings_by_id = {
+            r["id"]: r["sightings_by_diff"]
+            for r in self.backend.get_per_difficulty_sightings(map_name)
+        }
+
         # Performance: If it's the same map, just update button colors (Logged vs Not)
         if self._last_rendered_map == map_name:
             self.update_button_states()
             self.update_live_analysis()
             return
-            
+
         self._last_rendered_map = map_name
         self._room_buttons = {}
 
@@ -569,6 +605,18 @@ class AnomalyTrackerApp:
                 # state — even a missed/excluded anomaly is worth flagging as
                 # "you've never actually caught this on <difficulty>".
                 font = self._btn_font_unseen if count == 0 else self._btn_font_normal
+
+                # Show-all override: if the anomaly is declared ineligible for
+                # the current difficulty but shown anyway (because Show All is
+                # on), force a muted look so it reads as "reference only" —
+                # overrides the other colour states since 'not applicable on
+                # this mode' is a stronger signal than any per-shift state.
+                ineligible_set = getattr(self, "_room_buttons_ineligible", {}).get(room_name, set())
+                if anom_name in ineligible_set:
+                    bg_color = "#e8e8e8"
+                    fg_color = "#888888"
+                    font = self._btn_font_unseen  # italic for emphasis
+
                 btn.config(bg=bg_color, fg=fg_color, font=font)
 
         # Update collectible buttons
@@ -991,6 +1039,30 @@ class AnomalyTrackerApp:
         # Filter out collectibles from normal anomaly grid
         normal_anoms = [a for a in anomalies if not self.backend.is_collectible(a)]
 
+        # Sighting-based visibility: hide anomalies confirmed to appear only
+        # on the OTHER difficulty (≥1 sighting there, zero here). Always keep
+        # never-seen anomalies visible so the user can still log a first
+        # sighting. The Show All toggle overrides the hide rule and marks
+        # the concerned rows with a muted style so they read as reference.
+        current_diff = self.current_difficulty.get()
+        show_all = self.backend.show_all_candidates
+        sightings = self._sightings_by_id  # pre-computed per map in refresh_map_ui
+        filtered = []
+        ineligible = set()
+        for a in normal_anoms:
+            sb = sightings.get(a.get("id"), {})
+            here = sb.get(current_diff, 0)
+            elsewhere = sum(v for d, v in sb.items() if d != current_diff)
+            confirmed_other_only = (here == 0 and elsewhere > 0)
+            if not confirmed_other_only:
+                filtered.append(a)
+            elif show_all:
+                filtered.append(a)
+                ineligible.add(a["name"])
+        normal_anoms = filtered
+        self._room_buttons_ineligible = getattr(self, "_room_buttons_ineligible", {})
+        self._room_buttons_ineligible[room_name] = ineligible
+
         grid_frame = ttk.Frame(parent); grid_frame.pack(fill=tk.X)
         for c in range(3): grid_frame.columnconfigure(c, weight=1) # Center/Expand rows
 
@@ -1003,11 +1075,14 @@ class AnomalyTrackerApp:
             btn.grid(row=i // 3, column=i % 3, padx=3, pady=3, sticky="ew")
             self._room_buttons[room_name][name] = btn
 
-            # Use Right-click for Undo as before
+            # Right-click: quick undo.
             btn.bind("<Button-3>", lambda e, n=name, r=room_name: self.undo_anomaly(n, r))
             # Tooltips for descriptions
             desc = a.get("description", a.get("desc", ""))
-            tip = f"{desc}\n\nRight-click to undo" if desc else "Right-click to undo"
+            muted_note = ("\n[Sighted only on other difficulty — shown because Show All is on]"
+                          if name in ineligible else "")
+            base = desc if desc else ""
+            tip = (f"{base}{muted_note}\n\nRight-click to undo").strip()
             ToolTip(btn, tip)
             # Bind after ToolTip so both coexist
             btn.bind("<Enter>", lambda e, n=name: self._highlight_prediction(n), add="+")
