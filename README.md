@@ -23,6 +23,9 @@ The goal is to reverse-engineer the game's anomaly selection algorithm through s
 ### Exclusion Groups
 The game selects anomalies per shift such that certain anomalies are mutually exclusive — if one appears, the others in its group won't. Discovering these groups is the tool's primary analytical goal. Both live prediction and the audit log build on this.
 
+### Difficulty-Exclusive Anomalies
+The JSON anomaly pool for each map is the **union across difficulties** — every anomaly is listed once regardless of which mode it actually spawns on. In practice the game tends to split this pool: some anomalies only appear on Normal, others only on Hard. The tracker doesn't declare this upfront in the data; the **Anomalies Seen** audit tab surfaces it empirically through the per-difficulty ✓/— marks. With enough shifts logged, anything showing a perpetual — on one column is a strong candidate for being exclusive to the other mode (or just very rare — statistics can't fully separate those two without a schema hint).
+
 ### How the Math Works
 - Anomalies need **at least 2 sightings** before they enter any analysis (first sighting just proves it exists).
 - Pairs need an **expected overlap >= 2.5** before zero co-occurrence becomes statistically noteworthy (prevents false positives from sparse data).

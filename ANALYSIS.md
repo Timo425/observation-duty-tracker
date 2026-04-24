@@ -87,7 +87,10 @@ not via CSV logs). Each row shows per-difficulty ✓/— marks plus a total-shif
   reads as "no data yet, still outstanding everywhere." Default sort brings
   these to the top.
 - **Mid grey (regular)** — seen on another difficulty but not the currently
-  selected one. Secondary todo: caught it once, but still missing on this mode.
+  selected one. Ambiguous by design: the anomaly is either genuinely missing
+  from your current-mode sightings *or* is exclusive to the other difficulty
+  and will never appear here (the tracker can't distinguish those two without
+  a schema hint — see the "Difficulty-Exclusive Anomalies" note in the README).
 - **Normal black** — seen on the currently selected difficulty. "Done" on this
   mode.
 
