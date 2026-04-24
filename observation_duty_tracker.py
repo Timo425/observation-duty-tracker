@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
+from tkinter import font as tkfont
 import json
 import os
 import re
@@ -185,6 +186,12 @@ class AnomalyTrackerApp:
         self._updating_ui = False
         self._last_rendered_map = None
         self._room_buttons = {} # {room_name: {anomaly_name: button_widget}}
+        # Fonts for anomaly buttons: italic marks anomalies never sighted in
+        # the currently selected difficulty — helps answer "what haven't I
+        # caught yet on Normal vs Hard?"
+        _btn_base = tkfont.nametofont("TkDefaultFont").actual()
+        self._btn_font_normal = (_btn_base["family"], _btn_base["size"], "normal")
+        self._btn_font_unseen = (_btn_base["family"], _btn_base["size"], "italic")
         
         self.setup_ui()
         # Initial analysis with a slight delay for better startup feel
@@ -557,7 +564,12 @@ class AnomalyTrackerApp:
                     bg_color = '#%02x%02x%02x' % (int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
                     if sat > 0.7: fg_color = "white" # High intensity = white text
                 
-                btn.config(bg=bg_color, fg=fg_color)
+                # Italic marks anomalies never logged in the current difficulty
+                # (across all shifts in that mode). Fires independent of color
+                # state — even a missed/excluded anomaly is worth flagging as
+                # "you've never actually caught this on <difficulty>".
+                font = self._btn_font_unseen if count == 0 else self._btn_font_normal
+                btn.config(bg=bg_color, fg=fg_color, font=font)
 
         # Update collectible buttons
         for anom_name, (btn, room_name) in self._collectible_buttons.items():

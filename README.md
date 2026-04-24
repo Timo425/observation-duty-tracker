@@ -8,6 +8,7 @@ The goal is to reverse-engineer the game's anomaly selection algorithm through s
 - **Multi-Game Support:** Easily switch between different titles in the series.
 - **Smart UI:** Automatically adapts to the features of each game (e.g., hiding difficulty options for games that don't have them).
 - **Shift Management:** Navigate between shifts with `<`/`>`, start new ones, lock/unlock any shift, and review history. Historical shifts are auto-locked (🔒) to prevent accidental edits; shifts with an "It's over" report are also locked.
+- **Per-Difficulty Sightings:** Anomaly buttons show the sighting count for the currently selected difficulty, and anomalies never caught on that difficulty are rendered in italic so you can tell at a glance which ones you still haven't ticked off on Normal vs. Hard.
 - **Collectibles:** Special items (rubber ducky, ring, etc.) are shown in a separate compact strip, tracked as collected/not-collected rather than as anomalies.
 - **"It's over" Failure Reporting:** Report the 3 anomalies shown on the end-game screen. Linked anomalies appear as Orange buttons in room tabs, and a summary section appears below the analysis panel.
 - **Live Exclusivity Prediction:** Uses your full history up to (and including) the current shift to predict which anomalies are likely excluded from the current shift — updating in real-time as you log. Predictions are grouped under their exclusion group when known, showing which group members are active. Ungrouped pair exclusions appear individually until enough data confirms a group.
