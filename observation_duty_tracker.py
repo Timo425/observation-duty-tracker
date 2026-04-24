@@ -753,10 +753,16 @@ class AnomalyTrackerApp:
         # Default sort: lowest Total Shifts first → never-seen rows top the list.
         seen_tree._sort_state = ("total", False, False)
 
-        # Three visual tiers: never seen anywhere (grey), seen elsewhere but
-        # not on the selected difficulty (faded), seen on selected (normal).
-        seen_tree.tag_configure("seen_never", foreground="#999999")
-        seen_tree.tag_configure("seen_other", foreground="#aaaaaa")
+        # Three visual tiers, clearly distinct:
+        #   never seen anywhere → lighter grey + italic (most 'airy', reads
+        #     as tentative / no data yet)
+        #   seen on other difficulty only → solid mid grey, regular weight
+        #     (muted but still present — a secondary todo)
+        #   seen on selected difficulty → normal black
+        _seen_base = tkfont.nametofont("TkDefaultFont").actual()
+        seen_italic_font = (_seen_base["family"], _seen_base["size"], "italic")
+        seen_tree.tag_configure("seen_never", foreground="#aaaaaa", font=seen_italic_font)
+        seen_tree.tag_configure("seen_other", foreground="#808080")
         seen_tree.tag_configure("seen_here", foreground="black")
 
         ttk.Label(seen_frame,

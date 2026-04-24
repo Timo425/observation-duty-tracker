@@ -82,12 +82,17 @@ Cross-difficulty "have I ever caught this?" view. Lists every anomaly defined fo
 selected map (including Globals; excluding collectibles, which are tracked via toggle
 not via CSV logs). Each row shows per-difficulty ✓/— marks plus a total-shifts count.
 
-**Three visual tiers (using foreground colour):**
-- **Grey** — never seen on any difficulty. The primary signal: anomalies still
-  outstanding. Default sort brings these to the top.
-- **Faded** — seen on another difficulty but not the currently selected one.
-  Secondary signal: you've caught it once, but still need it on this mode.
-- **Normal** — seen on the currently selected difficulty. "Done" on this mode.
+**Three visual tiers:**
+- **Light grey + italic** — never seen on any difficulty. The most muted tier;
+  reads as "no data yet, still outstanding everywhere." Default sort brings
+  these to the top.
+- **Mid grey (regular)** — seen on another difficulty but not the currently
+  selected one. Secondary todo: caught it once, but still missing on this mode.
+- **Normal black** — seen on the currently selected difficulty. "Done" on this
+  mode.
+
+The italic-vs-regular split keeps the two muted tiers clearly distinguishable
+even on displays where small greyscale differences wash out.
 
 **Difficulty dropdown behaviour:** The dropdown does NOT filter this tab (that would
 defeat its purpose). Instead, it (a) prepends a ▶ marker to the matching "Seen on X"
