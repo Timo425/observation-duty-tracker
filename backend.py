@@ -2,11 +2,23 @@ import csv
 import os
 import json
 import math
+import uuid
+import shutil
 from collections import defaultdict
 from datetime import datetime
 
 class Backend:
-    CSV_FIELDS = ["Session_ID", "Difficulty", "Map", "Room", "Anomaly_Name", "Timestamp", "Alt_Tabbed", "Last_Cycled"]
+    CSV_FIELDS = ["Session_ID", "Difficulty", "Map", "Room", "Anomaly_ID", "Anomaly_Name", "Timestamp", "Alt_Tabbed", "Last_Cycled"]
+    FAILURES_FIELDS = [
+        "Session_ID", "Map", "Difficulty",
+        "Room1", "Type1", "Linked1_ID", "Linked1",
+        "Room2", "Type2", "Linked2_ID", "Linked2",
+        "Room3", "Type3", "Linked3_ID", "Linked3",
+        "Timestamp",
+    ]
+    # Where one-shot CSV/JSON backups go before a migration. Lives in the user's
+    # Obsidian vault so Proton Drive picks it up on next sync.
+    BACKUP_DIR = "/media/timo/Storage/Proton Drive/Obsidian/Obsidian hoidla/Arvutimängud/observation-duty-tracker-backups"
 
     def __init__(self, base_dir=None):
         if base_dir is None:
@@ -105,6 +117,31 @@ class Backend:
         # whose shift already has CSV rows (CSV is the source of truth).
         if self._cleanup_stale_session_configs():
             self.save_config()
+
+        # Stable anomaly IDs — backfill JSON and migrate CSVs if needed.
+        if self._ensure_anomaly_ids():
+            self.save_master_data()
+        needs_main = self._main_csv_needs_id_migration()
+        needs_fail = self._failures_csv_needs_id_migration()
+        if needs_main or needs_fail:
+            backup_dir = self._backup_data_files("pre-anomaly-id-migration")
+            if backup_dir:
+                print(f"[migration] backed up data/logs to {backup_dir}")
+            if needs_main: self._migrate_main_csv_add_ids()
+            if needs_fail: self._migrate_failures_csv_add_ids()
+        is_real_data = self.base_dir == os.path.dirname(os.path.abspath(__file__))
+        # Rename propagation: JSON is authoritative for names. Runs every start,
+        # cheap no-op once everything is in sync.
+        self._sync_csv_names_from_json()
+        # Orphan detection: rows reference IDs that no longer exist in JSON.
+        # Non-fatal — just a heads-up so the user knows if a JSON edit dropped
+        # an anomaly that still had logged rows.
+        if is_real_data:
+            orphans = self.find_orphan_anomaly_ids()
+            if orphans:
+                print(f"[{self.game_id}] {len(orphans)} anomaly ID(s) in CSV no longer exist in JSON (data/{self.game_id}.json). These rows are preserved with their stored names but won't aggregate correctly:")
+                for aid, info in list(orphans.items())[:5]:
+                    print(f"  - {info['name'] or '(blank name)'}: {info['main_rows']} main row(s), {info['failure_rows']} failure row(s)")
 
     def save_config(self):
         self._sync_active_to_games_state()
@@ -342,6 +379,241 @@ class Backend:
                 changed = True
         return changed
 
+    # -----------------------------------------------------------------
+    # Stable anomaly IDs. Each anomaly gets a UUID that never changes,
+    # even when renamed. CSVs store both the ID (for matching/ownership)
+    # and the name (for human readability / legacy fallback).
+    # -----------------------------------------------------------------
+
+    def _ensure_anomaly_ids(self):
+        """Walk the master JSON and assign a UUID to any anomaly that lacks one.
+        Returns True if anything was changed (caller is responsible for saving)."""
+        changed = False
+        def assign(anom):
+            nonlocal changed
+            if "id" not in anom or not anom["id"]:
+                anom["id"] = str(uuid.uuid4())
+                changed = True
+        for a in self.data.get("Global", []):
+            assign(a)
+        for map_data in self.data.get("Maps", {}).values():
+            for room_anoms in map_data.get("Rooms", {}).values():
+                for a in room_anoms:
+                    assign(a)
+        return changed
+
+    def _build_id_lookups(self):
+        """Two lookups built from the current JSON:
+          - room_lookup[(map_name, room_name, name_lower)] = id
+          - global_lookup[name_lower] = id
+        Used for resolving a name to an ID during migration and new writes."""
+        room_lookup = {}
+        global_lookup = {}
+        for a in self.data.get("Global", []):
+            if "id" in a:
+                global_lookup[a["name"].lower()] = a["id"]
+        for map_name, map_data in self.data.get("Maps", {}).items():
+            for room_name, anoms in map_data.get("Rooms", {}).items():
+                for a in anoms:
+                    if "id" in a:
+                        room_lookup[(map_name, room_name, a["name"].lower())] = a["id"]
+        return room_lookup, global_lookup
+
+    def _resolve_anomaly_id(self, map_name, room_name, anomaly_name, _lookups=None):
+        """Return the stable ID for an anomaly given its current name and
+        location. Global anomalies match by name alone (they appear in any
+        room on the CSV, but are keyed by name in JSON). Returns '' if no
+        match — caller writes an empty ID rather than failing, so the row
+        is still useful as a name-only record."""
+        room_lookup, global_lookup = _lookups if _lookups else self._build_id_lookups()
+        nm = (anomaly_name or "").lower()
+        key = (map_name, room_name, nm)
+        if key in room_lookup:
+            return room_lookup[key]
+        return global_lookup.get(nm, "")
+
+    def _backup_data_files(self, reason):
+        """Snapshot the current JSON + CSVs into the Obsidian backup folder
+        before a destructive one-shot migration. Keyed by game + reason + ts
+        so parallel migrations across multiple games don't collide. Skipped
+        when the Backend is operating against a test fixture (base_dir != the
+        repo root) so unit tests don't pollute the real backup folder."""
+        if self.base_dir != os.path.dirname(os.path.abspath(__file__)): return None
+        try:
+            ts = datetime.now().strftime("%Y%m%d-%H%M%S")
+            dest = os.path.join(self.BACKUP_DIR, f"{self.game_id}-{reason}-{ts}")
+            os.makedirs(dest, exist_ok=True)
+            for src in (self.data_path, self.logs_path, self.failures_path):
+                if src and os.path.exists(src):
+                    shutil.copy2(src, os.path.join(dest, os.path.basename(src)))
+            return dest
+        except Exception as e:
+            print(f"[backup] failed ({e}); migration will proceed without a backup")
+            return None
+
+    def _main_csv_needs_id_migration(self):
+        if not os.path.exists(self.logs_path): return False
+        try:
+            with open(self.logs_path, 'r', encoding='utf-8') as f:
+                header = next(csv.reader(f), [])
+            return "Anomaly_Name" in header and "Anomaly_ID" not in header
+        except Exception:
+            return False
+
+    def _failures_csv_needs_id_migration(self):
+        if not os.path.exists(self.failures_path): return False
+        try:
+            with open(self.failures_path, 'r', encoding='utf-8') as f:
+                header = next(csv.reader(f), [])
+            return "Linked1" in header and "Linked1_ID" not in header
+        except Exception:
+            return False
+
+    def _migrate_main_csv_add_ids(self):
+        """Insert an Anomaly_ID column into the main CSV, backfilling each row
+        by looking up (Map, Room, Anomaly_Name). Orphan rows (no matching
+        anomaly in JSON) get an empty ID — they're still preserved. Idempotent."""
+        if not self._main_csv_needs_id_migration(): return 0
+        lookups = self._build_id_lookups()
+        with open(self.logs_path, 'r', encoding='utf-8') as f:
+            rows = list(csv.DictReader(f))
+        orphans = 0
+        for row in rows:
+            aid = self._resolve_anomaly_id(
+                row.get("Map", ""), row.get("Room", ""), row.get("Anomaly_Name", ""),
+                _lookups=lookups,
+            )
+            row["Anomaly_ID"] = aid
+            if not aid:
+                orphans += 1
+        with open(self.logs_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=self.CSV_FIELDS)
+            writer.writeheader()
+            writer.writerows(rows)
+        if orphans:
+            print(f"[migration] {os.path.basename(self.logs_path)}: {orphans} row(s) could not be matched to a current anomaly; kept with empty Anomaly_ID (name preserved).")
+        return len(rows)
+
+    def _migrate_failures_csv_add_ids(self):
+        """Insert Linked1_ID/Linked2_ID/Linked3_ID columns into the failures
+        CSV. Each Linked column may be 'None' (no ID) or an anomaly name to
+        look up. Idempotent."""
+        if not self._failures_csv_needs_id_migration(): return 0
+        lookups = self._build_id_lookups()
+        with open(self.failures_path, 'r', encoding='utf-8') as f:
+            rows = list(csv.DictReader(f))
+        orphans = 0
+        for row in rows:
+            map_name = row.get("Map", "")
+            for i in (1, 2, 3):
+                linked = row.get(f"Linked{i}", "None")
+                room = row.get(f"Room{i}", "")
+                if linked and linked != "None":
+                    aid = self._resolve_anomaly_id(map_name, room, linked, _lookups=lookups)
+                    row[f"Linked{i}_ID"] = aid
+                    if not aid: orphans += 1
+                else:
+                    row[f"Linked{i}_ID"] = ""
+        with open(self.failures_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=self.FAILURES_FIELDS)
+            writer.writeheader()
+            writer.writerows(rows)
+        if orphans:
+            print(f"[migration] {os.path.basename(self.failures_path)}: {orphans} linked anomaly name(s) could not be resolved; kept with empty Linked_ID.")
+        return len(rows)
+
+    def _sync_csv_names_from_json(self):
+        """For each CSV row that has an Anomaly_ID matching an anomaly in JSON,
+        overwrite its stored name with the current JSON name. This is the
+        rename-propagation mechanism: edit the name in JSON, next startup the
+        CSVs reflect it automatically (no manual find-and-replace needed)."""
+        # Build id -> current name
+        id_to_name = {}
+        for a in self.data.get("Global", []):
+            if "id" in a: id_to_name[a["id"]] = a["name"]
+        for map_data in self.data.get("Maps", {}).values():
+            for anoms in map_data.get("Rooms", {}).values():
+                for a in anoms:
+                    if "id" in a: id_to_name[a["id"]] = a["name"]
+
+        total_updated = 0
+
+        # Main CSV
+        if os.path.exists(self.logs_path):
+            with open(self.logs_path, 'r', encoding='utf-8') as f:
+                rows = list(csv.DictReader(f))
+            if rows and "Anomaly_ID" in (rows[0].keys() if rows else []):
+                changed = 0
+                for row in rows:
+                    aid = row.get("Anomaly_ID", "")
+                    if aid and aid in id_to_name:
+                        cur = id_to_name[aid]
+                        if row.get("Anomaly_Name", "") != cur:
+                            row["Anomaly_Name"] = cur
+                            changed += 1
+                if changed:
+                    with open(self.logs_path, 'w', newline='', encoding='utf-8') as f:
+                        writer = csv.DictWriter(f, fieldnames=self.CSV_FIELDS)
+                        writer.writeheader()
+                        writer.writerows(rows)
+                    total_updated += changed
+
+        # Failures CSV
+        if os.path.exists(self.failures_path):
+            with open(self.failures_path, 'r', encoding='utf-8') as f:
+                rows = list(csv.DictReader(f))
+            if rows and "Linked1_ID" in (rows[0].keys() if rows else []):
+                changed = 0
+                for row in rows:
+                    for i in (1, 2, 3):
+                        aid = row.get(f"Linked{i}_ID", "")
+                        if aid and aid in id_to_name:
+                            cur = id_to_name[aid]
+                            if row.get(f"Linked{i}", "") != cur:
+                                row[f"Linked{i}"] = cur
+                                changed += 1
+                if changed:
+                    with open(self.failures_path, 'w', newline='', encoding='utf-8') as f:
+                        writer = csv.DictWriter(f, fieldnames=self.FAILURES_FIELDS)
+                        writer.writeheader()
+                        writer.writerows(rows)
+                    total_updated += changed
+
+        if total_updated:
+            print(f"[sync] renamed {total_updated} stored anomaly name(s) in CSVs to match JSON.")
+        return total_updated
+
+    def find_orphan_anomaly_ids(self):
+        """Detect anomaly IDs referenced in CSVs that no longer exist in JSON —
+        i.e., the user removed the anomaly from the data file but logged rows
+        still point at it. Returns a dict of {id: {"name": stored_name,
+        "main_rows": N, "failure_rows": M}} so the UI/CLI can surface a
+        'data you're about to lose' warning before accepting deletions."""
+        known_ids = set()
+        for a in self.data.get("Global", []):
+            if "id" in a: known_ids.add(a["id"])
+        for map_data in self.data.get("Maps", {}).values():
+            for anoms in map_data.get("Rooms", {}).values():
+                for a in anoms:
+                    if "id" in a: known_ids.add(a["id"])
+        orphans = {}
+        if os.path.exists(self.logs_path):
+            with open(self.logs_path, 'r', encoding='utf-8') as f:
+                for row in csv.DictReader(f):
+                    aid = row.get("Anomaly_ID", "")
+                    if aid and aid not in known_ids:
+                        entry = orphans.setdefault(aid, {"name": row.get("Anomaly_Name", ""), "main_rows": 0, "failure_rows": 0})
+                        entry["main_rows"] += 1
+        if os.path.exists(self.failures_path):
+            with open(self.failures_path, 'r', encoding='utf-8') as f:
+                for row in csv.DictReader(f):
+                    for i in (1, 2, 3):
+                        aid = row.get(f"Linked{i}_ID", "")
+                        if aid and aid not in known_ids:
+                            entry = orphans.setdefault(aid, {"name": row.get(f"Linked{i}", ""), "main_rows": 0, "failure_rows": 0})
+                            entry["failure_rows"] += 1
+        return orphans
+
     def load_master_data(self):
         if not os.path.exists(self.data_path):
             return {}
@@ -363,13 +635,7 @@ class Backend:
         if not os.path.exists(self.failures_path) or os.stat(self.failures_path).st_size == 0:
             with open(self.failures_path, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
-                writer.writerow([
-                    "Session_ID", "Map", "Difficulty",
-                    "Room1", "Type1", "Linked1",
-                    "Room2", "Type2", "Linked2",
-                    "Room3", "Type3", "Linked3",
-                    "Timestamp"
-                ])
+                writer.writerow(self.FAILURES_FIELDS)
 
     def set_difficulty(self, difficulty):
         self.difficulty = difficulty
@@ -583,9 +849,10 @@ class Backend:
         cfg = self.session_configs.get(str(self.session_id), {})
         alt_tabbed = "False" if cfg.get("Alt_Tab_Disabled") else "True"
         last_cycled = "" if cfg.get("Cycling_Disabled") else timestamp
+        anom_id = self._resolve_anomaly_id(map_name, room_name, anomaly_name)
         with open(self.logs_path, 'a', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
-            writer.writerow([self.session_id, self.difficulty, map_name, room_name, anomaly_name, timestamp, alt_tabbed, last_cycled])
+            writer.writerow([self.session_id, self.difficulty, map_name, room_name, anom_id, anomaly_name, timestamp, alt_tabbed, last_cycled])
         # Shift now has a CSV row — drop any stale Map/Difficulty from its
         # Session_Configs entry so the CSV is the only copy from here on.
         self._strip_map_diff_from_session_config(self.session_id)
@@ -597,19 +864,24 @@ class Backend:
         """
         timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         row = [self.session_id, map_name, self.difficulty]
-        
+
         updated_any_json = False
+        lookups = self._build_id_lookups()
         for f in failures:
             room = f.get("room", "")
             reported_type = f.get("reported_type", "")
             linked_name = f.get("linked_anomaly", "None")
-            row.extend([room, reported_type, linked_name])
-            
+            if linked_name and linked_name != "None":
+                linked_id = self._resolve_anomaly_id(map_name, room, linked_name, _lookups=lookups)
+            else:
+                linked_id = ""
+            row.extend([room, reported_type, linked_id, linked_name])
+
             # Update master JSON if linked
             if linked_name != "None":
                 if self.update_anomaly_end_game_type(map_name, room, linked_name, reported_type):
                     updated_any_json = True
-                    
+
         row.append(timestamp)
         
         with open(self.failures_path, 'a', newline='', encoding='utf-8') as f:
@@ -801,6 +1073,7 @@ class Backend:
     def add_new_anomaly(self, map_name, room_name, anom_name, anom_type="Unknown", description=""):
         # 1. Update JSON
         new_entry = {
+            "id": str(uuid.uuid4()),
             "name": anom_name,
             "type": anom_type,
             "description": description

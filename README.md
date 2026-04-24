@@ -15,7 +15,7 @@ The goal is to reverse-engineer the game's anomaly selection algorithm through s
 - **Debug: Glitch Tracking:** Two toggles to investigate suspected game glitches:
   - **Alt-Tabbed:** One-way toggle per shift. Once pressed, all subsequent observations are marked as potentially affected by alt-tabbing. Defaults to False.
   - **Camera Cycling:** Each press records a timestamp. Observations log the most recent cycling timestamp, allowing post-hoc analysis of time proximity between cycling and anomaly appearance.
-- **Data-Driven:** Easily expandable by adding JSON files to the `data/` directory.
+- **Data-Driven:** Easily expandable by adding JSON files to the `data/` directory. Each anomaly has a stable UUID (`id` field) assigned on first load, so renaming an anomaly in JSON automatically propagates to the existing CSV logs on the next launch — no manual find-and-replace needed. Removing an anomaly from JSON while logged rows still reference it is flagged on startup as an orphan warning rather than silently dropping the history.
 
 ## Core Concepts
 

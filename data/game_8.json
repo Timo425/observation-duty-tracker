@@ -8,19 +8,22 @@
             "name": "Abyss",
             "description": "Black hole that grows over time",
             "type": "Global",
-            "report": "RMB → \"Abyss\""
+            "report": "RMB → \"Abyss\"",
+            "id": "940d3aeb-8cf6-44ba-ac09-e4167e65cc00"
         },
         {
             "name": "Rift",
             "description": "Translucent distortion that grows",
             "type": "Global",
-            "report": "RMB → \"Rift\""
+            "report": "RMB → \"Rift\"",
+            "id": "fcf428d8-3e78-410b-abab-abe054e55a5b"
         },
         {
             "name": "Camera Malfunction",
             "description": "Room disappears from rotation (count your rooms!)",
             "type": "Global",
-            "report": "RMB → \"Camera Malfunction\""
+            "report": "RMB → \"Camera Malfunction\"",
+            "id": "aeead73e-3e8b-4c20-94b6-3097d141824c"
         }
     ],
     "Maps": {
@@ -30,302 +33,360 @@
                     {
                         "name": "Wall color",
                         "type": "Object Replacement",
-                        "description": "Green walls turn light blue"
+                        "description": "Green walls turn light blue",
+                        "id": "78d7cfdc-2df5-4a78-b450-9bb82aea6b9a"
                     },
                     {
                         "name": "Tree leaves",
                         "type": "Object Replacement",
-                        "description": "Missing leaves in middle of tree above bench swing"
+                        "description": "Missing leaves in middle of tree above bench swing",
+                        "id": "39a99d16-39f2-496f-84ee-46a3c2c261af"
                     },
                     {
                         "name": "Door",
                         "type": "Door Anomaly",
-                        "description": "Door changes to solid one"
+                        "description": "Door changes to solid one",
+                        "id": "82767213-f959-4f44-b16b-06fa3179a71b"
                     },
                     {
                         "name": "Lanterns",
                         "type": "Light Anomaly",
-                        "description": "See-through lights with bulbs → yellow lanterns"
+                        "description": "See-through lights with bulbs → yellow lanterns",
+                        "id": "a65a4beb-63ae-443e-9c37-14334cc20816"
                     },
                     {
                         "name": "Curtains",
                         "type": "Object Movement",
-                        "description": "Left window curtains sway/move"
+                        "description": "Left window curtains sway/move",
+                        "id": "676a583b-c9c1-4fb5-af19-9fcb1511da5f"
                     },
                     {
                         "name": "Ground under swing",
                         "type": "Object Movement",
-                        "description": "Ground moves"
+                        "description": "Ground moves",
+                        "id": "ba9f92e3-ae2e-498b-8e96-e58eafb4a37b"
                     },
                     {
                         "name": "Dog",
                         "type": "Weird Animal",
-                        "description": "Dog grows giraffe neck and yells at camera"
+                        "description": "Dog grows giraffe neck and yells at camera",
+                        "id": "05fe6d0f-049b-4468-99af-e48f2a2f1ee7"
                     },
                     {
                         "name": "Garbage bags",
                         "type": "Hold LMB",
-                        "description": "3 bags appear, collect all, man with bag on head appears"
+                        "description": "3 bags appear, collect all, man with bag on head appears",
+                        "id": "e816fb40-910a-43a6-9cc8-47dfffc2cbd6"
                     },
                     {
                         "name": "Farmer",
                         "type": "INTRUDER",
-                        "description": "Appears on chair with shotgun - report fast or die"
+                        "description": "Appears on chair with shotgun - report fast or die",
+                        "id": "7e73c9fa-6e98-4fe1-9247-ddb964d0256b"
                     }
                 ],
                 "Entrance": [
                     {
                         "name": "Windmill",
                         "type": "Object Movement",
-                        "description": "Rotates clockwise instead of counter-clockwise"
+                        "description": "Rotates clockwise instead of counter-clockwise",
+                        "id": "2e56fcd5-e06b-4bd0-833c-169f77d24738"
                     },
                     {
                         "name": "Blue cart",
                         "type": "Extra Object",
-                        "description": "Wheels in from back road, stops by jeep"
+                        "description": "Wheels in from back road, stops by jeep",
+                        "id": "71a02d25-562c-48e6-9297-3afb0887e8d0"
                     },
                     {
                         "name": "Pumpkin",
                         "type": "Object Replacement",
-                        "description": "Turns into jack-o'-lantern"
+                        "description": "Turns into jack-o'-lantern",
+                        "id": "1de90726-3a49-449e-9936-e9ff844ffe12"
                     },
                     {
                         "name": "Shovel",
                         "type": "Missing Object",
-                        "description": "Disappears from left tree"
+                        "description": "Disappears from left tree",
+                        "id": "3c5bb868-8acf-4a6f-af4d-05858283846c"
                     },
                     {
                         "name": "Jeep lights",
                         "type": "Light Anomaly",
-                        "description": "Lights start blinking (hard to spot)"
+                        "description": "Lights start blinking (hard to spot)",
+                        "id": "2b1f97be-a3c4-4777-b0e4-f80b75dc7745"
                     },
                     {
                         "name": "Hole",
                         "type": "Hole",
-                        "description": "Appears near windmill, camera distorts, creepy music"
+                        "description": "Appears near windmill, camera distorts, creepy music",
+                        "id": "f79940ee-2e78-438c-9ec5-35b1b8ca0f8d"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Appears near shovel/tree (2 locations possible)"
+                        "description": "Appears near shovel/tree (2 locations possible)",
+                        "id": "375d06b0-bbc8-40d9-858b-3e0bf866f061"
                     },
                     {
                         "name": "Fly-man",
                         "type": "INTRUDER",
-                        "description": "At gate. REQUIRES 2 REPORTS! First fails, pulls you to throat, report again or die"
+                        "description": "At gate. REQUIRES 2 REPORTS! First fails, pulls you to throat, report again or die",
+                        "id": "6ac9b6d1-207b-489c-8fed-39749455b31d"
                     },
                     {
                         "name": "Hidden intruder",
                         "type": "INTRUDER",
-                        "description": "Appears behind jeep peering at camera"
+                        "description": "Appears behind jeep peering at camera",
+                        "id": "20373880-ebdd-42b1-8d66-4400477cdbf5"
                     }
                 ],
                 "Kitchen": [
                     {
                         "name": "Fruits",
                         "type": "Object Movement",
-                        "description": "Weird music + fruits levitate from bowl"
+                        "description": "Weird music + fruits levitate from bowl",
+                        "id": "53955482-ae39-49a1-9890-0ca742e8fad6"
                     },
                     {
                         "name": "Calendar",
                         "type": "Image Anomaly",
-                        "description": "Image changes"
+                        "description": "Image changes",
+                        "id": "127a83df-3d0e-4e34-bdd9-8d86e56893ba"
                     },
                     {
                         "name": "Third plate",
                         "type": "Missing Object",
-                        "description": "Third plate from left in strainer disappears"
+                        "description": "Third plate from left in strainer disappears",
+                        "id": "62690897-28c9-4c68-8041-51921f091754"
                     },
                     {
                         "name": "Counter drawers",
                         "type": "Object Replacement",
-                        "description": "Counter near fridge has more drawers"
+                        "description": "Counter near fridge has more drawers",
+                        "id": "2a5378b3-0d85-4f4e-937c-4bab052690ee"
                     },
                     {
                         "name": "Clock",
                         "type": "Object Manipulation",
-                        "description": "Clock runs backwards (tricky!)"
+                        "description": "Clock runs backwards (tricky!)",
+                        "id": "349e1ae4-3bd4-41e3-adeb-e7c3dff7e5bf"
                     },
                     {
                         "name": "Hat in strainer",
                         "type": "Object Replacement",
-                        "description": "Hat appears in strainer (far left)"
+                        "description": "Hat appears in strainer (far left)",
+                        "id": "56e028ca-8cb0-45e6-9295-74d5dd03338e"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Appears in hallway or inside fridge"
+                        "description": "Appears in hallway or inside fridge",
+                        "id": "57245db2-ddd5-42a7-9e2b-7c257ea0f257"
                     },
                     {
                         "name": "Jello cube",
                         "type": "Forbidden Snack",
-                        "description": "Crackling jello on table"
+                        "description": "Crackling jello on table",
+                        "id": "1de8f1c4-bdb7-4528-b9bd-ff06e3698301"
                     },
                     {
                         "name": "Bananas",
                         "type": "Hold LMB",
-                        "description": "4 bananas appear, collect all, banana jumpscare"
+                        "description": "4 bananas appear, collect all, banana jumpscare",
+                        "id": "ff854ef8-c6e5-4ff5-bf6f-5b936085d21b"
                     },
                     {
                         "name": "Hallway Walker",
                         "type": "INTRUDER",
-                        "description": "Walks into kitchen from hallway. HOLD LMB immediately (reporting too slow)"
+                        "description": "Walks into kitchen from hallway. HOLD LMB immediately (reporting too slow)",
+                        "id": "6379a5e1-74f8-4556-bb63-f716ec4cf96a"
                     }
                 ],
                 "Living Room": [
                     {
                         "name": "Left magazine",
                         "type": "Image Anomaly",
-                        "description": "Cover changes"
+                        "description": "Cover changes",
+                        "id": "d1bdc2cc-c5d8-4b1c-9cfd-d0c3c1048773"
                     },
                     {
                         "name": "Right magazine",
                         "type": "Missing Object",
-                        "description": "Disappears from coffee table"
+                        "description": "Disappears from coffee table",
+                        "id": "3419a74f-1068-4c37-a885-0ef36c816063"
                     },
                     {
                         "name": "Couch stains",
                         "type": "Stains",
-                        "description": "Sweat stains on left couch"
+                        "description": "Sweat stains on left couch",
+                        "id": "54f91979-83e6-4e80-9d34-9b6f0fe9b95b"
                     },
                     {
                         "name": "Book under TV",
                         "type": "Extra Object",
-                        "description": "Book appears in open cabinet slot"
+                        "description": "Book appears in open cabinet slot",
+                        "id": "6c7f62c0-7b9f-4d74-8cee-9a03189b6592"
                     },
                     {
                         "name": "Candles",
                         "type": "Object Replacement",
-                        "description": "Tea candles → larger candles"
+                        "description": "Tea candles → larger candles",
+                        "id": "17b04e61-22b5-4b38-a920-6f6ac43086b0"
                     },
                     {
                         "name": "Left painting",
                         "type": "Image Anomaly",
-                        "description": "Field painting gains a cow"
+                        "description": "Field painting gains a cow",
+                        "id": "8a2bf172-e998-46d8-b7db-98d303cb238a"
                     },
                     {
                         "name": "Floor",
                         "type": "Object Replacement",
-                        "description": "Dusty brown → HD wood texture"
+                        "description": "Dusty brown → HD wood texture",
+                        "id": "1e92b93b-2748-4c15-8027-ae8b4888e292"
                     },
                     {
                         "name": "TV screen",
                         "type": "Image Anomaly",
-                        "description": "Red eyeball appears"
+                        "description": "Red eyeball appears",
+                        "id": "68e8bf12-6450-4ba1-ba95-6434058c03ad"
                     },
                     {
                         "name": "Goat skeleton photo",
                         "type": "Image Anomaly",
-                        "description": "Changes to different photo"
+                        "description": "Changes to different photo",
+                        "id": "d9fdc841-27a9-4136-939a-b835f4f4a8ef"
                     },
                     {
                         "name": "Book stack",
                         "type": "Missing Object",
-                        "description": "Books disappear from bottom stack"
+                        "description": "Books disappear from bottom stack",
+                        "id": "1beb1a28-efd2-4dfc-bace-e89c150dc857"
                     },
                     {
                         "name": "Naked cowboy",
                         "type": "INTRUDER",
-                        "description": "Appears on left couch, throws tantrum"
+                        "description": "Appears on left couch, throws tantrum",
+                        "id": "f0114b6f-8e55-43fb-9604-a66db662011f"
                     }
                 ],
                 "Stable": [
                     {
                         "name": "Saddle",
                         "type": "Extra Object",
-                        "description": "Appears on front top post"
+                        "description": "Appears on front top post",
+                        "id": "640959d6-8cdd-4892-bdf3-be1c7f95767a"
                     },
                     {
                         "name": "\"The Stable\" sign",
                         "type": "Extra Object",
-                        "description": "Text appears on front top post"
+                        "description": "Text appears on front top post",
+                        "id": "8ae8a5c9-5a4d-479c-99a4-b2d907f73b8f"
                     },
                     {
                         "name": "Cowboys",
                         "type": "Extra Object",
-                        "description": "Appear in stable"
+                        "description": "Appear in stable",
+                        "id": "b86f3cd7-7ef3-4343-a29b-6b161baab276"
                     },
                     {
                         "name": "Extra sacks",
                         "type": "Extra Object",
-                        "description": "Behind two blue bins"
+                        "description": "Behind two blue bins",
+                        "id": "e410d528-2ae0-4c57-a4d5-d46a525c42f6"
                     },
                     {
                         "name": "Blue crates",
                         "type": "Missing Object",
-                        "description": "2 blue crates near desk disappear"
+                        "description": "2 blue crates near desk disappear",
+                        "id": "2a370853-2c28-4e44-9c96-78c561e8ce30"
                     },
                     {
                         "name": "Shovel",
                         "type": "Object Replacement",
-                        "description": "Replaced with pitchfork"
+                        "description": "Replaced with pitchfork",
+                        "id": "641a1765-3d09-47a4-a817-3ff235cd652c"
                     },
                     {
                         "name": "Room length",
                         "type": "Room Manipulation",
-                        "description": "Stable gets longer"
+                        "description": "Stable gets longer",
+                        "id": "30f7ac3f-f6b9-49f4-9b09-849678bc00e0"
                     },
                     {
                         "name": "Both horses staring",
                         "type": "Weird Animal",
-                        "description": "Both horses stare at camera"
+                        "description": "Both horses stare at camera",
+                        "id": "68174db6-73c9-43e0-96f0-12b27618e79b"
                     },
                     {
                         "name": "Horse neck",
                         "type": "Weird Animal",
-                        "description": "Horse's neck grows very long"
+                        "description": "Horse's neck grows very long",
+                        "id": "ad3a5d48-d0f7-4d4e-b203-2bd79dbc8b66"
                     },
                     {
                         "name": "Demon goat",
                         "type": "Weird Animal",
-                        "description": "Appears in middle, strange music"
+                        "description": "Appears in middle, strange music",
+                        "id": "73724f80-75da-4792-ad55-b4b875a0c560"
                     },
                     {
                         "name": "Grandma",
                         "type": "INTRUDER",
-                        "description": "Throws stones at camera! HOLD LMB immediately (slow report)"
+                        "description": "Throws stones at camera! HOLD LMB immediately (slow report)",
+                        "id": "18006a7e-1ec8-4170-9ebe-ef8cf4d31518"
                     }
                 ],
                 "Backyard": [
                     {
                         "name": "Scarecrow",
                         "type": "Object Replacement",
-                        "description": "Changed to one with more limbs"
+                        "description": "Changed to one with more limbs",
+                        "id": "0fe5fc9e-9323-4b3b-bafa-ecb6c801ba10"
                     },
                     {
                         "name": "Shed light",
                         "type": "Light Anomaly",
-                        "description": "Light behind goats flickers"
+                        "description": "Light behind goats flickers",
+                        "id": "923af9f6-22aa-4552-a813-d8ba431e37e6"
                     },
                     {
                         "name": "Tree",
                         "type": "Object Movement",
-                        "description": "Middle tree moves left toward rock formation"
+                        "description": "Middle tree moves left toward rock formation",
+                        "id": "0889671c-59dd-4c18-b77f-0ce62d316b69"
                     },
                     {
                         "name": "Shed",
                         "type": "Missing Object",
-                        "description": "Shed beside tractor disappears"
+                        "description": "Shed beside tractor disappears",
+                        "id": "83965dd2-ac48-421a-bb24-bf32368cbd47"
                     },
                     {
                         "name": "Fence post",
                         "type": "Missing Object",
-                        "description": "Middle post disappears"
+                        "description": "Middle post disappears",
+                        "id": "4fef6607-f0d7-47c2-ae79-c65531190104"
                     },
                     {
                         "name": "Tires",
                         "type": "Extra Object",
-                        "description": "Appear beside goats"
+                        "description": "Appear beside goats",
+                        "id": "dda56ee1-69f5-448a-bb5c-8779e5f4ec01"
                     },
                     {
                         "name": "Special goats",
                         "type": "Hold LMB",
-                        "description": "4 special goats appear, collect all"
+                        "description": "4 special goats appear, collect all",
+                        "id": "ac86546b-196f-4d51-a42c-a5b85c0c4840"
                     },
                     {
                         "name": "Man behind shed",
                         "type": "INTRUDER",
-                        "description": "Appears behind enclosure shed"
+                        "description": "Appears behind enclosure shed",
+                        "id": "2a448eff-a054-4ec2-9fa7-78e97fd1fa5f"
                     }
                 ]
             }
@@ -336,412 +397,492 @@
                     {
                         "name": "Wall decor",
                         "type": "Missing Object",
-                        "description": "Under flight boards disappears"
+                        "description": "Under flight boards disappears",
+                        "id": "f31f937b-ff7b-4ab6-9efa-7c1f191b1733"
                     },
                     {
                         "name": "Plant (left)",
                         "type": "Missing Object",
-                        "description": "Left plant disappears"
+                        "description": "Left plant disappears",
+                        "id": "f232e8b4-e286-4f5c-8ba9-edfed95b9982"
                     },
                     {
                         "name": "Extra plant",
                         "type": "Extra Object",
-                        "description": "Appears in front of reception desk"
+                        "description": "Appears in front of reception desk",
+                        "id": "2dbb1383-f621-4c2f-ae1b-a6c380a86050"
                     },
                     {
                         "name": "Extra chairs",
                         "type": "Extra Object",
-                        "description": "On right seat rack, taking aisle space"
+                        "description": "On right seat rack, taking aisle space",
+                        "id": "93684421-9619-4287-b681-d6273cd49e12"
                     },
                     {
                         "name": "Extra seats",
                         "type": "Extra Object",
-                        "description": "On row going towards gate"
+                        "description": "On row going towards gate",
+                        "id": "de58636d-351a-49bd-a865-68dd18ca733c"
                     },
                     {
                         "name": "Backpack",
                         "type": "Object Replacement",
-                        "description": "Red → brown"
+                        "description": "Red → brown",
+                        "id": "d664b0d2-031f-4149-b695-67a09190d4e8"
                     },
                     {
                         "name": "Vent smoke",
                         "type": "Smoke",
-                        "description": "Comes out of vent at boarding desk"
+                        "description": "Comes out of vent at boarding desk",
+                        "id": "7030e0b5-f253-47b6-af6c-b3e8e51e8732"
                     },
                     {
                         "name": "UFO sign",
                         "type": "Image Anomaly",
-                        "description": "Far right sign shows UFO"
+                        "description": "Far right sign shows UFO",
+                        "id": "bb680c63-5f68-45a9-aa53-77fd069e6eb0"
                     },
                     {
                         "name": "Flights board",
                         "type": "Image Anomaly",
-                        "description": "All destinations \"Rome\" or \"Cancelled\""
+                        "description": "All destinations \"Rome\" or \"Cancelled\"",
+                        "id": "bee31dd6-d6f9-4a2f-a8ea-203593901922"
                     },
                     {
                         "name": "Seagull poster",
                         "type": "Image Anomaly",
-                        "description": "Poster beside do-not-enter changes"
+                        "description": "Poster beside do-not-enter changes",
+                        "id": "db358e62-c58f-47e5-8bac-d4f9f068a34c"
                     },
                     {
                         "name": "Gate symbols",
                         "type": "Image Anomaly",
-                        "description": "Exit/enter symbols change (red → green)"
+                        "description": "Exit/enter symbols change (red → green)",
+                        "id": "c853811f-f65f-4c48-9507-88e2a45472fc"
                     },
                     {
                         "name": "\"Gate 2\" sign",
                         "type": "Image Anomaly",
-                        "description": "Sign changes (2 → 3)"
+                        "description": "Sign changes (2 → 3)",
+                        "id": "4209d3db-693f-4260-bccb-52486dd2bc12"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Appears in gate area"
+                        "description": "Appears in gate area",
+                        "id": "bc3da1e4-f4b1-42f3-9a09-86e616ba2a01"
                     },
                     {
                         "name": "Rift",
                         "type": "Rift",
-                        "description": "Can appear in gate area"
+                        "description": "Can appear in gate area",
+                        "id": "92a4273c-fddc-4156-a09b-18205a68c087"
                     },
                     {
                         "name": "Gate intruder",
                         "type": "INTRUDER",
-                        "description": "Appears at gates to plane"
+                        "description": "Appears at gates to plane",
+                        "id": "dd6a6532-0fe0-414a-85b0-e81905d52a25"
                     }
                 ],
                 "Plane Entrance": [
                     {
                         "name": "Caution bars",
                         "type": "Image Anomaly",
-                        "description": "\"Caution\" text → thin bars"
+                        "description": "\"Caution\" text → thin bars",
+                        "id": "ce0f4a40-df9f-4dd2-b2d4-4f8c02ec31db"
                     },
                     {
                         "name": "Green sign",
                         "type": "Image Anomaly",
-                        "description": "Arrow direction changes"
+                        "description": "Arrow direction changes",
+                        "id": "4299076c-bc4b-41b1-b685-18a9c90eec6f"
                     },
                     {
                         "name": "Blue sign",
                         "type": "Image Anomaly",
-                        "description": "Blue → orange"
+                        "description": "Blue → orange",
+                        "id": "ec26b1c9-2c1b-4a07-8f4a-f5fcb4cbaf44"
                     },
                     {
                         "name": "Briefcase",
                         "type": "Object Movement",
-                        "description": "Moves from left to right side"
+                        "description": "Moves from left to right side",
+                        "id": "3f1d4efb-a0b6-47de-a0d5-a2a7db8bc817"
                     },
                     {
                         "name": "Floor pattern",
                         "type": "Object Replacement",
-                        "description": "Pattern grows larger"
+                        "description": "Pattern grows larger",
+                        "id": "af226f60-a3b5-4b4b-bc69-f09e95f0c5f8"
                     },
                     {
                         "name": "Hallway length",
                         "type": "Room Manipulation",
-                        "description": "Gets longer by one segment"
+                        "description": "Gets longer by one segment",
+                        "id": "f1fcd60d-78f7-4867-b0e6-67d2fd985c80"
                     },
                     {
                         "name": "Handprint",
                         "type": "Handprint",
-                        "description": "Appears on left and/or right of door"
+                        "description": "Appears on left and/or right of door",
+                        "id": "8470b49f-a654-4522-81af-7d9c2ccf759b"
                     },
                     {
                         "name": "Door",
                         "type": "Door Anomaly",
-                        "description": "Gate to plane closes"
+                        "description": "Gate to plane closes",
+                        "id": "da14acb9-f64a-4a9f-a998-51db84d9e6fc"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "In hallway against briefcase"
+                        "description": "In hallway against briefcase",
+                        "id": "3a49183c-56d2-4883-9e2f-2761fbd4b6c6"
                     },
                     {
                         "name": "Abyss",
                         "type": "Abyss",
-                        "description": "Can appear at end of hallway"
+                        "description": "Can appear at end of hallway",
+                        "id": "f478bbfa-60dd-4231-afa2-9dda1df08c63"
                     },
                     {
                         "name": "Wheelchair man",
                         "type": "INTRUDER",
-                        "description": "Man with bag on head wheels lady. SLOW report + CAPTCHA (select worms). If he gets too close = death"
+                        "description": "Man with bag on head wheels lady. SLOW report + CAPTCHA (select worms). If he gets too close = death",
+                        "id": "5f9004b6-ef7e-4392-9b48-213ffe71e640"
                     }
                 ],
                 "Economy Class": [
                     {
                         "name": "Bottle",
                         "type": "Object Movement",
-                        "description": "Closest bottle turns/moves on cart"
+                        "description": "Closest bottle turns/moves on cart",
+                        "id": "050239a7-2b4f-4b58-9243-36ded0c926aa"
                     },
                     {
                         "name": "Single tray",
                         "type": "Object Movement",
-                        "description": "One tray table closes"
+                        "description": "One tray table closes",
+                        "id": "4bb7df14-b091-43d1-a0ec-e54309dfd2be"
                     },
                     {
                         "name": "Overhead bins",
                         "type": "Object Movement",
-                        "description": "Overhead compartments close (can be any)"
+                        "description": "Overhead compartments close (can be any)",
+                        "id": "7adf76e7-3bd3-4abf-8a4d-ebf03131c986"
                     },
                     {
                         "name": "Bulkhead door",
                         "type": "Object Movement",
-                        "description": "Left side closes slightly"
+                        "description": "Left side closes slightly",
+                        "id": "a70e4708-2ecf-42f7-ba4d-e949c59ae0fa"
                     },
                     {
                         "name": "Red bottle",
                         "type": "Object Replacement",
-                        "description": "Turns green"
+                        "description": "Turns green",
+                        "id": "1827dd85-0f7a-4224-9b7f-15c09f1d9c3f"
                     },
                     {
                         "name": "Safety pamphlet",
                         "type": "Missing Object",
-                        "description": "2nd row, 2nd chair pamphlet disappears"
+                        "description": "2nd row, 2nd chair pamphlet disappears",
+                        "id": "1912755e-d530-4c21-a77a-12dbd249fe7d"
                     },
                     {
                         "name": "All trays",
                         "type": "Missing Object",
-                        "description": "All cabin trays disappear"
+                        "description": "All cabin trays disappear",
+                        "id": "7da746a3-629d-438b-8a7d-ee62c2fbfe56"
                     },
                     {
                         "name": "Cup/tray",
                         "type": "Missing Object",
-                        "description": "Cup missing, tray closed (scary face when reporting)"
+                        "description": "Cup missing, tray closed (scary face when reporting)",
+                        "id": "01dce7f7-328b-4dc8-afa0-6b734fd06036"
                     },
                     {
                         "name": "Window",
                         "type": "Light Anomaly",
-                        "description": "Right window opens, lets light in"
+                        "description": "Right window opens, lets light in",
+                        "id": "f8d71851-e60c-45f0-97d5-8ceef3c8859d"
                     },
                     {
                         "name": "Monitor video",
                         "type": "Image Anomaly",
-                        "description": "Plays cursed safety video or dark image"
+                        "description": "Plays cursed safety video or dark image",
+                        "id": "c8afbba7-da86-4900-be5c-c17803fc062a"
                     },
                     {
                         "name": "Monitor face",
                         "type": "Image Anomaly",
-                        "description": "Scary grey face appears"
+                        "description": "Scary grey face appears",
+                        "id": "3a5074d4-cc4e-42a2-b1e5-6d3705f52b17"
                     },
                     {
                         "name": "Behind cart",
                         "type": "INTRUDER",
-                        "description": "Appears behind beverage cart"
+                        "description": "Appears behind beverage cart",
+                        "id": "e839a406-0bbd-4ef8-8f61-ab9b75f0432f"
                     },
                     {
                         "name": "Teeth grinder",
                         "type": "INTRUDER",
-                        "description": "Grinding teeth in camera"
+                        "description": "Grinding teeth in camera",
+                        "id": "410c2206-23e6-431d-a294-cf8e184b8e5c"
                     },
                     {
                         "name": "Over seat",
                         "type": "INTRUDER",
-                        "description": "Looking over right seat, smiling"
+                        "description": "Looking over right seat, smiling",
+                        "id": "7df5fdd1-8b60-4760-9f46-609cf773ffe6"
                     }
                 ],
                 "Business Class": [
                     {
                         "name": "Secret item",
                         "type": "Special Object",
-                        "description": "Just click it! (collectible)"
+                        "description": "Just click it! (collectible)",
+                        "id": "9a5e08c7-a1c2-4aa3-acc0-6b2bb642ce5d"
                     },
                     {
                         "name": "Wall sign",
                         "type": "Extra Object",
-                        "description": "Extra sign on right wall"
+                        "description": "Extra sign on right wall",
+                        "id": "6d65688d-b893-48bb-9f34-e92192c3160a"
                     },
                     {
                         "name": "Cup",
                         "type": "Object Replacement",
-                        "description": "Left tray cup → wine bottle"
+                        "description": "Left tray cup → wine bottle",
+                        "id": "675418e9-777b-4f0c-af6d-91c87428ced9"
                     },
                     {
                         "name": "Exit sign",
                         "type": "Image Anomaly",
-                        "description": "\"Exit\" → \"Enter\""
+                        "description": "\"Exit\" → \"Enter\"",
+                        "id": "ea6e6bde-e109-48e7-ad75-bc52816e5dee"
                     },
                     {
                         "name": "Cabin doors",
                         "type": "Object Movement",
-                        "description": "Either of 2 cabin doors can close"
+                        "description": "Either of 2 cabin doors can close",
+                        "id": "fd414a9e-9f09-4c49-b1ec-580054af87f6"
                     },
                     {
                         "name": "Purse",
                         "type": "Missing Object",
-                        "description": "Left seat purse disappears"
+                        "description": "Left seat purse disappears",
+                        "id": "38c72eca-6cf0-495a-b165-0627bfb0df14"
                     },
                     {
                         "name": "Shoes",
                         "type": "Missing Object",
-                        "description": "Under right seat shoes disappear"
+                        "description": "Under right seat shoes disappear",
+                        "id": "87b84b32-c672-4e0b-8131-99d683bc6078"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Appears in cabin"
+                        "description": "Appears in cabin",
+                        "id": "27c02eca-ca09-444a-ac68-e5417a92cc9c"
                     },
                     {
                         "name": "Cabin flood",
                         "type": "Water Anomaly",
-                        "description": "Water fills cabin"
+                        "description": "Water fills cabin",
+                        "id": "caa15f7d-a65c-407f-b1fc-2f07b9cf320d"
                     },
                     {
                         "name": "Rift",
                         "type": "Rift",
-                        "description": "Can appear in cabin"
+                        "description": "Can appear in cabin",
+                        "id": "1a325f63-1953-4bf3-b65d-b56645bf5c6f"
                     },
                     {
                         "name": "Fog",
                         "type": "Steam/Smoke/Fog",
-                        "description": "Cabin fills with fog"
+                        "description": "Cabin fills with fog",
+                        "id": "29f6b9f6-bf56-4bae-863a-8f0210a6ef31"
                     },
                     {
                         "name": "Handprints",
                         "type": "Hold LMB",
-                        "description": "3 handprints around cabin. **Very hard to see** - may need multiple monitors!"
+                        "description": "3 handprints around cabin. **Very hard to see** - may need multiple monitors!",
+                        "id": "37c167f6-8a5f-4e7d-8581-975dc587dce8"
                     },
                     {
                         "name": "Intercom",
                         "type": "Strange Broadcast",
-                        "description": "Red light blinks, weird message plays"
+                        "description": "Red light blinks, weird message plays",
+                        "id": "5f14d518-5878-48c3-b421-e6429f8a2783"
                     },
                     {
                         "name": "Flight attendant",
                         "type": "INTRUDER",
-                        "description": "Walks with cart asking what's served. **Correct answer: WATER** (coffee/juice = rescan needed)"
+                        "description": "Walks with cart asking what's served. **Correct answer: WATER** (coffee/juice = rescan needed)",
+                        "id": "83fd283a-63c8-4977-9d43-bd6deb851fd6"
                     }
                 ],
                 "Cockpit": [
                     {
                         "name": "Fabric",
                         "type": "Object Movement",
-                        "description": "Moves from behind right chair to left"
+                        "description": "Moves from behind right chair to left",
+                        "id": "bc6ed5b3-8d6a-4c90-a3df-ffae6647e2a0"
                     },
                     {
                         "name": "Chair arm",
                         "type": "Object Movement",
-                        "description": "Left chair arm lifts up"
+                        "description": "Left chair arm lifts up",
+                        "id": "e6bf5030-1aa8-49a3-aa6d-7e0ba077a31e"
                     },
                     {
                         "name": "Shoulder straps",
                         "type": "Object Movement",
-                        "description": "Left seat straps shift (right lower than left)"
+                        "description": "Left seat straps shift (right lower than left)",
+                        "id": "ec9b963a-04ad-4231-bb30-44e9ddc92709"
                     },
                     {
                         "name": "Handles",
                         "type": "Object Movement",
-                        "description": "Center handles move"
+                        "description": "Center handles move",
+                        "id": "95a40f79-6ded-4c6f-9ad0-15e0b90c162e"
                     },
                     {
                         "name": "Red cup",
                         "type": "Object Movement",
-                        "description": "Right side cup appears upside-down"
+                        "description": "Right side cup appears upside-down",
+                        "id": "cdf05ede-197b-4f9f-9ea1-53cfcd560958"
                     },
                     {
                         "name": "Chairs",
                         "type": "Object Replacement",
-                        "description": "Worn → vibrant new-looking"
+                        "description": "Worn → vibrant new-looking",
+                        "id": "9e9fb1b6-a62b-4d95-b7e7-5e709a1aaa7a"
                     },
                     {
                         "name": "Banana",
                         "type": "Missing Object",
-                        "description": "Right side banana disappears"
+                        "description": "Right side banana disappears",
+                        "id": "c3139ec4-2ab2-4b45-a113-169b022e4a71"
                     },
                     {
                         "name": "Orange vest",
                         "type": "Missing Object",
-                        "description": "Disappears"
+                        "description": "Disappears",
+                        "id": "d15bebfb-9ee3-4de4-8673-f60cf5f8b8ad"
                     },
                     {
                         "name": "Right straps",
                         "type": "Missing Object",
-                        "description": "Right seat straps disappear"
+                        "description": "Right seat straps disappear",
+                        "id": "d3c0fed7-aacc-4297-91f4-284d24f6700b"
                     },
                     {
                         "name": "Game controllers",
                         "type": "Extra Object",
-                        "description": "Appear on pilot seats"
+                        "description": "Appear on pilot seats",
+                        "id": "2d9ff279-2792-45e6-a611-af07f0061d6d"
                     },
                     {
                         "name": "Banana pile",
                         "type": "Extra Object",
-                        "description": "Behind pilot seats"
+                        "description": "Behind pilot seats",
+                        "id": "f7e92d88-0916-4068-b19c-1a022a29024a"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Pilot appears on seat"
+                        "description": "Pilot appears on seat",
+                        "id": "43f4154a-0370-4f03-93ba-6cd9e11f5173"
                     },
                     {
                         "name": "Door peeker",
                         "type": "INTRUDER",
-                        "description": "Peeks through door behind chairs"
+                        "description": "Peeks through door behind chairs",
+                        "id": "b310ca67-503d-45fb-bb4e-cebb2368957b"
                     }
                 ],
                 "Toilet": [
                     {
                         "name": "Magazine",
                         "type": "Image Anomaly",
-                        "description": "Cover changes"
+                        "description": "Cover changes",
+                        "id": "c05b7c33-178c-47ac-8633-e991b22d7bfc"
                     },
                     {
                         "name": "Blue sign",
                         "type": "Image Anomaly",
-                        "description": "\"Keep toilet clean\" → \"Don't Flush Human\""
+                        "description": "\"Keep toilet clean\" → \"Don't Flush Human\"",
+                        "id": "0ba8659d-26be-4ce3-aeed-b157ec776a4a"
                     },
                     {
                         "name": "No alcohol sign",
                         "type": "Image Anomaly",
-                        "description": "Changes to no mask sign"
+                        "description": "Changes to no mask sign",
+                        "id": "1a9423bb-c6ab-467d-a114-29a5f06d6b40"
                     },
                     {
                         "name": "Small sign",
                         "type": "Image Anomaly",
-                        "description": "Man squatting over toilet → in toilet"
+                        "description": "Man squatting over toilet → in toilet",
+                        "id": "2480b895-b528-42ba-8a88-d1bdf90dcffc"
                     },
                     {
                         "name": "Extra soap",
                         "type": "Extra Object",
-                        "description": "Extra bottle on left of sink"
+                        "description": "Extra bottle on left of sink",
+                        "id": "56534c71-65d3-4c70-8ca4-db08c878c003"
                     },
                     {
                         "name": "Tourist hat",
                         "type": "Extra Object",
-                        "description": "Appears in toilet"
+                        "description": "Appears in toilet",
+                        "id": "34dcd439-e668-49d0-9189-af8f4b311e20"
                     },
                     {
                         "name": "Worms",
                         "type": "Extra Object",
-                        "description": "Appear in toilet"
+                        "description": "Appear in toilet",
+                        "id": "d687aa9a-caf1-4805-9540-237ed7748e64"
                     },
                     {
                         "name": "Toilet paper",
                         "type": "Object Replacement",
-                        "description": "Replaced with roll with less paper"
+                        "description": "Replaced with roll with less paper",
+                        "id": "d5055d6f-5da3-4313-bfbf-483ed5d1c2d8"
                     },
                     {
                         "name": "Door lock",
                         "type": "Object Movement",
-                        "description": "Moves left to right"
+                        "description": "Moves left to right",
+                        "id": "94f56b6b-5109-4aa3-b4e9-b719f7bcf2c0"
                     },
                     {
                         "name": "Room size",
                         "type": "Room Manipulation",
-                        "description": "Bathroom shrinks, second mirror removed"
+                        "description": "Bathroom shrinks, second mirror removed",
+                        "id": "7aef8ecb-f18c-43d0-a556-0ff0473311b0"
                     },
                     {
                         "name": "Window",
                         "type": "Light Anomaly",
-                        "description": "Opens and flashbangs you"
+                        "description": "Opens and flashbangs you",
+                        "id": "9ecd2772-63b7-4d6b-bd12-4e046b6be24a"
                     },
                     {
                         "name": "Handprint",
                         "type": "Handprint",
-                        "description": "Red handprint on right mirror"
+                        "description": "Red handprint on right mirror",
+                        "id": "3cafb56f-c560-477b-958d-3be2a804c6da"
                     },
                     {
                         "name": "Toilet woman",
                         "type": "INTRUDER",
-                        "description": "HOLD LMB immediately! Slow report. Fail = death"
+                        "description": "HOLD LMB immediately! Slow report. Fail = death",
+                        "id": "a8b674fe-4a15-4559-a00f-cf01f8403402"
                     }
                 ]
             }
@@ -752,392 +893,468 @@
                     {
                         "name": "Lower railing",
                         "type": "Missing Object",
-                        "description": "Lower staircase railing disappears"
+                        "description": "Lower staircase railing disappears",
+                        "id": "9f4c4ae1-d80b-4f37-8bc3-ab9e8ffca484"
                     },
                     {
                         "name": "Upper railing",
                         "type": "Missing Object",
-                        "description": "Upper staircase railing disappears"
+                        "description": "Upper staircase railing disappears",
+                        "id": "af163fa7-d923-46bb-b097-354b0ea8e319"
                     },
                     {
                         "name": "Red carpet",
                         "type": "Missing Object",
-                        "description": "Stairs carpet disappears"
+                        "description": "Stairs carpet disappears",
+                        "id": "fb9ff1dc-12f0-4953-9e1a-8b746e5fd712"
                     },
                     {
                         "name": "Golden stair rods",
                         "type": "Missing Object",
-                        "description": "Disappear"
+                        "description": "Disappear",
+                        "id": "8c1afab6-0e07-4994-9c09-e3a84fd6fc5b"
                     },
                     {
                         "name": "Column text",
                         "type": "Image Anomaly",
-                        "description": "\"Do you see me?\" on right column"
+                        "description": "\"Do you see me?\" on right column",
+                        "id": "2e9344f6-ce6c-4cf7-8914-07c6689d222c"
                     },
                     {
                         "name": "TV",
                         "type": "Image Anomaly",
-                        "description": "Cursed slideshow plays"
+                        "description": "Cursed slideshow plays",
+                        "id": "03f6658c-86e9-4894-98b1-772fdf08305f"
                     },
                     {
                         "name": "Upper door light",
                         "type": "Light Anomaly",
-                        "description": "Bright light glowing from upper doorway"
+                        "description": "Bright light glowing from upper doorway",
+                        "id": "3975cb62-bf70-43b2-8d67-618c6622c07c"
                     },
                     {
                         "name": "Center statue",
                         "type": "Object Movement",
-                        "description": "Turns around"
+                        "description": "Turns around",
+                        "id": "2349d8cc-0586-4d59-9165-4fa7123629db"
                     },
                     {
                         "name": "Bottom statue",
                         "type": "Object Movement",
-                        "description": "Right of stairs → left side"
+                        "description": "Right of stairs → left side",
+                        "id": "831f7551-b517-447e-9f49-2f434340a4a9"
                     },
                     {
                         "name": "Arm statues",
                         "type": "Object Replacement",
-                        "description": "Top statues cross their arms"
+                        "description": "Top statues cross their arms",
+                        "id": "4457f1de-cb6e-4670-b5d0-aea6eb9c2ca6"
                     },
                     {
                         "name": "Extra bottle",
                         "type": "Extra Object",
-                        "description": "Appears on left table"
+                        "description": "Appears on left table",
+                        "id": "aed5a4da-d099-4084-81c7-ffda325304c5"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Hanging from railing"
+                        "description": "Hanging from railing",
+                        "id": "dddcd5b8-d41b-490c-9110-a4ebb72b0448"
                     },
                     {
                         "name": "Abyss",
                         "type": "Abyss",
-                        "description": "Starts growing from upper level"
+                        "description": "Starts growing from upper level",
+                        "id": "0f0ff471-c598-4d86-83fd-0483e0d08329"
                     },
                     {
                         "name": "Rift",
                         "type": "Rift",
-                        "description": "Grows from center of lobby"
+                        "description": "Grows from center of lobby",
+                        "id": "a5b2d3fe-4d69-4fa4-beee-51f5d6a93b15"
                     },
                     {
                         "name": "HUGE MAN!",
                         "type": "INTRUDER",
-                        "description": "Appears at top doorway. Report fails → attack minigame. **Weak spot: his RIGHT leg (our left)**. Aim circle there. He fights back - be fast!"
+                        "description": "Appears at top doorway. Report fails → attack minigame. **Weak spot: his RIGHT leg (our left)**. Aim circle there. He fights back - be fast!",
+                        "id": "bebc26e1-b494-4d1e-a625-2870155b0ba3"
                     }
                 ],
                 "Catwalk": [
                     {
                         "name": "Mannequin head",
                         "type": "Extra Object",
-                        "description": "Appears under hat on chair"
+                        "description": "Appears under hat on chair",
+                        "id": "17f44f20-6deb-4b21-b1f0-adfd5341e8f6"
                     },
                     {
                         "name": "Curtains",
                         "type": "Extra Object",
-                        "description": "Appear on left/right of camera"
+                        "description": "Appear on left/right of camera",
+                        "id": "5a9967b2-4ebc-4142-a428-c9a65cdb4dbf"
                     },
                     {
                         "name": "All chairs",
                         "type": "Object Movement",
-                        "description": "Turn from facing catwalk to camera"
+                        "description": "Turn from facing catwalk to camera",
+                        "id": "a5f4b6db-5b22-4787-a628-91a164aba7ac"
                     },
                     {
                         "name": "Lights",
                         "type": "Object Movement",
-                        "description": "Above stage, turn to different directions"
+                        "description": "Above stage, turn to different directions",
+                        "id": "0af130f5-454c-4b36-958a-a5b6b9ae7351"
                     },
                     {
                         "name": "Lights",
                         "type": "Object Replacement",
-                        "description": "Wall lights → golden ones"
+                        "description": "Wall lights → golden ones",
+                        "id": "2a6ddfde-2134-409b-88b4-b04d83bf85cd"
                     },
                     {
                         "name": "Floor",
                         "type": "Object Replacement",
-                        "description": "Black tiles → black/white checkered"
+                        "description": "Black tiles → black/white checkered",
+                        "id": "2b2c0ead-94d3-4e24-bb59-78aa1edef884"
                     },
                     {
                         "name": "Rift",
                         "type": "Rift",
-                        "description": "Middle of catwalk (chairs move backward)"
+                        "description": "Middle of catwalk (chairs move backward)",
+                        "id": "48d2bc28-2506-4382-8a4f-ea22bf11570a"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Partially under chairs on left side"
+                        "description": "Partially under chairs on left side",
+                        "id": "4a5262c3-afa6-446b-b2c7-32858f29ee9a"
                     },
                     {
                         "name": "Silhouette",
                         "type": "INTRUDER",
-                        "description": "Shadowy intruder draped over front chairs"
+                        "description": "Shadowy intruder draped over front chairs",
+                        "id": "e039f945-9dee-4614-95ef-8c7ab64f8dca"
                     },
                     {
                         "name": "Undead mannequins",
                         "type": "INTRUDER",
-                        "description": "Walking mannequins replaced by undead-looking intruders"
+                        "description": "Walking mannequins replaced by undead-looking intruders",
+                        "id": "32587097-c1d3-4c2b-850f-d081f40bc61a"
                     }
                 ],
                 "Backstage": [
                     {
                         "name": "Jacket",
                         "type": "Missing Object",
-                        "description": "Right coat hanger jacket disappears"
+                        "description": "Right coat hanger jacket disappears",
+                        "id": "a064f1aa-6a2e-40a8-ac8d-14572f5c4626"
                     },
                     {
                         "name": "Middle bottles",
                         "type": "Missing Object",
-                        "description": "Bottles on desk disappear"
+                        "description": "Bottles on desk disappear",
+                        "id": "1ebc4bf2-64c1-4c03-92bf-278ba6b2e3ed"
                     },
                     {
                         "name": "Mannequin head",
                         "type": "Object Movement",
-                        "description": "Mannequin on floor flips around"
+                        "description": "Mannequin on floor flips around",
+                        "id": "1dd4d316-a0ad-4b25-98ae-497abeaa3287"
                     },
                     {
                         "name": "Spinning chair",
                         "type": "Object Movement",
-                        "description": "Chair spins, ghost appears after reporting"
+                        "description": "Chair spins, ghost appears after reporting",
+                        "id": "49cd2392-8b81-45b1-947f-30dea5a4e638"
                     },
                     {
                         "name": "Orange jacket",
                         "type": "Object Replacement",
-                        "description": "→ black"
+                        "description": "→ black",
+                        "id": "4c2ac19b-5450-42ff-b931-57173052792a"
                     },
                     {
                         "name": "Left bottles",
                         "type": "Extra Object",
-                        "description": "More bottles on left side of far table"
+                        "description": "More bottles on left side of far table",
+                        "id": "2c1d8394-1214-49bd-ab97-f734d92a7032"
                     },
                     {
                         "name": "Right bottles",
                         "type": "Extra Object",
-                        "description": "Bottles on table duplicate"
+                        "description": "Bottles on table duplicate",
+                        "id": "536b6192-ad9f-406b-b846-8c17c576c173"
                     },
                     {
                         "name": "Ring",
                         "type": "Special Object",
-                        "description": "Appears on desk (collectible!)"
+                        "description": "Appears on desk (collectible!)",
+                        "id": "10f7db6c-6610-495b-a17f-c8a38e9af856"
                     },
                     {
                         "name": "Painting face",
                         "type": "Image Anomaly",
-                        "description": "Lips disappear, OR lips disappear AND painting becomes 3D (both can occur in same game!)"
+                        "description": "Lips disappear, OR lips disappear AND painting becomes 3D (both can occur in same game!)",
+                        "id": "5312fc55-2d8e-4be2-b58a-879c124d74c4"
                     },
                     {
                         "name": "Bottle on chair",
                         "type": "Extra Object",
-                        "description": "Bottle appears on chair"
+                        "description": "Bottle appears on chair",
+                        "id": "11f97f4d-342f-4faf-a0eb-1577c60be364"
                     },
                     {
                         "name": "Mannequin face on painting",
                         "type": "Extra Object",
-                        "description": "Mannequin face appears on painting"
+                        "description": "Mannequin face appears on painting",
+                        "id": "f6e23628-2751-4fa1-a5f1-5087c1f419da"
                     },
                     {
                         "name": "Mirror shadow",
                         "type": "INTRUDER",
-                        "description": "Shadow/silhouette appears in mirror"
+                        "description": "Shadow/silhouette appears in mirror",
+                        "id": "38a1b56c-a25e-41e5-899c-87fb51038834"
                     },
                     {
                         "name": "The Collector",
                         "type": "INTRUDER",
-                        "description": "Man with donut appears, start timer. Find donut in other room, click it. **Donut locations:** Lobby (table), Catwalk (chairs), Bar (multiple spots), Store (displays), Storage (desk area)"
+                        "description": "Man with donut appears, start timer. Find donut in other room, click it. **Donut locations:** Lobby (table), Catwalk (chairs), Bar (multiple spots), Store (displays), Storage (desk area)",
+                        "id": "16bffcf0-1ac1-4e9e-a4f9-91de65a66583"
                     }
                 ],
                 "Bar": [
                     {
                         "name": "Left statue",
                         "type": "Object Replacement",
-                        "description": "→ crumpled/contorted body"
+                        "description": "→ crumpled/contorted body",
+                        "id": "ab07592b-fb5f-4531-b129-383b0b6ce45d"
                     },
                     {
                         "name": "Mirrored statue",
                         "type": "Object Replacement",
-                        "description": "Statue replaced with mirrored version"
+                        "description": "Statue replaced with mirrored version",
+                        "id": "69be715d-12b5-48ba-9ad7-5638f32699c0"
                     },
                     {
                         "name": "Extra bottle",
                         "type": "Extra Object",
-                        "description": "On closest table"
+                        "description": "On closest table",
+                        "id": "fd7d464f-d019-4206-9537-f3d0b6d909e6"
                     },
                     {
                         "name": "Extra brackets",
                         "type": "Extra Object",
-                        "description": "Extra brackets/chains on pillar"
+                        "description": "Extra brackets/chains on pillar",
+                        "id": "b63a0a9d-d8c8-498b-bca1-5fd73057b3cd"
                     },
                     {
                         "name": "Chair missing",
                         "type": "Missing Object",
-                        "description": "Back room chair disappears"
+                        "description": "Back room chair disappears",
+                        "id": "1aaf9cfc-1867-414b-b0b8-a9b1a2dfe3b0"
                     },
                     {
                         "name": "Bar stool missing",
                         "type": "Missing Object",
-                        "description": "Leftmost bar stool disappears"
+                        "description": "Leftmost bar stool disappears",
+                        "id": "7002b3d3-0718-4272-822d-be5a1616c416"
                     },
                     {
                         "name": "Light fixture",
                         "type": "Missing Object",
-                        "description": "Outer part of light fixture disappears"
+                        "description": "Outer part of light fixture disappears",
+                        "id": "46ed78d2-b8ac-4b66-bce4-35765fb10588"
                     },
                     {
                         "name": "Magazine",
                         "type": "Image Anomaly",
-                        "description": "Magazine on chair → creepy image"
+                        "description": "Magazine on chair → creepy image",
+                        "id": "40e3f46f-cd6e-453e-a011-819c5047968d"
                     },
                     {
                         "name": "Woman statue",
                         "type": "Object Movement",
-                        "description": "Stretches and moves (very subtle)"
+                        "description": "Stretches and moves (very subtle)",
+                        "id": "fee8cc20-053a-4108-9e5a-3294e37ffbe0"
                     },
                     {
                         "name": "Santa hats",
                         "type": "Hold LMB",
-                        "description": "6 hats around room, collect all"
+                        "description": "6 hats around room, collect all",
+                        "id": "b9296379-c45a-4832-9122-9874bdb28ed9"
                     },
                     {
                         "name": "Dead body (back)",
                         "type": "Dead Body",
-                        "description": "In back of bar"
+                        "description": "In back of bar",
+                        "id": "668fd016-f1b5-45ef-82a0-897945091799"
                     },
                     {
                         "name": "Dead body (pillar)",
                         "type": "Dead Body",
-                        "description": "Leaning against pillar"
+                        "description": "Leaning against pillar",
+                        "id": "203786c8-aefe-4e74-a0ed-cd64c3a1fe4e"
                     },
                     {
                         "name": "The Handyman",
                         "type": "INTRUDER",
-                        "description": "LMB hold, he moves and shows symbol in hand-face. Report, then choose: **Fire beats Leaf, Leaf beats Water, Water beats Fire**"
+                        "description": "LMB hold, he moves and shows symbol in hand-face. Report, then choose: **Fire beats Leaf, Leaf beats Water, Water beats Fire**",
+                        "id": "65eb547e-ae29-4877-b398-9f6a22f58e00"
                     }
                 ],
                 "Store": [
                     {
                         "name": "Back rack clothes",
                         "type": "Missing Object",
-                        "description": "Disappear"
+                        "description": "Disappear",
+                        "id": "5cb75713-e651-4ace-be28-cd336746c9eb"
                     },
                     {
                         "name": "2 jackets",
                         "type": "Missing Object",
-                        "description": "Two jackets from rack disappear"
+                        "description": "Two jackets from rack disappear",
+                        "id": "880bce91-4bc8-4cd1-bb8b-79dda2bd0e1c"
                     },
                     {
                         "name": "Floor",
                         "type": "Object Replacement",
-                        "description": "Blue floor → green"
+                        "description": "Blue floor → green",
+                        "id": "06b96453-3fca-4c02-a16c-403b1d846c43"
                     },
                     {
                         "name": "Wall bust",
                         "type": "Object Replacement",
-                        "description": "Bust on wall → male one"
+                        "description": "Bust on wall → male one",
+                        "id": "b5e669f4-5fcd-4c43-a4d4-88cabdc660c8"
                     },
                     {
                         "name": "Wallet money",
                         "type": "Object Replacement",
-                        "description": "Money → ID card"
+                        "description": "Money → ID card",
+                        "id": "41820280-66f0-4985-8cbd-4f0747a0b803"
                     },
                     {
                         "name": "Worm sculpture",
                         "type": "Object Movement",
-                        "description": "Slumps down in cage"
+                        "description": "Slumps down in cage",
+                        "id": "357c35a5-c4c8-4799-9c0c-28e99c4fa509"
                     },
                     {
                         "name": "Displays",
                         "type": "Object Movement",
-                        "description": "Two displays swap places"
+                        "description": "Two displays swap places",
+                        "id": "793ef6ea-7ae1-487a-ab92-aa7db7eaaba1"
                     },
                     {
                         "name": "Red lights",
                         "type": "Light Anomaly",
-                        "description": "Flash with alarm"
+                        "description": "Flash with alarm",
+                        "id": "550c5720-9d67-472c-8113-8b3abce7e9c9"
                     },
                     {
                         "name": "Laptop",
                         "type": "Image Anomaly",
-                        "description": "Face appears on computer screen"
+                        "description": "Face appears on computer screen",
+                        "id": "b5c4e855-6046-4f3b-baa2-961518e3d6ca"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Appears in cage in middle"
+                        "description": "Appears in cage in middle",
+                        "id": "8d053173-6165-4a82-ad31-c2c537b762ed"
                     },
                     {
                         "name": "Rift",
                         "type": "Rift",
-                        "description": "Left side of room"
+                        "description": "Left side of room",
+                        "id": "dc71480c-6020-4545-9cdc-c5f501542466"
                     },
                     {
                         "name": "Naked intruder",
                         "type": "INTRUDER",
-                        "description": "Appears between clothing rows"
+                        "description": "Appears between clothing rows",
+                        "id": "46134088-b492-42db-b64b-f8ff07117a1b"
                     }
                 ],
                 "Storage": [
                     {
                         "name": "Toolbox",
                         "type": "Missing Object",
-                        "description": "Toolbox disappears"
+                        "description": "Toolbox disappears",
+                        "id": "0d9675c2-018c-44f8-b5c3-a08c4d74a897"
                     },
                     {
                         "name": "Chair",
                         "type": "Missing Object",
-                        "description": "Chair disappears"
+                        "description": "Chair disappears",
+                        "id": "f2865efe-35b5-4c62-98c1-741d18e51d5b"
                     },
                     {
                         "name": "Red container",
                         "type": "Missing Object",
-                        "description": "On desk, disappears"
+                        "description": "On desk, disappears",
+                        "id": "79aa0bf9-343b-44c1-a3bf-26951636c311"
                     },
                     {
                         "name": "Garbage bag",
                         "type": "Missing Object",
-                        "description": "Behind left desk, disappears"
+                        "description": "Behind left desk, disappears",
+                        "id": "eff55327-017a-4403-81c1-32e6eb4bed1f"
                     },
                     {
                         "name": "Top right picture",
                         "type": "Missing Object",
-                        "description": "Disappears"
+                        "description": "Disappears",
+                        "id": "455dae3d-3768-4638-a318-06498161c1c8"
                     },
                     {
                         "name": "White mannequin",
                         "type": "Object Movement",
-                        "description": "Right side, moves to face camera"
+                        "description": "Right side, moves to face camera",
+                        "id": "5cbbfb21-945c-4bd6-9228-3d5a63e34542"
                     },
                     {
                         "name": "Mannequin head",
                         "type": "Object Replacement",
-                        "description": "→ creepy face"
+                        "description": "→ creepy face",
+                        "id": "926c950f-3392-4ef3-9534-476b961c46da"
                     },
                     {
                         "name": "White mannequin head",
                         "type": "Object Replacement",
-                        "description": "→ grey"
+                        "description": "→ grey",
+                        "id": "a215d58b-2f48-40b9-8cc4-d10e2e542f6b"
                     },
                     {
                         "name": "Corner mannequin",
                         "type": "Object Replacement",
-                        "description": "Torso → full body"
+                        "description": "Torso → full body",
+                        "id": "f326d96b-1cb3-4310-9880-a70996989780"
                     },
                     {
                         "name": "Top left image",
                         "type": "Image Anomaly",
-                        "description": "→ cursed portrait"
+                        "description": "→ cursed portrait",
+                        "id": "932a6194-b3ef-46ea-992d-f36677943153"
                     },
                     {
                         "name": "Bottom left painting",
                         "type": "Image Anomaly",
-                        "description": "Goes cross-eyed"
+                        "description": "Goes cross-eyed",
+                        "id": "6649554a-337c-4936-ba7b-da8535c21c71"
                     },
                     {
                         "name": "Rift",
                         "type": "Rift",
-                        "description": "Middle of room"
+                        "description": "Middle of room",
+                        "id": "caf8d04b-ef34-4faf-814b-1d6717f27910"
                     },
                     {
                         "name": "The Puppeteer",
                         "type": "INTRUDER",
-                        "description": "Memory game with 9 cards. Match pairs. DON'T HIT SKULLS = death"
+                        "description": "Memory game with 9 cards. Match pairs. DON'T HIT SKULLS = death",
+                        "id": "3340d5a9-90c4-45d4-a0cd-4469960dac14"
                     }
                 ]
             }
@@ -1148,317 +1365,378 @@
                     {
                         "name": "Staircase",
                         "type": "Missing Object",
-                        "description": "Left side disappears"
+                        "description": "Left side disappears",
+                        "id": "42e7a099-a6fe-4bdc-bd5f-31ba0c93dce3"
                     },
                     {
                         "name": "Left door",
                         "type": "Door Anomaly",
-                        "description": "Opens, someone runs out when reported"
+                        "description": "Opens, someone runs out when reported",
+                        "id": "514648d1-a0a8-4610-b65e-d085fdeb6a49"
                     },
                     {
                         "name": "Bowl smoke",
                         "type": "Smoke",
-                        "description": "Rises from bowl"
+                        "description": "Rises from bowl",
+                        "id": "6c1b3869-5545-4332-896f-1467975cbffe"
                     },
                     {
                         "name": "Handprint",
                         "type": "Handprint",
-                        "description": "Small bloody print under brown cabinet"
+                        "description": "Small bloody print under brown cabinet",
+                        "id": "8bf16a5f-a796-458c-8851-00e9e27cbad0"
                     },
                     {
                         "name": "Purple poster",
                         "type": "Image Anomaly",
-                        "description": "→ angry Bill Cipher"
+                        "description": "→ angry Bill Cipher",
+                        "id": "43cc8b43-6e0a-470f-b6b2-6917e4faacda"
                     },
                     {
                         "name": "Blue TV",
                         "type": "Image Anomaly",
-                        "description": "Creepy scratched-out faces photo"
+                        "description": "Creepy scratched-out faces photo",
+                        "id": "f657dbce-e744-4bff-b30f-3f56c299f62b"
                     },
                     {
                         "name": "Wall papers",
                         "type": "Image Anomaly",
-                        "description": "→ redacted texts"
+                        "description": "→ redacted texts",
+                        "id": "ed37ec21-e1d2-4ecd-ab70-9f1765051997"
                     },
                     {
                         "name": "Plants",
                         "type": "Object Replacement",
-                        "description": "Pompom trees → big leafed plants"
+                        "description": "Pompom trees → big leafed plants",
+                        "id": "85767476-d90a-4553-bc1f-b5260952537a"
                     },
                     {
                         "name": "Chamber logo",
                         "type": "Extra Object",
-                        "description": "Eyeball in circle"
+                        "description": "Eyeball in circle",
+                        "id": "1ec6b4a6-7bd2-41b6-8d81-54c0410c8a2a"
                     },
                     {
                         "name": "Printer intruder",
                         "type": "INTRUDER",
-                        "description": "On top of printer (doing unspeakable things)"
+                        "description": "On top of printer (doing unspeakable things)",
+                        "id": "42fae301-0179-4b60-8a69-6d3c92e3fb5b"
                     }
                 ],
                 "Bullpen": [
                     {
                         "name": "Binders",
                         "type": "Missing Object",
-                        "description": "Half on top left shelf disappear"
+                        "description": "Half on top left shelf disappear",
+                        "id": "85a14569-de09-427b-93c7-2617bdb7c814"
                     },
                     {
                         "name": "Board numbers",
                         "type": "Image Anomaly",
-                        "description": "Go into red"
+                        "description": "Go into red",
+                        "id": "85d13b0e-13ff-4357-85c3-ffc9b097fcd5"
                     },
                     {
                         "name": "Right monitor",
                         "type": "Image Anomaly",
-                        "description": "Scary woman appears"
+                        "description": "Scary woman appears",
+                        "id": "c2b866f6-9a79-4fa7-8b3f-4053955f2f34"
                     },
                     {
                         "name": "Left monitor",
                         "type": "Image Anomaly",
-                        "description": "Cute drawing app pops up"
+                        "description": "Cute drawing app pops up",
+                        "id": "500f0808-007b-45e1-97d0-b8b6ac63fec7"
                     },
                     {
                         "name": "Room",
                         "type": "Room Manipulation",
-                        "description": "Gets longer"
+                        "description": "Gets longer",
+                        "id": "4f3e0015-87a1-4ff9-b182-20ac00d36b2a"
                     },
                     {
                         "name": "Paper throwing",
                         "type": "Object Movement",
-                        "description": "Paper thrown from left desk to trashcan"
+                        "description": "Paper thrown from left desk to trashcan",
+                        "id": "d65cf18a-d434-45fe-abc9-2351460912d2"
                     },
                     {
                         "name": "Extra buttons",
                         "type": "Extra Object",
-                        "description": "At back of room"
+                        "description": "At back of room",
+                        "id": "b4aa01d6-81fb-4112-bcb2-5522311a5899"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Office worker rams camera, dies"
+                        "description": "Office worker rams camera, dies",
+                        "id": "d7aeccec-5c8e-4849-80f2-1451a066c28c"
                     },
                     {
                         "name": "\"E\" anomaly",
                         "type": "SPECIAL",
-                        "description": "Weird \"Eeee\" noise. Find infected room, report from DIFFERENT room (menu turns to \"E\" if in same room)"
+                        "description": "Weird \"Eeee\" noise. Find infected room, report from DIFFERENT room (menu turns to \"E\" if in same room)",
+                        "id": "53219a21-88ad-410e-b1c1-68d3f784e91b"
                     }
                 ],
                 "Workspace": [
                     {
                         "name": "Papers",
                         "type": "Missing Object",
-                        "description": "Right wall papers disappear"
+                        "description": "Right wall papers disappear",
+                        "id": "a4742774-187c-44fe-8c91-d01ba5f5bd8d"
                     },
                     {
                         "name": "Sticky notes",
                         "type": "Object Movement",
-                        "description": "Change positions"
+                        "description": "Change positions",
+                        "id": "d2071abf-f719-4493-9cdf-432e084306ab"
                     },
                     {
                         "name": "Three cups",
                         "type": "Object Movement",
-                        "description": "Change positions with each other"
+                        "description": "Change positions with each other",
+                        "id": "22f3ccb5-3f18-4aa0-8640-c04dc4c9b6c5"
                     },
                     {
                         "name": "Brown duotang",
                         "type": "Object Movement",
-                        "description": "Turns wrong way"
+                        "description": "Turns wrong way",
+                        "id": "35dd918a-b624-4631-b45f-254cd77098e8"
                     },
                     {
                         "name": "Family photo",
                         "type": "Image Anomaly",
-                        "description": "→ portrait of man"
+                        "description": "→ portrait of man",
+                        "id": "e72d3326-e3eb-4df6-be45-31cc720d1fc9"
                     },
                     {
                         "name": "Extra buttons",
                         "type": "Extra Object",
-                        "description": "Back wall: 4 → 6"
+                        "description": "Back wall: 4 → 6",
+                        "id": "c866422b-dd64-4479-99d0-5b2b322bbe1c"
                     },
                     {
                         "name": "Hole",
                         "type": "Hole",
-                        "description": "Beside chair, screeching noise"
+                        "description": "Beside chair, screeching noise",
+                        "id": "ed089761-c155-4885-847d-e66e1b73bfd1"
                     },
                     {
                         "name": "Rift",
                         "type": "Rift",
-                        "description": "Middle of room, sucks you in"
+                        "description": "Middle of room, sucks you in",
+                        "id": "cd7436c7-5c63-4a06-a4d7-bb74d2ec4344"
                     },
                     {
                         "name": "Wall intruder",
                         "type": "INTRUDER",
-                        "description": "Behind left cubicle wall"
+                        "description": "Behind left cubicle wall",
+                        "id": "134fa8da-8c1f-4537-9fec-571849b9cf67"
                     },
                     {
                         "name": "Banana thing",
                         "type": "INTRUDER",
-                        "description": "Weird thing replaces banana"
+                        "description": "Weird thing replaces banana",
+                        "id": "ce20287c-abfd-45ae-a15c-861d7041e60c"
                     },
                     {
                         "name": "Monitor face",
                         "type": "INTRUDER",
-                        "description": "Man's face warps monitor, chanting"
+                        "description": "Man's face warps monitor, chanting",
+                        "id": "67a21573-dd7c-48bf-9ed1-dd8c7e08c623"
                     }
                 ],
                 "Break Room": [
                     {
                         "name": "Trashcan",
                         "type": "Object Movement",
-                        "description": "Grey trashcan moves from brown trashcan to fridge"
+                        "description": "Grey trashcan moves from brown trashcan to fridge",
+                        "id": "c79f0b02-a38d-4820-8d2a-637275c5e442"
                     },
                     {
                         "name": "Fridge cord",
                         "type": "Object Movement",
-                        "description": "Left outlet → right"
+                        "description": "Left outlet → right",
+                        "id": "cab44f22-a245-4ea4-bdb4-110c9ebcefca"
                     },
                     {
                         "name": "Coffee/microwave",
                         "type": "Object Movement",
-                        "description": "Switch places"
+                        "description": "Switch places",
+                        "id": "74791e0c-53e0-4ecd-86c9-c705d36c90a0"
                     },
                     {
                         "name": "Top left chair",
                         "type": "Object Movement",
-                        "description": "Faces camera"
+                        "description": "Faces camera",
+                        "id": "1e077863-6ccf-420a-b6b1-f9925eac5b99"
                     },
                     {
                         "name": "Flowers",
                         "type": "Object Replacement",
-                        "description": "4 red → 3 yellow"
+                        "description": "4 red → 3 yellow",
+                        "id": "b1e68df2-b439-4354-905a-20b14422635d"
                     },
                     {
                         "name": "Fridge text",
                         "type": "Image Anomaly",
-                        "description": "Changes"
+                        "description": "Changes",
+                        "id": "3c4d7381-0bde-4128-8729-953df2754918"
                     },
                     {
                         "name": "Trashcan paper",
                         "type": "Image Anomaly",
-                        "description": "→ red splatter painting"
+                        "description": "→ red splatter painting",
+                        "id": "ce4bb579-762e-4322-81dc-4b26c92e89ef"
                     },
                     {
                         "name": "K-pop poster",
                         "type": "Image Anomaly",
-                        "description": "→ abstract skull"
+                        "description": "→ abstract skull",
+                        "id": "b6d75bc1-e2d7-4c84-b84c-c1a8a77cbfda"
                     },
                     {
                         "name": "Coffee machine paper",
                         "type": "Image Anomaly",
-                        "description": "Changes"
+                        "description": "Changes",
+                        "id": "6819bb69-967a-4e64-82a5-321dd24e4b15"
                     },
                     {
                         "name": "\"Work..?\" text",
                         "type": "Image Anomaly",
-                        "description": "Brown bin sign turns red"
+                        "description": "Brown bin sign turns red",
+                        "id": "6fce84f4-817b-414b-89f7-69c9c2d22ecc"
                     },
                     {
                         "name": "Fruit faces",
                         "type": "Hold LMB",
-                        "description": "3 fruits, collect all, bananarang jumps out"
+                        "description": "3 fruits, collect all, bananarang jumps out",
+                        "id": "45da40f9-37ad-4ffa-b8b3-62cddc699b26"
                     },
                     {
                         "name": "Garbage intruder",
                         "type": "INTRUDER",
-                        "description": "Takes over garbage can"
+                        "description": "Takes over garbage can",
+                        "id": "119323ad-0618-4cb7-bea0-076b84ba9fd5"
                     },
                     {
                         "name": "The Tunneller",
                         "type": "INTRUDER",
-                        "description": "In wall hole. Start reporting IMMEDIATELY (slow, camera zooms in)"
+                        "description": "In wall hole. Start reporting IMMEDIATELY (slow, camera zooms in)",
+                        "id": "8efced02-4a97-46cd-8459-3f73d06f402e"
                     }
                 ],
                 "Boss' Room": [
                     {
                         "name": "Middle shelf books",
                         "type": "Missing Object",
-                        "description": "Disappear"
+                        "description": "Disappear",
+                        "id": "f91761fc-56ef-4001-b0d0-5feaa8e90397"
                     },
                     {
                         "name": "Left shelf books",
                         "type": "Missing Object",
-                        "description": "Disappear"
+                        "description": "Disappear",
+                        "id": "1bda8ccc-170b-4ce0-93f6-c87c2f8b608c"
                     },
                     {
                         "name": "Middle plant",
                         "type": "Missing Object",
-                        "description": "Corner plant disappears"
+                        "description": "Corner plant disappears",
+                        "id": "f36d5128-a868-406b-b85a-ff7c59ac0e08"
                     },
                     {
                         "name": "Red/blue frames",
                         "type": "Object Movement",
-                        "description": "Left cabinet, switch places"
+                        "description": "Left cabinet, switch places",
+                        "id": "561749b9-b90d-4f42-b124-91a722df0094"
                     },
                     {
                         "name": "Right couch",
                         "type": "Object Movement",
-                        "description": "Turns toward camera"
+                        "description": "Turns toward camera",
+                        "id": "c47bb952-7332-4b66-8f2b-2c5877439e94"
                     },
                     {
                         "name": "Red painting",
                         "type": "Image Anomaly",
-                        "description": "→ white spooky painting"
+                        "description": "→ white spooky painting",
+                        "id": "d9572821-0153-4115-861a-a2c72ce05b80"
                     },
                     {
                         "name": "Middle painting",
                         "type": "Image Anomaly",
-                        "description": "Stains/design underneath"
+                        "description": "Stains/design underneath",
+                        "id": "50bc0a24-b8f3-40fe-b9b2-74fba1ffe29c"
                     },
                     {
                         "name": "Fish image",
                         "type": "Image Anomaly",
-                        "description": "→ creepy cursed photo"
+                        "description": "→ creepy cursed photo",
+                        "id": "679feb7d-6a09-4027-8e43-bd2ff2160217"
                     },
                     {
                         "name": "Room flood",
                         "type": "Water Anomaly",
-                        "description": "Fills with water and fish"
+                        "description": "Fills with water and fish",
+                        "id": "af3ca571-117b-42a6-be58-2e9b4b3ccf10"
                     },
                     {
                         "name": "Mug",
                         "type": "Special Object",
-                        "description": "Appears on boss' desk (collectible!)"
+                        "description": "Appears on boss' desk (collectible!)",
+                        "id": "8537eab5-23df-4320-8c59-22f9bb88b70d"
                     },
                     {
                         "name": "Skinny Prince",
                         "type": "INTRUDER",
-                        "description": "Alert appears with location. DO NOT GO TO THAT ROOM! Report from different room via RMB → \"Skinny Prince\""
+                        "description": "Alert appears with location. DO NOT GO TO THAT ROOM! Report from different room via RMB → \"Skinny Prince\"",
+                        "id": "908b168e-0af3-42b7-8468-bf2e9c8007a9"
                     }
                 ],
                 "Balcony": [
                     {
                         "name": "Sandwich",
                         "type": "Object Replacement",
-                        "description": "Goes moldy"
+                        "description": "Goes moldy",
+                        "id": "f9467e5a-d9b6-41f8-8707-71acb0e90bb6"
                     },
                     {
                         "name": "Crane",
                         "type": "Object Movement",
-                        "description": "Turns different direction"
+                        "description": "Turns different direction",
+                        "id": "4b2bdee6-2c4e-42db-bc65-9ca01ac57aeb"
                     },
                     {
                         "name": "Extra leg",
                         "type": "Extra Object",
-                        "description": "Under table (very hard to spot!)"
+                        "description": "Under table (very hard to spot!)",
+                        "id": "f73526b2-5d1c-48b9-bc4e-7cfba4c7d966"
                     },
                     {
                         "name": "Green bottle",
                         "type": "Smoke",
-                        "description": "Smoke comes out"
+                        "description": "Smoke comes out",
+                        "id": "7d6fffbc-a38d-4950-8f39-eace74ce8410"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "On railing side"
+                        "description": "On railing side",
+                        "id": "540e0350-d52d-4908-b554-f2fc8a22dd23"
                     },
                     {
                         "name": "Window face",
                         "type": "INTRUDER",
-                        "description": "Gross face in balcony barrier window"
+                        "description": "Gross face in balcony barrier window",
+                        "id": "cc2219e8-9a1d-427c-8493-923116a1d0c5"
                     },
                     {
                         "name": "The Savage",
                         "type": "INTRUDER",
-                        "description": "Floating disembodied head over balcony"
+                        "description": "Floating disembodied head over balcony",
+                        "id": "608ab73b-e6cf-4509-a726-dc4e58ff138a"
                     }
                 ]
             }
@@ -1469,156 +1747,186 @@
                     {
                         "name": "Naked Man",
                         "type": "INTRUDER",
-                        "description": "Naked Man is taking a piss"
+                        "description": "Naked Man is taking a piss",
+                        "id": "f17f16fe-8154-4a85-af1f-3b5ba25a7553"
                     },
                     {
                         "name": "Dock extended",
                         "type": "Room Manipulation",
-                        "description": "Dock has been extended plus extra lamppost"
+                        "description": "Dock has been extended plus extra lamppost",
+                        "id": "ec9b52d4-ce6b-44ad-96c1-08c0a262ae80"
                     },
                     {
                         "name": "Tall piling",
                         "type": "Object Replacement",
-                        "description": "Tall piling on the right side is shorter"
+                        "description": "Tall piling on the right side is shorter",
+                        "id": "769582fb-a3b5-4534-8ffb-c1603a981b6c"
                     },
                     {
                         "name": "Titan",
                         "type": "INTRUDER",
-                        "description": "Titan is slowly approaching the dock, click on the faces looking upward"
+                        "description": "Titan is slowly approaching the dock, click on the faces looking upward",
+                        "id": "8434d1b0-e2df-4aa1-9ac5-bf47f7cb3ff0"
                     },
                     {
                         "name": "Wood boards",
                         "type": "Missing Object",
-                        "description": "Wood boards on the roof are gone"
+                        "description": "Wood boards on the roof are gone",
+                        "id": "22f19f2e-365d-4dd9-b2d3-7565bba17f53"
                     },
                     {
                         "name": "Preserver",
                         "type": "Missing Object",
-                        "description": "Preserver on the cross is gone"
+                        "description": "Preserver on the cross is gone",
+                        "id": "b8a36dc8-a988-4741-9cd3-1d8a01033c55"
                     },
                     {
                         "name": "Short piling",
                         "type": "Object Replacement",
-                        "description": "Short piling next to the lamppost is taller"
+                        "description": "Short piling next to the lamppost is taller",
+                        "id": "a4c53a67-808e-4342-a1a5-2e8d34fc1885"
                     },
                     {
                         "name": "Rubber ducky",
                         "type": "Secret Object",
-                        "description": "Rubber ducky in the water"
+                        "description": "Rubber ducky in the water",
+                        "id": "07b8ca0d-5982-4c2a-bbe7-0d544c2377d6"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Body floating in the water"
+                        "description": "Body floating in the water",
+                        "id": "92c3fa5f-5486-444c-a840-21c9dfbb7a21"
                     },
                     {
                         "name": "Fog",
                         "type": "Steam/Smoke/Fog",
-                        "description": "There is fog everywhere"
+                        "description": "There is fog everywhere",
+                        "id": "3a1e0663-561f-4d51-a7c5-e1c084cbb6b6"
                     },
                     {
                         "name": "Extra buoy",
                         "type": "Extra Object",
-                        "description": "Extra buoy in the pile on right"
+                        "description": "Extra buoy in the pile on right",
+                        "id": "f026c013-32d3-4eec-b130-ab0fa739a15b"
                     },
                     {
                         "name": "Bottle",
                         "type": "Object Movement",
-                        "description": "Bottle closest to shed will turn other way"
+                        "description": "Bottle closest to shed will turn other way",
+                        "id": "87f61766-e037-43a6-9308-7451fd1830fd"
                     },
                     {
                         "name": "Life jacket",
                         "type": "Extra Object",
-                        "description": "Life jacket in the dinghy"
+                        "description": "Life jacket in the dinghy",
+                        "id": "ff78a2fc-e3e9-4f97-8821-ae17ec2dd9f3"
                     }
                 ],
                 "Yard": [
                     {
                         "name": "Drum",
                         "type": "Extra Object",
-                        "description": "Drum on the top of left hill"
+                        "description": "Drum on the top of left hill",
+                        "id": "6948fb20-ba59-4037-825f-a188fa95d0cf"
                     },
                     {
                         "name": "Man in window",
                         "type": "INTRUDER",
-                        "description": "Man in the lighthouse window"
+                        "description": "Man in the lighthouse window",
+                        "id": "e8c2ce7f-208b-4815-b815-57afd6ae3d2b"
                     },
                     {
                         "name": "Wires",
                         "type": "Object Movement",
-                        "description": "Wires are swaying"
+                        "description": "Wires are swaying",
+                        "id": "2c0bb527-adfc-49dd-b755-b8eddfa471f6"
                     },
                     {
                         "name": "Siren",
                         "type": "INTRUDER",
-                        "description": "Siren is singing, time sensitive"
+                        "description": "Siren is singing, time sensitive",
+                        "id": "f8133c55-b5f0-47f7-8bb6-9101f34ccf59"
                     },
                     {
                         "name": "Flooded yard",
                         "type": "Water Anomaly",
-                        "description": "Everything is underwater"
+                        "description": "Everything is underwater",
+                        "id": "43ee356f-c759-49d0-b12e-65aa3ffdebb6"
                     },
                     {
                         "name": "Chimney smoke",
                         "type": "Smoke",
-                        "description": "Smoke coming from cabin chimney"
+                        "description": "Smoke coming from cabin chimney",
+                        "id": "088c4d14-7d61-4865-8be3-53931e0d7845"
                     },
                     {
                         "name": "Wine bottle",
                         "type": "Extra Object",
-                        "description": "Second wine bottle"
+                        "description": "Second wine bottle",
+                        "id": "53fb7a6f-37fb-40ef-97a0-48f95746570c"
                     },
                     {
                         "name": "Flares",
                         "type": "Light Anomaly",
-                        "description": "Flares going off in the sky"
+                        "description": "Flares going off in the sky",
+                        "id": "bea466ca-993b-40bc-9416-1a76ed3ff810"
                     },
                     {
                         "name": "Deflated man",
                         "type": "INTRUDER",
-                        "description": "Deflated man behind the crates"
+                        "description": "Deflated man behind the crates",
+                        "id": "ba27f60c-c3e8-48ba-a547-73a0d071cf84"
                     },
                     {
                         "name": "Yellow/gray buoy",
                         "type": "Object Replacement",
-                        "description": "Replaced with green/blue buoy"
+                        "description": "Replaced with green/blue buoy",
+                        "id": "0a8c1b4d-3ca1-4830-b371-3ca9f387c9e1"
                     },
                     {
                         "name": "Yellow/blue buoy",
                         "type": "Object Replacement",
-                        "description": "Replaced with red/white buoy"
+                        "description": "Replaced with red/white buoy",
+                        "id": "9fecf9fd-4825-4fec-8326-cee968fffc3a"
                     },
                     {
                         "name": "Outhouse",
                         "type": "Missing Object",
-                        "description": "Outhouse at top of hill disappears"
+                        "description": "Outhouse at top of hill disappears",
+                        "id": "5270e1b1-3b06-40d9-8a02-daa1476468b2"
                     }
                 ],
                 "Cabin": [
                     {
                         "name": "Man outside",
                         "type": "INTRUDER",
-                        "description": "Man outside the window"
+                        "description": "Man outside the window",
+                        "id": "f9497526-df51-4aea-a215-e2f27f02623f"
                     },
                     {
                         "name": "TV screen",
                         "type": "Image Anomaly",
-                        "description": "Static on TV screen"
+                        "description": "Static on TV screen",
+                        "id": "16ec18e8-4897-44d7-af0f-baa4f8663b8e"
                     },
                     {
                         "name": "Ice on windows",
                         "type": "Frosted Glass",
-                        "description": "Ice on the windows"
+                        "description": "Ice on the windows",
+                        "id": "f3c07910-21a6-4a4f-849a-7e47e8014816"
                     },
                     {
                         "name": "Dentures",
                         "type": "Object Replacement",
-                        "description": "Dentures turn into eyeballs"
+                        "description": "Dentures turn into eyeballs",
+                        "id": "0231039d-b21b-4a76-a716-c38f5cd6f043"
                     },
                     {
                         "name": "Firewood",
                         "type": "Extra Object",
-                        "description": "More firewood than normal"
+                        "description": "More firewood than normal",
+                        "id": "5fadd85a-7c72-4ff3-bb4d-e10e551205af"
                     },
                     {
                         "name": "Gramophone",
@@ -1627,257 +1935,306 @@
                             "Object Manipulation"
                         ],
                         "description": "Gramophone starts playing",
-                        "game_end_type": "Object Movement"
+                        "game_end_type": "Object Movement",
+                        "id": "03921c02-ef76-4f43-864c-ba524325b484"
                     },
                     {
                         "name": "Stove smoke",
                         "type": "Smoke",
-                        "description": "Smoke coming from stove"
+                        "description": "Smoke coming from stove",
+                        "id": "60215817-eba3-4265-84a8-4b97a98b4450"
                     },
                     {
                         "name": "Brick walls",
                         "type": "Object Replacement",
-                        "description": "Brick walls have changed to stucco"
+                        "description": "Brick walls have changed to stucco",
+                        "id": "d9a25452-fd0c-4ea0-b054-7c94578a0c6d"
                     },
                     {
                         "name": "Board",
                         "type": "Image Anomaly",
-                        "description": "Pics of mustachioed man all over board"
+                        "description": "Pics of mustachioed man all over board",
+                        "id": "425fd1d4-062e-48c8-8430-5dc98671867c"
                     },
                     {
                         "name": "Keeper",
                         "type": "INTRUDER",
-                        "description": "Keeper is holding a knife, answer nay for all"
+                        "description": "Keeper is holding a knife, answer nay for all",
+                        "id": "37276113-8d16-4f63-8996-79f7be186c1a"
                     }
                 ],
                 "Interior": [
                     {
                         "name": "Ropes",
                         "type": "Object Manipulation",
-                        "description": "Lots of ropes hanging everywhere"
+                        "description": "Lots of ropes hanging everywhere",
+                        "id": "54e8273a-4b71-49ac-8073-e0cee81ca0cb"
                     },
                     {
                         "name": "Lantern",
                         "type": "Object Movement",
-                        "description": "Lantern has shifted to right side of the sill"
+                        "description": "Lantern has shifted to right side of the sill",
+                        "id": "8be37c89-e26f-46ce-ba26-e8858f9c9f68"
                     },
                     {
                         "name": "Radio",
                         "type": "Strange Broadcast",
-                        "description": "Radio is playing a weird message"
+                        "description": "Radio is playing a weird message",
+                        "id": "0cb37b28-11c3-46df-8e75-0dee1a9c03f5"
                     },
                     {
                         "name": "Light switch",
                         "type": "Missing Object",
-                        "description": "Light switch is gone"
+                        "description": "Light switch is gone",
+                        "id": "04e013ba-319b-4a8f-8b32-c5d4c927898e"
                     },
                     {
                         "name": "Typewriter",
                         "type": "Missing Object",
-                        "description": "Typewriter is gone"
+                        "description": "Typewriter is gone",
+                        "id": "f16f6704-18ec-4dde-bd61-afc07b9835ef"
                     },
                     {
                         "name": "Gnawer",
                         "type": "INTRUDER",
-                        "description": "Appears from behind the pipe near top of screen and leaps toward camera"
+                        "description": "Appears from behind the pipe near top of screen and leaps toward camera",
+                        "id": "7d0ae9bc-4b76-493c-8898-2412445c285d"
                     },
                     {
                         "name": "Map",
                         "type": "Image Anomaly",
                         "description": "Extra continent appears on the map",
-                        "game_end_type": "Image Anomaly"
+                        "game_end_type": "Image Anomaly",
+                        "id": "9b113b57-62a2-49e0-a28d-5add6734e65f"
                     },
                     {
                         "name": "Ladder",
                         "type": "Object Movement",
-                        "description": "Bottom rung of ladder shifts downward"
+                        "description": "Bottom rung of ladder shifts downward",
+                        "id": "dbe0ef4b-2d3c-4847-b1ad-6dbc03d3ada2"
                     },
                     {
                         "name": "Cloth",
                         "type": "Missing Object",
-                        "description": "Blue/green cloth under the stairs disappears"
+                        "description": "Blue/green cloth under the stairs disappears",
+                        "id": "2aac20f4-662b-43d3-a449-9adb9fc0f93f"
                     },
                     {
                         "name": "Bottle",
                         "type": "Extra Object",
-                        "description": "Bottle on windowsill near top of screen"
+                        "description": "Bottle on windowsill near top of screen",
+                        "id": "5e409d4a-b011-4a6f-9c1a-b247b128fa53"
                     },
                     {
                         "name": "Rope",
                         "type": "Object Replacement",
-                        "description": "One of the ropes becomes a noose"
+                        "description": "One of the ropes becomes a noose",
+                        "id": "455121af-c80d-45b6-8f09-05be17c406e0"
                     },
                     {
                         "name": "Trapdoor man",
                         "type": "INTRUDER",
-                        "description": "Man peeking from the trapdoor"
+                        "description": "Man peeking from the trapdoor",
+                        "id": "9e5f8d9c-38bf-4d87-8a22-e7e68daade33"
                     },
                     {
                         "name": "Mousetrap",
                         "type": "Object Movement",
-                        "description": "Mousetrap flips around, cheese on right"
+                        "description": "Mousetrap flips around, cheese on right",
+                        "id": "d77efd84-acfd-4df6-bc07-8a45b552ebde"
                     }
                 ],
                 "Stairwell": [
                     {
                         "name": "Tower height",
                         "type": "Room Manipulation",
-                        "description": "Light house is much taller than before"
+                        "description": "Light house is much taller than before",
+                        "id": "96e24244-2bef-4efd-8715-50afc310ca7d"
                     },
                     {
                         "name": "Stairs",
                         "type": "Room Manipulation",
-                        "description": "Stairs have been rotated, lower floor on left side"
+                        "description": "Stairs have been rotated, lower floor on left side",
+                        "id": "19054cce-d610-43ea-8a08-fc8bf9d0bac8"
                     },
                     {
                         "name": "Black pawn",
                         "type": "Extra Object",
-                        "description": "Black pawn appears, location varies"
+                        "description": "Black pawn appears, location varies",
+                        "id": "527fffa3-4d41-481a-ac51-ac5674b3629d"
                     },
                     {
                         "name": "Rear guardrail",
                         "type": "Missing Object",
-                        "description": "Rear guardrail is gone"
+                        "description": "Rear guardrail is gone",
+                        "id": "810fc7e9-616e-4b8d-8a6f-103e500ddffc"
                     },
                     {
                         "name": "Earthworm",
                         "type": "INTRUDER",
-                        "description": "Giant earthworm slithering up the stairs, needs to be reported twice"
+                        "description": "Giant earthworm slithering up the stairs, needs to be reported twice",
+                        "id": "48c20f84-6235-47b7-a891-c1c61b80dbd4"
                     },
                     {
                         "name": "Axel",
                         "type": "Object Movement",
-                        "description": "Axel begins rotating counterclockwise"
+                        "description": "Axel begins rotating counterclockwise",
+                        "id": "3d9a51d9-e114-417f-bbd7-cdbcc01ae911"
                     },
                     {
                         "name": "Thing under stairs",
                         "type": "Extra Object",
-                        "description": "Thing under stairs on right"
+                        "description": "Thing under stairs on right",
+                        "id": "78da2628-043f-4734-b3bd-c0571d531285"
                     },
                     {
                         "name": "Crate",
                         "type": "Object Replacement",
-                        "description": "Crate with symbol turns into a barrel"
+                        "description": "Crate with symbol turns into a barrel",
+                        "id": "cc8b4f35-eeac-4568-96c8-da5aba646cdf"
                     },
                     {
                         "name": "Left guardrail",
                         "type": "Object Movement",
-                        "description": "Left guardrail shifts up so gap at bottom"
+                        "description": "Left guardrail shifts up so gap at bottom",
+                        "id": "4085ce5f-280e-41bf-8ffb-f93c90f42955"
                     }
                 ],
                 "Lantern": [
                     {
                         "name": "Purple scarf",
                         "type": "Object Replacement",
-                        "description": "Turns black and white"
+                        "description": "Turns black and white",
+                        "id": "1c981859-d53f-401b-95dd-81a4750cd8f6"
                     },
                     {
                         "name": "Oilcan",
                         "type": "Missing Object",
-                        "description": "Oilcan is gone"
+                        "description": "Oilcan is gone",
+                        "id": "3090db59-d047-45b1-95bd-c0208bd37af1"
                     },
                     {
                         "name": "Seagulls",
                         "type": "Hold LMB",
-                        "description": "Report the 4 seagulls"
+                        "description": "Report the 4 seagulls",
+                        "id": "de553baa-5f43-4d3d-be78-a13c8b87bda3"
                     },
                     {
                         "name": "Nixie",
                         "type": "INTRUDER",
-                        "description": "Slowly approaches from lower level until he pounces"
+                        "description": "Slowly approaches from lower level until he pounces",
+                        "id": "bf93a8bd-f94f-41f0-b471-0003cb0f813b"
                     },
                     {
                         "name": "Green mug",
                         "type": "Extra Object",
-                        "description": "Green mug appears on the small table"
+                        "description": "Green mug appears on the small table",
+                        "id": "776160b9-3f9f-4b6f-9c53-b2f2643711ac"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Man on the rocks down below"
+                        "description": "Man on the rocks down below",
+                        "id": "4e96f259-9215-4ade-bf4a-3e1dbc47e136"
                     },
                     {
                         "name": "Lantern",
                         "type": "Object Movement",
-                        "description": "Lantern begins rotating counterclockwise"
+                        "description": "Lantern begins rotating counterclockwise",
+                        "id": "41eb140c-6c09-497a-8dea-7e55bb4b4cbd"
                     },
                     {
                         "name": "Ladder",
                         "type": "Object Movement",
-                        "description": "Ladder is wriggling"
+                        "description": "Ladder is wriggling",
+                        "id": "026caee1-ab7f-4530-9b02-f7c0b032b7aa"
                     },
                     {
                         "name": "Stool",
                         "type": "Object Movement",
-                        "description": "Stool next to green bucket turned 90 degrees"
+                        "description": "Stool next to green bucket turned 90 degrees",
+                        "id": "ffe6cd8e-7f59-41a6-ab6a-058e66e6cb4b"
                     }
                 ],
                 "Basement": [
                     {
                         "name": "Drum: Front left",
                         "type": "Object Movement",
-                        "description": "Tipped over"
+                        "description": "Tipped over",
+                        "id": "d7a2e4a2-f87c-48b9-872d-1f8b72813427"
                     },
                     {
                         "name": "Handprint",
                         "type": "Handprint",
                         "description": "On the stairs",
-                        "game_end_type": "Handprint"
+                        "game_end_type": "Handprint",
+                        "id": "9601fe09-2cf1-4248-a618-ca869be6111d"
                     },
                     {
                         "name": "Stairs",
                         "type": "Object Movement",
-                        "description": "Stairs are wriggling"
+                        "description": "Stairs are wriggling",
+                        "id": "f5141e10-e90d-4903-934a-26174a01e0e4"
                     },
                     {
                         "name": "Flooded",
                         "type": "Water Anomaly",
-                        "description": "Basement is flooded"
+                        "description": "Basement is flooded",
+                        "id": "ff9b0329-c0ff-4c7a-bb94-92b329f22736"
                     },
                     {
                         "name": "Hole",
                         "type": "Hole",
-                        "description": "Opens up at the bottom of the stairs"
+                        "description": "Opens up at the bottom of the stairs",
+                        "id": "a58b3799-444c-46a3-8369-cbfb7c8f9be6"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Corpse is thrown down the stairs. REQUIRES 2 REPORTS: first as 'Dead Body', then second as 'Intruder' (mumbling corpse)!"
+                        "description": "Corpse is thrown down the stairs. REQUIRES 2 REPORTS: first as 'Dead Body', then second as 'Intruder' (mumbling corpse)!",
+                        "id": "0e6fa9df-b289-4604-b5ad-aaded76f7f8e"
                     },
                     {
                         "name": "Drum: Rear left",
                         "type": "Object Movement",
-                        "description": "Rotates, you can see the flammable sign"
+                        "description": "Rotates, you can see the flammable sign",
+                        "id": "1072f59a-1c31-40c2-a7f9-23ccef440f4e"
                     },
                     {
                         "name": "Sack: Top right",
                         "type": "Missing Object",
-                        "description": "Top sack from right stack is gone"
+                        "description": "Top sack from right stack is gone",
+                        "id": "a7432941-a2c5-4dd3-bae7-9f4446cbae2b"
                     },
                     {
                         "name": "Sack: Top middle",
                         "type": "Missing Object",
-                        "description": "Top sack from middle stack is gone"
+                        "description": "Top sack from middle stack is gone",
+                        "id": "14b90424-f226-47d3-8120-4c19bdab29d7"
                     },
                     {
                         "name": "Sack: Top left",
                         "type": "Missing Object",
-                        "description": "Top sack from left stack is gone"
+                        "description": "Top sack from left stack is gone",
+                        "id": "1d79afbd-0e58-45ed-bd95-1646fb659c90"
                     },
                     {
                         "name": "Mousetrap: Left of left pair",
                         "type": "Missing Object",
-                        "description": "Leftmost mousetrap disappears"
+                        "description": "Leftmost mousetrap disappears",
+                        "id": "923fe40e-d96f-4004-9b37-7e491b58bf15"
                     },
                     {
                         "name": "Mousetrap: Left of right pair",
                         "type": "Missing Object",
-                        "description": "Second mousetrap from left disappears"
+                        "description": "Second mousetrap from left disappears",
+                        "id": "fcc9e427-5b02-4013-904d-d303f7e9daef"
                     },
                     {
                         "name": "Mousetrap: Right of right pair",
                         "type": "Missing Object",
-                        "description": "Third mousetrap from left disappears"
+                        "description": "Third mousetrap from left disappears",
+                        "id": "e19d152f-3c1d-4d10-bd77-5d9cdc78dc23"
                     }
                 ]
             }
@@ -1888,427 +2245,509 @@
                     {
                         "name": "Post-it notes (extra)",
                         "type": "Extra Object",
-                        "description": "More post-it notes appear on the white board"
+                        "description": "More post-it notes appear on the white board",
+                        "id": "791418c1-e500-40e7-9d01-1812b8eeafa3"
                     },
                     {
                         "name": "Laptop",
                         "type": "Image Anomaly",
-                        "description": "Laptop on the floor turns on"
+                        "description": "Laptop on the floor turns on",
+                        "id": "7d63f8db-ea51-4405-b6d9-189c904eca15"
                     },
                     {
                         "name": "Walkie-talkies",
                         "type": "Extra Object",
-                        "description": "More walkie-talkies appear on the desk"
+                        "description": "More walkie-talkies appear on the desk",
+                        "id": "3db34dcc-7c4c-4449-a9e8-f46824c3ebae"
                     },
                     {
                         "name": "Bullets",
                         "type": "Extra Object",
-                        "description": "Bullets on the floor"
+                        "description": "Bullets on the floor",
+                        "id": "cef923c5-542d-4055-a67a-11310926f427"
                     },
                     {
                         "name": "Crawling creature",
                         "type": "INTRUDER",
-                        "description": "Fatal if not reported on time"
+                        "description": "Fatal if not reported on time",
+                        "id": "6cd79d68-042e-406a-a877-18f7e31ed89e"
                     },
                     {
                         "name": "Post-it notes (floating)",
                         "type": "Object Movement",
-                        "description": "Post-it notes levitating"
+                        "description": "Post-it notes levitating",
+                        "id": "2508b7c9-aaa4-4b10-8a51-239d15c034cf"
                     },
                     {
                         "name": "Tic Tac Toe",
                         "type": "Image Anomaly",
-                        "description": "Changes the longer it goes unnoticed"
+                        "description": "Changes the longer it goes unnoticed",
+                        "id": "4b41833c-fee7-4e56-9d59-0367ba9108c6"
                     },
                     {
                         "name": "Clock",
                         "type": "Object Manipulation",
-                        "description": "Clock shows \"backward\" time"
+                        "description": "Clock shows \"backward\" time",
+                        "id": "e815ae45-ed9f-4304-8989-ff8c12a75116"
                     },
                     {
                         "name": "Torch",
                         "type": "Light Anomaly",
-                        "description": "Torch flickering"
+                        "description": "Torch flickering",
+                        "id": "482befe6-c0fb-465c-bf3e-c8b8ec3b7351"
                     },
                     {
                         "name": "Floor",
                         "type": "Object Replacement",
-                        "description": "Texture changes and becomes more \"rough\" and bumpy"
+                        "description": "Texture changes and becomes more \"rough\" and bumpy",
+                        "id": "70c8a236-b6d9-43b4-96b5-8f94342e4071"
                     },
                     {
                         "name": "Cable clips",
                         "type": "Missing Object",
-                        "description": "Clips on wires on the left upper corner disappear"
+                        "description": "Clips on wires on the left upper corner disappear",
+                        "id": "9e4a364f-607a-4638-ba20-7f7d107cb6c1"
                     }
                 ],
                 "Laboratory": [
                     {
                         "name": "Tall creature",
                         "type": "INTRUDER",
-                        "description": "Outside the open door"
+                        "description": "Outside the open door",
+                        "id": "70d2b3d0-288a-4bfd-940d-fd2a3d69b1bd"
                     },
                     {
                         "name": "Sockets (door)",
                         "type": "Missing Object",
-                        "description": "A pair of sockets next to the door disappears"
+                        "description": "A pair of sockets next to the door disappears",
+                        "id": "f5b577d2-aea7-4e07-8331-9a1a92403801"
                     },
                     {
                         "name": "Giant",
                         "type": "INTRUDER",
-                        "description": "In the containment room"
+                        "description": "In the containment room",
+                        "id": "63cb81d0-4f6c-454c-ba2d-e47af2a87b3b"
                     },
                     {
                         "name": "Sockets (glass)",
                         "type": "Missing Object",
-                        "description": "A pair of sockets under the glass partition disappears"
+                        "description": "A pair of sockets under the glass partition disappears",
+                        "id": "e06ae3b1-cf1c-4e32-a25f-c835100bcd1e"
                     },
                     {
                         "name": "Microscope",
                         "type": "Extra Object",
-                        "description": "A thing on the microscope"
+                        "description": "A thing on the microscope",
+                        "id": "ee767094-033f-4c01-982f-89bb9deabff7"
                     },
                     {
                         "name": "Creature",
                         "type": "INTRUDER",
-                        "description": "In the containment room"
+                        "description": "In the containment room",
+                        "id": "60a9c0a9-ddbe-4bd6-8baa-3554bc821a19"
                     },
                     {
                         "name": "Scale",
                         "type": "Object Replacement",
-                        "description": "Changes to typewriter"
+                        "description": "Changes to typewriter",
+                        "id": "2b3c98cc-83f5-435e-97fb-ac25528b8ceb"
                     },
                     {
                         "name": "Bottles",
                         "type": "Object Movement",
-                        "description": "Bottles on the counter move to the center"
+                        "description": "Bottles on the counter move to the center",
+                        "id": "6b82e4e5-f09b-4433-abb9-6cd2a7f59edd"
                     },
                     {
                         "name": "Vertical beam",
                         "type": "Missing Object",
-                        "description": "Beam on the counter going up to the ceiling disappears"
+                        "description": "Beam on the counter going up to the ceiling disappears",
+                        "id": "3b11cb3f-1208-4bf8-8603-f5719d4913ac"
                     },
                     {
                         "name": "Test tubes",
                         "type": "Object Movement",
-                        "description": "All move to the right side in a row"
+                        "description": "All move to the right side in a row",
+                        "id": "87c1df76-e790-4470-ac1a-d69da5d4c6d2"
                     },
                     {
                         "name": "Light",
                         "type": "Light Anomaly",
-                        "description": "The light outside the open door is flickering"
+                        "description": "The light outside the open door is flickering",
+                        "id": "070cfb2b-3996-472d-b22e-3c670c4d8b67"
                     },
                     {
                         "name": "Cupboard",
                         "type": "Missing Object",
-                        "description": "Cupboard on the wall (left from clock) disappears"
+                        "description": "Cupboard on the wall (left from clock) disappears",
+                        "id": "71982abc-82a5-46be-a1a5-942c548f16d6"
                     },
                     {
                         "name": "Clock",
                         "type": "Object Manipulation",
-                        "description": "Clock hands are mirrored"
+                        "description": "Clock hands are mirrored",
+                        "id": "311174b7-c3a8-480c-a15e-ff2d9bb8c9d9"
                     }
                 ],
                 "Rec Room": [
                     {
                         "name": "Dartboard",
                         "type": "Object Movement",
-                        "description": "Dartboard spinning"
+                        "description": "Dartboard spinning",
+                        "id": "07f71637-ebdc-4724-97ee-093f905670d1"
                     },
                     {
                         "name": "Darts",
                         "type": "Extra Object",
-                        "description": "Darts on the dartboard increase over time"
+                        "description": "Darts on the dartboard increase over time",
+                        "id": "f096e2e0-6f79-45aa-905b-caf16e3c5a74"
                     },
                     {
                         "name": "Dead body (couch)",
                         "type": "Dead Body",
-                        "description": "A dead person in front of the couch"
+                        "description": "A dead person in front of the couch",
+                        "id": "dbba45bc-f694-4dbb-b102-e3c663f21014"
                     },
                     {
                         "name": "Fridge",
                         "type": "Door Anomaly",
-                        "description": "Fridge door opens"
+                        "description": "Fridge door opens",
+                        "id": "ce2945bc-7fff-45dc-a792-343abcbc0aa3"
                     },
                     {
                         "name": "Mousetrap",
                         "type": "Extra Object",
-                        "description": "Next to the phone"
+                        "description": "Next to the phone",
+                        "id": "e897196b-3d42-4103-a7f4-75e70602afcd"
                     },
                     {
                         "name": "Books",
                         "type": "Missing Object",
-                        "description": "Half the books disappear on third bottom shelf (right)"
+                        "description": "Half the books disappear on third bottom shelf (right)",
+                        "id": "f2923749-1c51-41f9-82ac-5d61c9f56bc6"
                     },
                     {
                         "name": "Sink",
                         "type": "Suspicious Liquid",
-                        "description": "Green liquid appears in the sink"
+                        "description": "Green liquid appears in the sink",
+                        "id": "9325f2e8-227e-4fe9-ba06-076b0b5d9c82"
                     },
                     {
                         "name": "Calendar",
                         "type": "Image Anomaly",
-                        "description": "Calendar's image changes"
+                        "description": "Calendar's image changes",
+                        "id": "d267be1d-926b-4df8-a85d-b84277352f30"
                     },
                     {
                         "name": "Business card",
                         "type": "Secret Object",
-                        "description": "Business card on the table"
+                        "description": "Business card on the table",
+                        "id": "9c66c3a5-a21a-456f-b8fe-3c5230d48f3d"
                     },
                     {
                         "name": "Phone",
                         "type": "Phone Anomaly",
-                        "description": "The phone rings and a man starts talking"
+                        "description": "The phone rings and a man starts talking",
+                        "id": "3e63f1a0-3c15-49a2-8333-847a09a23f50"
                     },
                     {
                         "name": "Dead body (fridge)",
                         "type": "Dead Body",
-                        "description": "A dead person on the fridge"
+                        "description": "A dead person on the fridge",
+                        "id": "6795fad9-e8c7-477c-add5-b6f684d8aa28"
                     },
                     {
                         "name": "Nested intruder",
                         "type": "INTRUDER",
-                        "description": "Intruder \"inside\" an intruder (requires re-report)"
+                        "description": "Intruder \"inside\" an intruder (requires re-report)",
+                        "id": "2a6f8daa-7bc1-4010-a5dd-5cf358bfedf1"
                     },
                     {
                         "name": "Chair",
                         "type": "Missing Object",
-                        "description": "Turned chair towards the projector screen disappears"
+                        "description": "Turned chair towards the projector screen disappears",
+                        "id": "c073fb98-8dc5-470e-b75f-eaa24223f98e"
                     },
                     {
                         "name": "Couches",
                         "type": "Object Movement",
-                        "description": "Couches and loveseat move slightly angled"
+                        "description": "Couches and loveseat move slightly angled",
+                        "id": "416cebbc-c298-42ef-95d0-3b39bd54c221"
                     },
                     {
                         "name": "Chess pieces",
                         "type": "Object Movement",
-                        "description": "Chess pieces on chessboard move"
+                        "description": "Chess pieces on chessboard move",
+                        "id": "5a488e5f-f2a8-49e2-a45c-de38b72498f2"
                     }
                 ],
                 "Quarters": [
                     {
                         "name": "Multiple intruders",
                         "type": "INTRUDER",
-                        "description": "Click one by one"
+                        "description": "Click one by one",
+                        "id": "8349c280-6994-454e-9d38-e122425dee9f"
                     },
                     {
                         "name": "Room length",
                         "type": "Room Manipulation",
-                        "description": "Longer room"
+                        "description": "Longer room",
+                        "id": "4aab2b17-c477-4fa9-89f6-9609e534d739"
                     },
                     {
                         "name": "First aid",
                         "type": "Image Anomaly",
-                        "description": "Text on cupboards changes to \"Third Aid\""
+                        "description": "Text on cupboards changes to \"Third Aid\"",
+                        "id": "f2a12a72-544e-4ca7-ac85-e676ad8928c6"
                     },
                     {
                         "name": "Dead body (chair)",
                         "type": "Dead Body",
-                        "description": "Placed on the far end chair"
+                        "description": "Placed on the far end chair",
+                        "id": "c72b0e5a-7aed-4e88-9e33-c3805cdd34d2"
                     },
                     {
                         "name": "Shoes",
                         "type": "Missing Object",
-                        "description": "Shoes at the bottom next to drawers disappear"
+                        "description": "Shoes at the bottom next to drawers disappear",
+                        "id": "e36cc15d-9db8-4938-a820-f980522365a4"
                     },
                     {
                         "name": "Dead body (bed)",
                         "type": "Dead Body",
-                        "description": "A dead person on the right bottom bed"
+                        "description": "A dead person on the right bottom bed",
+                        "id": "711a7502-7fb8-4890-8aed-700c463ad041"
                     },
                     {
                         "name": "Soda cans",
                         "type": "Object Movement",
-                        "description": "The red soda cans switch places"
+                        "description": "The red soda cans switch places",
+                        "id": "0b129eed-a9fc-4de1-8148-c807acd291ee"
                     },
                     {
                         "name": "Huge Spider",
                         "type": "INTRUDER",
-                        "description": "On right bed, top of first aid cabinet, or hanging from ceiling between the beds"
+                        "description": "On right bed, top of first aid cabinet, or hanging from ceiling between the beds",
+                        "id": "521e8128-0b99-400f-8dd1-21e5324a591e"
                     },
                     {
                         "name": "Wardrobe handle",
                         "type": "Object Movement",
-                        "description": "Door handle moves to the right side"
+                        "description": "Door handle moves to the right side",
+                        "id": "3f78969f-317b-428d-b55f-d5504a0022b0"
                     }
                 ],
                 "Quarantine": [
                     {
                         "name": "Green smoke",
                         "type": "Smoke",
-                        "description": "In the containment room"
+                        "description": "In the containment room",
+                        "id": "23b99c44-761a-468e-bd19-51fd1c88ffbf"
                     },
                     {
                         "name": "Blood sample",
                         "type": "Smoke",
-                        "description": "Blood sample smoking"
+                        "description": "Blood sample smoking",
+                        "id": "6eba3340-e84d-4727-9824-39649d28f309"
                     },
                     {
                         "name": "Microscope",
                         "type": "Object Movement",
-                        "description": "Changes place closer to monitor"
+                        "description": "Changes place closer to monitor",
+                        "id": "676618c4-4dab-42f6-ba50-d8f2864e7350"
                     },
                     {
                         "name": "The Maw",
                         "type": "INTRUDER",
-                        "description": "1st report fails (glass shatters). Re-report empty room, then report him rising"
+                        "description": "1st report fails (glass shatters). Re-report empty room, then report him rising",
+                        "id": "57c1f09d-c23e-490c-beaf-000bcf094f70"
                     },
                     {
                         "name": "Chamber memo",
                         "type": "Missing Object",
-                        "description": "Memo under the keyboard disappears"
+                        "description": "Memo under the keyboard disappears",
+                        "id": "d5589a46-2e3a-470a-bc01-5655749716f5"
                     },
                     {
                         "name": "Notepad",
                         "type": "Image Anomaly",
-                        "description": "Scribbles appear on the notepad"
+                        "description": "Scribbles appear on the notepad",
+                        "id": "7f337fad-2f37-4b4f-a3d0-0c79f81190fe"
                     },
                     {
                         "name": "Samples",
                         "type": "Object Movement",
-                        "description": "Blood sample and pink sample switch places"
+                        "description": "Blood sample and pink sample switch places",
+                        "id": "9bc9489a-958c-4498-ad04-a46b2fc97383"
                     },
                     {
                         "name": "Post-it notes",
                         "type": "Extra Object",
-                        "description": "Multiple all around (click one by one)"
+                        "description": "Multiple all around (click one by one)",
+                        "id": "4de24e32-1564-44d1-b1e1-c3caa2f82830"
                     },
                     {
                         "name": "Reflection",
                         "type": "INTRUDER",
-                        "description": "Creature having spasms in containment room (can be Image Anomaly)"
+                        "description": "Creature having spasms in containment room (can be Image Anomaly)",
+                        "id": "514c897a-ae20-4d35-ad2b-ba1fb1bed05c"
                     },
                     {
                         "name": "Metal jars",
                         "type": "Object Replacement",
-                        "description": "Both metal jars on desk turn into red cups"
+                        "description": "Both metal jars on desk turn into red cups",
+                        "id": "0ab8cfb1-cc46-4a2e-a918-f4cd3e3b8566"
                     }
                 ],
                 "Exterior": [
                     {
                         "name": "Yellow snowcat",
                         "type": "Object Movement",
-                        "description": "Changes position"
+                        "description": "Changes position",
+                        "id": "4304d623-bccc-4839-9d89-c287743e3690"
                     },
                     {
                         "name": "Radio tower",
                         "type": "Object Movement",
-                        "description": "Changes position"
+                        "description": "Changes position",
+                        "id": "98ffcfe0-b8e6-420c-bc43-a395969a989f"
                     },
                     {
                         "name": "Stick",
                         "type": "Missing Object",
-                        "description": "On left corner of right building's rooftop disappears"
+                        "description": "On left corner of right building's rooftop disappears",
+                        "id": "cae3d514-03fa-4247-be68-cc332ac02d74"
                     },
                     {
                         "name": "Round building",
                         "type": "Light Anomaly",
-                        "description": "Red lights flickering"
+                        "description": "Red lights flickering",
+                        "id": "65998d3f-332c-48d7-8013-55adbbeebf44"
                     },
                     {
                         "name": "Penguin creature",
                         "type": "INTRUDER",
-                        "description": "Penguin creature"
+                        "description": "Penguin creature",
+                        "id": "a93063b0-3445-44a4-ad41-84c825562f6a"
                     },
                     {
                         "name": "Naked man",
                         "type": "INTRUDER",
-                        "description": "Freezing in front of the camera"
+                        "description": "Freezing in front of the camera",
+                        "id": "eedf0e74-d015-4bcc-ad43-e5b90d6b229a"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "A dead person on the black snowcat"
+                        "description": "A dead person on the black snowcat",
+                        "id": "5527a321-2bf9-4609-a3f5-d72e5c53072a"
                     },
                     {
                         "name": "Snow",
                         "type": "Weather Anomaly",
                         "description": "Snow defies gravity as it floats upward",
-                        "game_end_type": "Weather Anomaly"
+                        "game_end_type": "Weather Anomaly",
+                        "id": "36d4f67b-e486-4e9f-8df2-9b666ab3a57c"
                     },
                     {
                         "name": "Snow shoes",
                         "type": "Object Movement",
-                        "description": "Move slightly angled"
+                        "description": "Move slightly angled",
+                        "id": "f34389d4-ffb9-47eb-ac4f-dcca27135975"
                     },
                     {
                         "name": "Baluster",
                         "type": "Extra Object",
-                        "description": "Extra baluster on railing by timestamp (bottom left)"
+                        "description": "Extra baluster on railing by timestamp (bottom left)",
+                        "id": "ae04edcc-3df6-430d-a24d-6c9566d33545"
                     },
                     {
                         "name": "Dome building",
                         "type": "Object Replacement",
-                        "description": "Covered in snow"
+                        "description": "Covered in snow",
+                        "id": "f2f86ef6-46d1-47af-ae11-ec6ad93913ac"
                     }
                 ],
                 "The Site": [
                     {
                         "name": "Invisible creature",
                         "type": "INTRUDER",
-                        "description": "Almost invisible creature walks towards the camera"
+                        "description": "Almost invisible creature walks towards the camera",
+                        "id": "4a1fcbaa-5657-48d8-8436-dc4f27c10b36"
                     },
                     {
                         "name": "Top container (door)",
                         "type": "Door Anomaly",
-                        "description": "Top container door opens"
+                        "description": "Top container door opens",
+                        "id": "4561af44-cef7-494d-bdcd-94c2e12aa625"
                     },
                     {
                         "name": "Snowcat",
                         "type": "Object Replacement",
-                        "description": "Changes color"
+                        "description": "Changes color",
+                        "id": "fc23bd47-a52b-4176-9a01-4ed4297196bd"
                     },
                     {
                         "name": "Top container (missing)",
                         "type": "Missing Object",
-                        "description": "Disappears"
+                        "description": "Disappears",
+                        "id": "cda79cde-1196-4edf-b8d3-318bbb6c8aed"
                     },
                     {
                         "name": "Device",
                         "type": "Light Anomaly",
-                        "description": "Red lights and sounds on the electronic device"
+                        "description": "Red lights and sounds on the electronic device",
+                        "id": "80b5c898-c6fe-44d2-8dfe-40bbf8e1a3a8"
                     },
                     {
                         "name": "Lid",
                         "type": "Object Movement",
-                        "description": "Lid on the electronic device closes"
+                        "description": "Lid on the electronic device closes",
+                        "id": "2b814b01-9c66-4567-a712-9da41353dcc7"
                     },
                     {
                         "name": "Mound of snow",
                         "type": "Extra Object",
-                        "description": "On the electronic device"
+                        "description": "On the electronic device",
+                        "id": "415b5b4d-e1d7-4ea3-b3bf-05c24a3c7a11"
                     },
                     {
                         "name": "Spools",
                         "type": "Missing Object",
-                        "description": "Two huge spools covered in snow disappear"
+                        "description": "Two huge spools covered in snow disappear",
+                        "id": "2bd8c636-ce38-41e9-85ed-88fc2d0dc921"
                     },
                     {
                         "name": "Power lines",
                         "type": "Object Movement",
-                        "description": "Start moving slightly"
+                        "description": "Start moving slightly",
+                        "id": "04f27bab-e7cf-46fc-86f9-635dc1189a88"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "On top of crane (glass looks weird)"
+                        "description": "On top of crane (glass looks weird)",
+                        "id": "85919ec8-4fd4-4771-891c-6a8ad50d4d7c"
                     },
                     {
                         "name": "Shovel",
                         "type": "Missing Object",
-                        "description": "Leaning against the crane disappears"
+                        "description": "Leaning against the crane disappears",
+                        "id": "94ce7b73-71c8-467c-8fbb-b0fdfcae977c"
                     }
                 ],
                 "Underwater": [
                     {
                         "name": "Squid creature",
                         "type": "INTRUDER",
-                        "description": "Fatal if not reported on time"
+                        "description": "Fatal if not reported on time",
+                        "id": "3c0123ab-aaea-42a6-96a8-0cccb96ec606"
                     },
                     {
                         "name": "School of fish",
                         "type": "Extra Object",
-                        "description": "Swim around"
+                        "description": "Swim around",
+                        "id": "c8834559-9f90-407d-9e6a-cbcbf03e5cf6"
                     }
                 ]
             }

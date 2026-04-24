@@ -7,19 +7,22 @@
             "name": "Abyss",
             "description": "Black hole that grows over time",
             "type": "Global",
-            "report": "RMB \u2192 \"Abyss\""
+            "report": "RMB → \"Abyss\"",
+            "id": "767520ff-38a3-4ea5-9738-10842a0bef4d"
         },
         {
             "name": "Rift",
             "description": "Translucent distortion that grows",
             "type": "Global",
-            "report": "RMB \u2192 \"Rift\""
+            "report": "RMB → \"Rift\"",
+            "id": "a7fbaf9f-3614-4041-8404-74ec472441df"
         },
         {
             "name": "Camera Malfunction",
             "description": "Room disappears from rotation (count your rooms!)",
             "type": "Global",
-            "report": "RMB \u2192 \"Camera Malfunction\""
+            "report": "RMB → \"Camera Malfunction\"",
+            "id": "6ebb15d0-a3ae-43b3-8da5-58b618ad9dbf"
         }
     ],
     "Maps": {
@@ -29,151 +32,180 @@
                     {
                         "name": "Naked Man",
                         "type": "INTRUDER",
-                        "description": "Naked Man is taking a piss"
+                        "description": "Naked Man is taking a piss",
+                        "id": "c59b8d1a-5a75-49dd-bcd3-8c1755c075b2"
                     },
                     {
                         "name": "Dock extended",
                         "type": "Room Manipulation",
-                        "description": "Dock has been extended plus extra lamppost"
+                        "description": "Dock has been extended plus extra lamppost",
+                        "id": "a2d77e53-374a-4360-b58d-52d865a811cf"
                     },
                     {
                         "name": "Tall piling",
                         "type": "Object Replacement",
-                        "description": "Tall piling on the right side is shorter"
+                        "description": "Tall piling on the right side is shorter",
+                        "id": "9c86a02d-ffe1-47b5-ad7a-eba9de9857db"
                     },
                     {
                         "name": "Titan",
                         "type": "INTRUDER",
-                        "description": "Titan is slowly approaching the dock, click on the faces looking upward"
+                        "description": "Titan is slowly approaching the dock, click on the faces looking upward",
+                        "id": "a574e0c5-683e-4834-808d-636b180523ab"
                     },
                     {
                         "name": "Wood boards",
                         "type": "Missing Object",
-                        "description": "Wood boards on the roof are gone"
+                        "description": "Wood boards on the roof are gone",
+                        "id": "651c4764-e684-4e6c-a16e-aa32b73309ed"
                     },
                     {
                         "name": "Preserver",
                         "type": "Missing Object",
-                        "description": "Preserver on the cross is gone"
+                        "description": "Preserver on the cross is gone",
+                        "id": "a51e3d1f-ecb3-4de2-9003-03c90f60224b"
                     },
                     {
                         "name": "Short piling",
                         "type": "Object Replacement",
-                        "description": "Short piling next to the lamppost is taller"
+                        "description": "Short piling next to the lamppost is taller",
+                        "id": "a68f46b3-d300-40b9-a6cb-fc972e1a60ea"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Body floating in the water"
+                        "description": "Body floating in the water",
+                        "id": "a433a204-231b-4c3e-8576-d1da524edf0a"
                     },
                     {
                         "name": "Fog",
                         "type": "Steam/Smoke/Fog",
-                        "description": "There is fog everywhere"
+                        "description": "There is fog everywhere",
+                        "id": "1e3b043a-1eda-4fd1-b0d9-cea75f06f883"
                     },
                     {
                         "name": "Extra buoy",
                         "type": "Extra Object",
-                        "description": "Extra buoy in the pile on right"
+                        "description": "Extra buoy in the pile on right",
+                        "id": "0e93b182-8e29-4fe8-a590-b537474fb9ea"
                     },
                     {
                         "name": "Bottle",
                         "type": "Object Movement",
-                        "description": "Bottle closest to shed will turn other way"
+                        "description": "Bottle closest to shed will turn other way",
+                        "id": "abb729ef-99d9-4d72-b4be-bfcda4694c65"
                     },
                     {
                         "name": "Life jacket",
                         "type": "Extra Object",
-                        "description": "Life jacket in the dinghy"
+                        "description": "Life jacket in the dinghy",
+                        "id": "5d9caf04-8ec9-438c-a871-e5bc51503758"
                     }
                 ],
                 "Yard": [
                     {
                         "name": "Drum",
                         "type": "Extra Object",
-                        "description": "Drum on the top of left hill"
+                        "description": "Drum on the top of left hill",
+                        "id": "1990d210-0b44-4dab-9aeb-3d80c028a90c"
                     },
                     {
                         "name": "Man in window",
                         "type": "INTRUDER",
-                        "description": "Man in the lighthouse window"
+                        "description": "Man in the lighthouse window",
+                        "id": "33be58e6-02d5-4fa0-b3c2-dd83f30571c1"
                     },
                     {
                         "name": "Wires",
                         "type": "Object Movement",
-                        "description": "Wires are swaying"
+                        "description": "Wires are swaying",
+                        "id": "bc79853c-e510-429e-b328-8ed58223ca85"
                     },
                     {
                         "name": "Siren",
                         "type": "INTRUDER",
-                        "description": "Siren is singing, time sensitive"
+                        "description": "Siren is singing, time sensitive",
+                        "id": "5bbbdb37-2fb6-409d-b701-be00e55e8e6e"
                     },
                     {
                         "name": "Flooded yard",
                         "type": "Water Anomaly",
-                        "description": "Everything is underwater"
+                        "description": "Everything is underwater",
+                        "id": "9047c3d9-25f7-4f73-9cbf-1c12b2d93292"
                     },
                     {
                         "name": "Chimney smoke",
                         "type": "Smoke",
-                        "description": "Smoke coming from cabin chimney"
+                        "description": "Smoke coming from cabin chimney",
+                        "id": "7d6adf9d-8752-4558-9d87-1f55af2f5884"
                     },
                     {
                         "name": "Wine bottle",
                         "type": "Extra Object",
-                        "description": "Second wine bottle"
+                        "description": "Second wine bottle",
+                        "id": "4e746175-6307-41e3-acf1-c1450abf7fba"
                     },
                     {
                         "name": "Flares",
                         "type": "Light Anomaly",
-                        "description": "Flares going off in the sky"
+                        "description": "Flares going off in the sky",
+                        "id": "d83bb333-6592-48b7-86d4-0a59b58d39eb"
                     },
                     {
                         "name": "Deflated man",
                         "type": "INTRUDER",
-                        "description": "Deflated man behind the crates"
+                        "description": "Deflated man behind the crates",
+                        "id": "431383b4-4ade-44c3-b9c2-794d3a9c3d7e"
                     },
                     {
                         "name": "Yellow/gray buoy",
                         "type": "Object Replacement",
-                        "description": "Replaced with green/blue buoy"
+                        "description": "Replaced with green/blue buoy",
+                        "id": "ab183306-f51b-42ca-8ac6-3bcf8753815b"
                     },
                     {
                         "name": "Yellow/blue buoy",
                         "type": "Object Replacement",
-                        "description": "Replaced with red/white buoy"
+                        "description": "Replaced with red/white buoy",
+                        "id": "37488a17-f6ea-4736-b659-6baae0482da8"
                     },
                     {
                         "name": "Outhouse",
                         "type": "Missing Object",
-                        "description": "Outhouse at top of hill disappears"
+                        "description": "Outhouse at top of hill disappears",
+                        "id": "5ae7aaa4-736c-4043-9118-3a39b5749d52"
                     }
                 ],
                 "Cabin": [
                     {
                         "name": "Man outside",
                         "type": "INTRUDER",
-                        "description": "Man outside the window"
+                        "description": "Man outside the window",
+                        "id": "1b183da2-6ba7-4022-9e6e-bc44013f3e18"
                     },
                     {
                         "name": "TV screen",
                         "type": "Image Anomaly",
-                        "description": "Static on TV screen"
+                        "description": "Static on TV screen",
+                        "id": "44bd5d52-da66-4a65-aa0e-9fde61d9163a"
                     },
                     {
                         "name": "Ice on windows",
                         "type": "Frosted Glass",
-                        "description": "Ice on the windows"
+                        "description": "Ice on the windows",
+                        "id": "c3fe5eb4-0cb2-4dd2-9ec8-99c9a0d20307"
                     },
                     {
                         "name": "Dentures",
                         "type": "Object Replacement",
-                        "description": "Dentures turn into eyeballs"
+                        "description": "Dentures turn into eyeballs",
+                        "id": "9caab46c-c286-4a2b-b19b-facc4844ace0"
                     },
                     {
                         "name": "Firewood",
                         "type": "Extra Object",
-                        "description": "More firewood than normal"
+                        "description": "More firewood than normal",
+                        "id": "05ef93fb-79b4-45ab-b172-d62a0e170281"
                     },
                     {
                         "name": "Gramophone",
@@ -182,257 +214,306 @@
                             "Object Manipulation"
                         ],
                         "description": "Gramophone starts playing",
-                        "game_end_type": "Object Movement"
+                        "game_end_type": "Object Movement",
+                        "id": "cc75894f-1c75-400e-af6c-5a1a684730a5"
                     },
                     {
                         "name": "Stove smoke",
                         "type": "Smoke",
-                        "description": "Smoke coming from stove"
+                        "description": "Smoke coming from stove",
+                        "id": "84d86e53-5107-4936-b220-336369256455"
                     },
                     {
                         "name": "Brick walls",
                         "type": "Object Replacement",
-                        "description": "Brick walls have changed to stucco"
+                        "description": "Brick walls have changed to stucco",
+                        "id": "a77c4f30-6374-444e-a9a6-bb0b6b8e025c"
                     },
                     {
                         "name": "Board",
                         "type": "Image Anomaly",
-                        "description": "Pics of mustachioed man all over board"
+                        "description": "Pics of mustachioed man all over board",
+                        "id": "4e1334c8-8cd2-49fd-93c7-6dcb7ecf923f"
                     },
                     {
                         "name": "Keeper",
                         "type": "INTRUDER",
-                        "description": "Keeper is holding a knife, answer nay for all"
+                        "description": "Keeper is holding a knife, answer nay for all",
+                        "id": "1b042282-c250-4d6d-b240-cc5a23e3dbf5"
                     }
                 ],
                 "Interior": [
                     {
                         "name": "Ropes",
                         "type": "Object Manipulation",
-                        "description": "Lots of ropes hanging everywhere"
+                        "description": "Lots of ropes hanging everywhere",
+                        "id": "459535d1-419a-4280-a7b2-e0543dd843da"
                     },
                     {
                         "name": "Lantern",
                         "type": "Object Movement",
-                        "description": "Lantern has shifted to right side of the sill"
+                        "description": "Lantern has shifted to right side of the sill",
+                        "id": "e30c591d-cefa-4443-9cc4-fe318656c6dd"
                     },
                     {
                         "name": "Radio",
                         "type": "Strange Broadcast",
-                        "description": "Radio is playing a weird message"
+                        "description": "Radio is playing a weird message",
+                        "id": "bf3ed8b0-2d85-4e71-88f3-9e05c1c7353d"
                     },
                     {
                         "name": "Light switch",
                         "type": "Missing Object",
-                        "description": "Light switch is gone"
+                        "description": "Light switch is gone",
+                        "id": "9103c848-f522-4b4f-848a-15372cb310e9"
                     },
                     {
                         "name": "Typewriter",
                         "type": "Missing Object",
-                        "description": "Typewriter is gone"
+                        "description": "Typewriter is gone",
+                        "id": "b7bec626-715a-4084-a694-8473855b2877"
                     },
                     {
                         "name": "Gnawer",
                         "type": "INTRUDER",
-                        "description": "Appears from behind the pipe near top of screen and leaps toward camera"
+                        "description": "Appears from behind the pipe near top of screen and leaps toward camera",
+                        "id": "f260bf08-2f4e-4dba-81c4-c217e00a42cf"
                     },
                     {
                         "name": "Map",
                         "type": "Image Anomaly",
                         "description": "Extra continent appears on the map",
-                        "game_end_type": "Image Anomaly"
+                        "game_end_type": "Image Anomaly",
+                        "id": "d42826a8-3c58-497e-8143-7ca3f9777df7"
                     },
                     {
                         "name": "Ladder",
                         "type": "Object Movement",
-                        "description": "Bottom rung of ladder shifts downward"
+                        "description": "Bottom rung of ladder shifts downward",
+                        "id": "c702e34d-aaa9-45d5-bf4d-9973056739b8"
                     },
                     {
                         "name": "Cloth",
                         "type": "Missing Object",
-                        "description": "Blue/green cloth under the stairs disappears"
+                        "description": "Blue/green cloth under the stairs disappears",
+                        "id": "79b4bb59-9254-458c-a94c-6c3fa9c9aabf"
                     },
                     {
                         "name": "Bottle",
                         "type": "Extra Object",
-                        "description": "Bottle on windowsill near top of screen"
+                        "description": "Bottle on windowsill near top of screen",
+                        "id": "5c56357b-1f1b-4bd4-b8fd-e4eac59c7bea"
                     },
                     {
                         "name": "Rope",
                         "type": "Object Replacement",
-                        "description": "One of the ropes becomes a noose"
+                        "description": "One of the ropes becomes a noose",
+                        "id": "587d2122-211e-48fd-b43e-6990b25ced0f"
                     },
                     {
                         "name": "Trapdoor man",
                         "type": "INTRUDER",
-                        "description": "Man peeking from the trapdoor"
+                        "description": "Man peeking from the trapdoor",
+                        "id": "af5ffd4d-20a2-4611-8e82-02bc775fcb11"
                     },
                     {
                         "name": "Mousetrap",
                         "type": "Object Movement",
-                        "description": "Mousetrap flips around, cheese on right"
+                        "description": "Mousetrap flips around, cheese on right",
+                        "id": "d143e397-ecb5-4639-8759-948da3a5b6e4"
                     }
                 ],
                 "Stairwell": [
                     {
                         "name": "Tower height",
                         "type": "Room Manipulation",
-                        "description": "Light house is much taller than before"
+                        "description": "Light house is much taller than before",
+                        "id": "3809a9a0-6a58-4945-a048-607a5e02b98b"
                     },
                     {
                         "name": "Stairs",
                         "type": "Room Manipulation",
-                        "description": "Stairs have been rotated, lower floor on left side"
+                        "description": "Stairs have been rotated, lower floor on left side",
+                        "id": "b6255fdb-7abf-4253-a226-f1bc20571119"
                     },
                     {
                         "name": "Black pawn",
                         "type": "Extra Object",
-                        "description": "Black pawn appears, location varies"
+                        "description": "Black pawn appears, location varies",
+                        "id": "05e6a1e6-5fbb-4848-8399-039c81403c48"
                     },
                     {
                         "name": "Rear guardrail",
                         "type": "Missing Object",
-                        "description": "Rear guardrail is gone"
+                        "description": "Rear guardrail is gone",
+                        "id": "cb71af21-6a68-4ff0-86a5-cd549d9d4f01"
                     },
                     {
                         "name": "Earthworm",
                         "type": "INTRUDER",
-                        "description": "Giant earthworm slithering up the stairs, needs to be reported twice"
+                        "description": "Giant earthworm slithering up the stairs, needs to be reported twice",
+                        "id": "ac27d554-9ccc-403c-9c1b-919d7704a5a2"
                     },
                     {
                         "name": "Axel",
                         "type": "Object Movement",
-                        "description": "Axel begins rotating counterclockwise"
+                        "description": "Axel begins rotating counterclockwise",
+                        "id": "d2185a05-47ab-47b6-9645-85bf97cef913"
                     },
                     {
                         "name": "Thing under stairs",
                         "type": "Extra Object",
-                        "description": "Thing under stairs on right"
+                        "description": "Thing under stairs on right",
+                        "id": "997c82f3-e317-413f-be33-74cd1af30ce7"
                     },
                     {
                         "name": "Crate",
                         "type": "Object Replacement",
-                        "description": "Crate with symbol turns into a barrel"
+                        "description": "Crate with symbol turns into a barrel",
+                        "id": "c070847a-3149-4c47-8d24-8222484b686f"
                     },
                     {
                         "name": "Left guardrail",
                         "type": "Object Movement",
-                        "description": "Left guardrail shifts up so gap at bottom"
+                        "description": "Left guardrail shifts up so gap at bottom",
+                        "id": "02c77f45-3dc1-4d9d-aa6c-bafa129722a0"
                     }
                 ],
                 "Lantern": [
                     {
                         "name": "Purple scarf",
                         "type": "Object Replacement",
-                        "description": "Turns black and white"
+                        "description": "Turns black and white",
+                        "id": "606a4e80-3692-4432-9a6a-f3b888a77879"
                     },
                     {
                         "name": "Oilcan",
                         "type": "Missing Object",
-                        "description": "Oilcan is gone"
+                        "description": "Oilcan is gone",
+                        "id": "a8d5ed16-e4ce-4419-9ea6-46c69b84c4aa"
                     },
                     {
                         "name": "Seagulls",
                         "type": "Hold LMB",
-                        "description": "Report the 4 seagulls"
+                        "description": "Report the 4 seagulls",
+                        "id": "a98ec82b-9782-4223-a359-223724415781"
                     },
                     {
                         "name": "Nixie",
                         "type": "INTRUDER",
-                        "description": "Slowly approaches from lower level until he pounces"
+                        "description": "Slowly approaches from lower level until he pounces",
+                        "id": "7b37ac18-075d-4579-9902-626f29b7d282"
                     },
                     {
                         "name": "Green mug",
                         "type": "Extra Object",
-                        "description": "Green mug appears on the small table"
+                        "description": "Green mug appears on the small table",
+                        "id": "396cf53a-92a1-4d0c-adb7-acf918805f6c"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Man on the rocks down below"
+                        "description": "Man on the rocks down below",
+                        "id": "bdea73df-a161-4146-ac08-ecd50317538a"
                     },
                     {
                         "name": "Lantern",
                         "type": "Object Movement",
-                        "description": "Lantern begins rotating counterclockwise"
+                        "description": "Lantern begins rotating counterclockwise",
+                        "id": "af582da9-89dd-4e0d-8840-5962c197ef92"
                     },
                     {
                         "name": "Ladder",
                         "type": "Object Movement",
-                        "description": "Ladder is wriggling"
+                        "description": "Ladder is wriggling",
+                        "id": "036bde4f-2589-4740-9bf6-ff7b82938412"
                     },
                     {
                         "name": "Stool",
                         "type": "Object Movement",
-                        "description": "Stool next to green bucket turned 90 degrees"
+                        "description": "Stool next to green bucket turned 90 degrees",
+                        "id": "4caf498e-8d9b-4790-9930-3981eaef85a1"
                     }
                 ],
                 "Basement": [
                     {
                         "name": "Drum: Front left",
                         "type": "Object Movement",
-                        "description": "Tipped over"
+                        "description": "Tipped over",
+                        "id": "6b1df739-16f7-44fd-ada8-b0fdb8993b5e"
                     },
                     {
                         "name": "Handprint",
                         "type": "Handprint",
                         "description": "On the stairs",
-                        "game_end_type": "Handprint"
+                        "game_end_type": "Handprint",
+                        "id": "cc2274e1-0804-4e62-938a-2c1988d24f0c"
                     },
                     {
                         "name": "Stairs",
                         "type": "Object Movement",
-                        "description": "Stairs are wriggling"
+                        "description": "Stairs are wriggling",
+                        "id": "8afc7135-83ea-4663-8242-2aaf884f96d8"
                     },
                     {
                         "name": "Flooded",
                         "type": "Water Anomaly",
-                        "description": "Basement is flooded"
+                        "description": "Basement is flooded",
+                        "id": "c071f1d8-e369-41ad-b270-701493945a14"
                     },
                     {
                         "name": "Hole",
                         "type": "Hole",
-                        "description": "Opens up at the bottom of the stairs"
+                        "description": "Opens up at the bottom of the stairs",
+                        "id": "a00447b3-d23c-4381-a793-35c577aecd10"
                     },
                     {
                         "name": "Dead body",
                         "type": "Dead Body",
-                        "description": "Corpse is thrown down the stairs. REQUIRES 2 REPORTS: first as 'Dead Body', then second as 'Intruder' (mumbling corpse)!"
+                        "description": "Corpse is thrown down the stairs. REQUIRES 2 REPORTS: first as 'Dead Body', then second as 'Intruder' (mumbling corpse)!",
+                        "id": "c4f7426b-8250-42ff-a2cd-b20cf5754f4c"
                     },
                     {
                         "name": "Drum: Rear left",
                         "type": "Object Movement",
-                        "description": "Rotates, you can see the flammable sign"
+                        "description": "Rotates, you can see the flammable sign",
+                        "id": "648a258b-fb31-439a-a442-baa97529033c"
                     },
                     {
                         "name": "Sack: Top right",
                         "type": "Missing Object",
-                        "description": "Top sack from right stack is gone"
+                        "description": "Top sack from right stack is gone",
+                        "id": "8302d803-54bf-4dd3-ad98-520a3f590379"
                     },
                     {
                         "name": "Sack: Top middle",
                         "type": "Missing Object",
-                        "description": "Top sack from middle stack is gone"
+                        "description": "Top sack from middle stack is gone",
+                        "id": "40734337-4eea-4c03-85db-8db979086ed7"
                     },
                     {
                         "name": "Sack: Top left",
                         "type": "Missing Object",
-                        "description": "Top sack from left stack is gone"
+                        "description": "Top sack from left stack is gone",
+                        "id": "e0fdc9d4-a793-4eca-835b-6145bc1ef62c"
                     },
                     {
                         "name": "Mousetrap: Left of left pair",
                         "type": "Missing Object",
-                        "description": "Leftmost mousetrap disappears"
+                        "description": "Leftmost mousetrap disappears",
+                        "id": "ebbdc6e4-ec09-472a-9d92-21ea8dd86080"
                     },
                     {
                         "name": "Mousetrap: Left of right pair",
                         "type": "Missing Object",
-                        "description": "Second mousetrap from left disappears"
+                        "description": "Second mousetrap from left disappears",
+                        "id": "c2838834-d304-4a47-a250-49dcf4a8e043"
                     },
                     {
                         "name": "Mousetrap: Right of right pair",
                         "type": "Missing Object",
-                        "description": "Third mousetrap from left disappears"
+                        "description": "Third mousetrap from left disappears",
+                        "id": "b5ab85a5-62c0-496b-9466-69d50207916e"
                     }
                 ]
             }
