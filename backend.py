@@ -1118,6 +1118,42 @@ class Backend:
                 results.append(summarize(a["id"], a["name"], "Global"))
         return results
 
+    def get_shift_count(self, map_name, difficulty):
+        """How many unique shifts (sessions) the user has actually played on
+        a given (map, difficulty). Used by the room-grid candidate filter as
+        a warmup gate — without enough shifts on this slice, 'never seen
+        here' isn't meaningful evidence yet (you just haven't played it
+        enough), so the filter shouldn't kick in. Counts shifts that have
+        ≥1 logged anomaly; pure-empty shifts (rare) are missed but harmless
+        for this purpose since they'd just leave the gate closed slightly
+        longer."""
+        sessions = set()
+        for row in self._get_csv_data(self.logs_path):
+            if row.get("Map") == map_name and row.get("Difficulty") == difficulty:
+                try: sessions.add(int(row.get("Session_ID", "")))
+                except: pass
+        return len(sessions)
+
+    def get_sightings_on_shift(self, map_name, difficulty):
+        """For each anomaly, count unique shifts the user has sighted it on
+        the given (map, difficulty). Used by the room-grid candidate filter,
+        which judges each shift purely on its own sighting history — sightings
+        on other maps or other difficulties are deliberately ignored, even
+        for Globals, because Global just means 'not tied to one room' and
+        doesn't imply one map's data should influence another's.
+        Returns: {anomaly_id: unique_shift_count}
+        """
+        sightings = defaultdict(set)
+        for row in self._get_csv_data(self.logs_path):
+            if row.get("Map") != map_name: continue
+            if row.get("Difficulty") != difficulty: continue
+            aid = row.get("Anomaly_ID", "")
+            if not aid: continue
+            try: sid = int(row.get("Session_ID", ""))
+            except: continue
+            sightings[aid].add(sid)
+        return {aid: len(s) for aid, s in sightings.items()}
+
     def get_counts(self, map_name=None, room_name=None, max_session_id=None):
         counts = defaultdict(int)
         for row in self._get_csv_data(self.logs_path):

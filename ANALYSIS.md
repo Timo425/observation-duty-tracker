@@ -1,7 +1,13 @@
-# Analysis Features — Purpose & Design
+# Analysis Features — Spec & Design
 
-This doc exists to prevent drift when modifying the analytical parts of the tracker.
-Terminology: we say **shift** (not session) throughout.
+> **This file is the spec.** Every analytical feature in the tracker —
+> what it does, why it exists, and how it fits with the rest — is
+> defined here. The whole document is the source of truth, not any
+> single section. Read this before changing analytical code or
+> behaviour, and update it whenever behaviour intentionally changes.
+> Drift between this doc and the code is the bug.
+
+**Terminology:** we say **shift** (not session) throughout.
 
 ## Anomalies Likely Excluded (main window, lower pane)
 
@@ -34,6 +40,61 @@ seen, then insufficient sightings.
 certain anomalies don't appear yet.
 
 This is actionable during gameplay — you check it to narrow down what's left.
+
+## Sighting-Driven Candidate Filter (room grid)
+
+**Purpose:** Reduce visual noise on the room grid by hiding anomaly buttons
+the user has had ample chance to sight on the current shift but never has.
+The grid stays open during early game so first sightings are always
+loggable.
+
+**The rule:**
+
+A **shift** is the (current map, current difficulty) tuple — the slice of
+the game the user is actively playing. Each shift stands on its own
+sighting history; the filter does not look at other (map, difficulty)
+slices.
+
+- `here`   = unique-shift count of this anomaly on the current (map, difficulty)
+- `played` = total unique shifts the user has played on the current (map, difficulty)
+- **Hide if `here == 0` AND `played >= MIN_SHIFTS_FOR_CANDIDATE_FILTER` (currently 10).**
+
+This applies uniformly to per-room and Global anomalies. "Global" means
+the anomaly isn't tied to a single room and may appear on multiple maps
+— it does **not** mean one map's sightings should influence what's
+displayed on another map. Each map's grid is judged purely on that map's
+own evidence: if the user has played 30 Lighthouse shifts and never
+sighted Rift there, the filter hides Rift on Lighthouse regardless of
+how many Rift sightings exist on Airplane.
+
+**Warmup gate.** Below the `played` threshold, "never seen here" is just
+lack of playtime, not evidence of absence — applying the filter would
+hide every anomaly on a fresh difficulty switch (e.g. moving to Hard on
+a map you've only played on Normal). During warmup the grid behaves as
+if the filter is disabled: every anomaly is visible and nothing is
+muted, regardless of the Show All toggle. The threshold is heuristic;
+it just buys enough shifts that a confirmed-zero starts to mean
+something.
+
+**"Show all candidates" toggle** (top-bar checkbox, persisted across
+launches): overrides the hide rule once warmup is met. Hidden anomalies
+come back as muted-grey + italic rows, readable as reference-only. The
+user can still click them if the game surprises them with one — and
+that single sighting moves the anomaly back into the visible bucket
+permanently (because `here` becomes ≥ 1).
+
+**Self-correcting:** no JSON schema changes, no manual per-map
+declarations of which anomalies belong where. The filter reads CSV
+sighting history for the current shift only and adapts as the user
+plays.
+
+**What this is NOT:**
+- Not the live exclusion predictor — that's "Anomalies Likely Excluded"
+  in the lower pane, driven by what you've logged *in the current shift*,
+  not by historical sightings.
+- Not the Anomalies Seen audit tab — that's deliberately cross-difficulty
+  completion tracking; this filter is about what's loggable on the
+  current shift specifically.
 
 ## Expert Audit (separate window, "Audit logs" button)
 
@@ -154,3 +215,61 @@ were first observed. This is the "window" for that pair.
 
 **Why window?** Prevents early shifts (before you learned to spot an anomaly) from
 inflating exclusion evidence.
+
+## Open Questions / Modeling Gaps
+
+Unresolved questions about how the anomaly data model should evolve. Parked
+here so they don't get lost between sessions. Items marked **???** need
+in-game verification.
+
+### Steam / Smoke / Fog availability per map
+The newly-promoted global "Steam / Smoke / Fog" has only one logged
+sighting so far (Research Station Exterior, session 36). Open domain
+questions:
+
+- Does Lighthouse actually offer the RMB → "Steam / Smoke / Fog" report
+  option in-game? **???** Lighthouse Pier already has per-room "Fog"
+  sightings reported via Hold LMB on the fog object (own UUID
+  `3a1e0663...`, 6 sightings), but whether the global RMB report is
+  also accepted there is unverified.
+- Is Steam / Smoke / Fog room-locked at Research Station (Exterior
+  only? other rooms too?) or genuinely random across rooms like Abyss
+  and Rift? **???**
+
+No urgent action needed. Each map's grid will surface or hide SSF based
+purely on that map's own sighting history once enough shifts are played
+there — no cross-map dependency. This is just domain knowledge to
+validate against gameplay.
+
+### Room-based Fog vs global Steam / Smoke / Fog
+Two coexisting representations of fog/steam/smoke in the data:
+- Per-room entries: name "Fog", type "Steam/Smoke/Fog", own UUIDs.
+  Currently in Lighthouse Cabin (`29f6b9f6...`) and Lighthouse Pier
+  (`3a1e0663...`, 6 sightings).
+- Top-level Global: "Steam / Smoke / Fog" (`4712056f...`, 1 sighting in
+  Research Station Exterior).
+
+Whether these should be merged depends on the in-game reporting mechanic:
+- RMB-only globals (Abyss, Rift, Camera Malfunction): right-click menu
+  only, no targeted reporting.
+- Fog at Lighthouse Pier: **???** — believed to support **Hold LMB**
+  on the fog object itself (targeted reporting), which is an affordance
+  the other globals don't have. That's the reason to keep the per-room
+  entry: it represents a different reporting path, not just a different
+  location.
+
+**Open:**
+- Can Lighthouse Pier Fog *also* be reported via RMB → "Steam / Smoke /
+  Fog"? **???**
+- Can Research Station Exterior Fog (now global) *also* be reported via
+  Hold LMB on the fog object? **???**
+- Is Steam / Smoke / Fog room-locked at Research Station (Exterior only?
+  other rooms too?) or genuinely random across rooms like Abyss/Rift?
+  **???**
+
+If both reporting methods work on the same fog instance, the room-based
+and global entries are duplicate counts of one phenomenon and should be
+linked — clicking one would count as the other (probably via a
+`linked_ids` or `aliases` field on the anomaly entry, with the analyzer
+folding them at load time). If only one method works per location,
+they're genuinely separate entities and the current split is correct.

@@ -116,6 +116,14 @@ class ToolTip:
         if tw: tw.destroy()
 
 class AnomalyTrackerApp:
+    # Sighting-driven candidate filter warmup: don't gate any anomalies until
+    # the user has played at least this many shifts on the current
+    # (map, difficulty). Below this, "never seen here" is just lack of
+    # playtime, not evidence of absence — applying the filter would hide
+    # everything on a fresh difficulty switch (e.g. moving to Hard on a map
+    # you've only played on Normal). 10 is a heuristic; tune if needed.
+    MIN_SHIFTS_FOR_CANDIDATE_FILTER = 10
+
     def __init__(self, root):
         self.root = root
         self.backend = Backend()
@@ -257,10 +265,13 @@ class AnomalyTrackerApp:
         )
         self.show_all_check.grid(row=0, column=4, padx=5)
         ToolTip(self.show_all_check,
-                "Off: hide anomalies confirmed to appear only on the other difficulty\n"
-                "(zero sightings here, ≥1 elsewhere). Never-seen anomalies stay visible.\n"
-                "On: show all, with 'other-difficulty-only' ones rendered muted for\n"
-                "reference. Saved between launches.")
+                "Off: hide anomalies you've never sighted on the current shift\n"
+                "(this map + this difficulty), once you've played enough shifts\n"
+                f"here (≥{AnomalyTrackerApp.MIN_SHIFTS_FOR_CANDIDATE_FILTER}) for the absence to count as evidence. Each\n"
+                "shift stands on its own — sightings on other maps or difficulties\n"
+                "don't influence what's shown here.\n"
+                "On: show all, with the hidden ones rendered muted for reference.\n"
+                "Saved between launches.")
 
         self.map_label = ttk.Label(mode_frame, text="Map:")
         self.map_label.grid(row=0, column=5, padx=5)
@@ -492,13 +503,19 @@ class AnomalyTrackerApp:
         map_name = self.current_map.get()
         if not map_name: return
 
-        # Cache per-difficulty sightings for this map once per full rebuild —
-        # create_buttons reads this to decide which anomalies to hide vs mute.
-        # Cheap to recompute because _get_csv_data hits its own cache.
-        self._sightings_by_id = {
-            r["id"]: r["sightings_by_diff"]
-            for r in self.backend.get_per_difficulty_sightings(map_name)
-        }
+        # Cache current-shift sightings ({anomaly_id: shift_count}) once per
+        # full rebuild — create_buttons uses it to find anomalies the user
+        # has never sighted on this (map, difficulty). Other-shift sightings
+        # are deliberately not loaded; the filter judges each shift on its
+        # own evidence only. Cheap because _get_csv_data is cached.
+        current_diff = self.current_difficulty.get()
+        self._shift_sightings = self.backend.get_sightings_on_shift(map_name, current_diff)
+
+        # Filter warmup gate: only apply the candidate filter once the user
+        # has played enough shifts on the current (map, difficulty) for
+        # "never seen here" to be meaningful evidence.
+        played_shifts = self.backend.get_shift_count(map_name, current_diff)
+        self._candidate_filter_active = played_shifts >= self.MIN_SHIFTS_FOR_CANDIDATE_FILTER
 
         # Performance: If it's the same map, just update button colors (Logged vs Not)
         if self._last_rendered_map == map_name:
@@ -508,6 +525,7 @@ class AnomalyTrackerApp:
 
         self._last_rendered_map = map_name
         self._room_buttons = {}
+        self._room_buttons_ineligible = {}
 
         # Rebuild collectibles strip
         self.rebuild_collectibles(map_name)
@@ -584,7 +602,7 @@ class AnomalyTrackerApp:
                 # Probabilistic Color Logic
                 bg_color = "lightgray"
                 fg_color = "black"
-                
+
                 if self.backend.is_logged_in_current_session(map_name, room_name, anom_name):
                     bg_color = "#90ee90" # Green (Found)
                 elif anom_name in missed_names:
@@ -599,7 +617,7 @@ class AnomalyTrackerApp:
                     rgb = colorsys.hls_to_rgb(0, 0.5, sat)
                     bg_color = '#%02x%02x%02x' % (int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
                     if sat > 0.7: fg_color = "white" # High intensity = white text
-                
+
                 # Italic marks anomalies never logged in the current difficulty
                 # (across all shifts in that mode). Fires independent of color
                 # state — even a missed/excluded anomaly is worth flagging as
@@ -607,10 +625,10 @@ class AnomalyTrackerApp:
                 font = self._btn_font_unseen if count == 0 else self._btn_font_normal
 
                 # Show-all override: if the anomaly is declared ineligible for
-                # the current difficulty but shown anyway (because Show All is
+                # the current shift but shown anyway (because Show All is
                 # on), force a muted look so it reads as "reference only" —
                 # overrides the other colour states since 'not applicable on
-                # this mode' is a stronger signal than any per-shift state.
+                # this shift' is a stronger signal than any per-shift state.
                 ineligible_set = getattr(self, "_room_buttons_ineligible", {}).get(room_name, set())
                 if anom_name in ineligible_set:
                     bg_color = "#e8e8e8"
@@ -1039,29 +1057,38 @@ class AnomalyTrackerApp:
         # Filter out collectibles from normal anomaly grid
         normal_anoms = [a for a in anomalies if not self.backend.is_collectible(a)]
 
-        # Sighting-based visibility: hide anomalies confirmed to appear only
-        # on the OTHER difficulty (≥1 sighting there, zero here). Always keep
-        # never-seen anomalies visible so the user can still log a first
-        # sighting. The Show All toggle overrides the hide rule and marks
-        # the concerned rows with a muted style so they read as reference.
-        current_diff = self.current_difficulty.get()
+        # Sighting-based visibility: each shift = (current map, current
+        # difficulty) stands on its own evidence. After a warmup of
+        # MIN_SHIFTS_FOR_CANDIDATE_FILTER shifts on this slice, any anomaly
+        # that has never been sighted on this exact (map, difficulty) gets
+        # hidden — sightings on other maps or other difficulties are
+        # deliberately ignored, even for Globals (Abyss/Rift/etc.). Below
+        # warmup the filter is disabled so a fresh difficulty switch
+        # doesn't sweep the whole grid empty. The Show All toggle
+        # overrides the hide rule and renders the affected rows muted.
         show_all = self.backend.show_all_candidates
-        sightings = self._sightings_by_id  # pre-computed per map in refresh_map_ui
+        shift_sightings = self._shift_sightings
+        filter_active = self._candidate_filter_active
         filtered = []
         ineligible = set()
         for a in normal_anoms:
-            sb = sightings.get(a.get("id"), {})
-            here = sb.get(current_diff, 0)
-            elsewhere = sum(v for d, v in sb.items() if d != current_diff)
-            confirmed_other_only = (here == 0 and elsewhere > 0)
-            if not confirmed_other_only:
+            if not filter_active:
+                filtered.append(a)
+                continue
+            here = shift_sightings.get(a.get("id"), 0)
+            if here > 0:
                 filtered.append(a)
             elif show_all:
                 filtered.append(a)
                 ineligible.add(a["name"])
         normal_anoms = filtered
+        # create_buttons is called twice per room tab — once for the room's
+        # own anomalies, once for the Globals section — so union into the
+        # existing set instead of overwriting it. Otherwise the second call
+        # wipes the first call's filter-muted names and only globals end up
+        # styled muted. Cleared on full rebuild via reset in refresh_map_ui.
         self._room_buttons_ineligible = getattr(self, "_room_buttons_ineligible", {})
-        self._room_buttons_ineligible[room_name] = ineligible
+        self._room_buttons_ineligible.setdefault(room_name, set()).update(ineligible)
 
         grid_frame = ttk.Frame(parent); grid_frame.pack(fill=tk.X)
         for c in range(3): grid_frame.columnconfigure(c, weight=1) # Center/Expand rows
@@ -1079,7 +1106,7 @@ class AnomalyTrackerApp:
             btn.bind("<Button-3>", lambda e, n=name, r=room_name: self.undo_anomaly(n, r))
             # Tooltips for descriptions
             desc = a.get("description", a.get("desc", ""))
-            muted_note = ("\n[Sighted only on other difficulty — shown because Show All is on]"
+            muted_note = ("\n[Sighted only outside this shift (different map and/or difficulty) — shown because Show All is on]"
                           if name in ineligible else "")
             base = desc if desc else ""
             tip = (f"{base}{muted_note}\n\nRight-click to undo").strip()
