@@ -24,6 +24,13 @@
             "type": "Global",
             "report": "RMB → \"Camera Malfunction\"",
             "id": "aeead73e-3e8b-4c20-94b6-3097d141824c"
+        },
+        {
+            "name": "Steam / Smoke / Fog",
+            "description": "Steam, smoke, or fog fills a room",
+            "type": "Global",
+            "report": "RMB → \"Steam / Smoke / Fog\"",
+            "id": "4712056f-70c8-45bb-9cee-2b2f0c14c454"
         }
     ],
     "Maps": {
