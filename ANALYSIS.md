@@ -224,22 +224,22 @@ in-game verification.
 
 ### Steam / Smoke / Fog availability per map
 The newly-promoted global "Steam / Smoke / Fog" has only one logged
-sighting so far (Research Station Exterior, session 36). Open domain
-questions:
+sighting so far (Research Station Exterior, session 36).
 
-- Does Lighthouse actually offer the RMB → "Steam / Smoke / Fog" report
-  option in-game? **???** Lighthouse Pier already has per-room "Fog"
-  sightings reported via Hold LMB on the fog object (own UUID
-  `3a1e0663...`, 6 sightings), but whether the global RMB report is
-  also accepted there is unverified.
+**Confirmed:** Lighthouse offers the RMB → "Steam / Smoke / Fog" report
+option in-game. So SSF as a global is genuinely available on Lighthouse,
+not just Research Station — the per-shift filter will discover this
+empirically once Lighthouse accumulates RMB-SSF sightings under the
+global UUID.
+
+Still open:
 - Is Steam / Smoke / Fog room-locked at Research Station (Exterior
   only? other rooms too?) or genuinely random across rooms like Abyss
   and Rift? **???**
 
-No urgent action needed. Each map's grid will surface or hide SSF based
-purely on that map's own sighting history once enough shifts are played
-there — no cross-map dependency. This is just domain knowledge to
-validate against gameplay.
+Each map's grid will surface or hide SSF based purely on that map's own
+sighting history once enough shifts are played there — no cross-map
+dependency.
 
 ### Room-based Fog vs global Steam / Smoke / Fog
 Two coexisting representations of fog/steam/smoke in the data:
@@ -249,27 +249,25 @@ Two coexisting representations of fog/steam/smoke in the data:
 - Top-level Global: "Steam / Smoke / Fog" (`4712056f...`, 1 sighting in
   Research Station Exterior).
 
-Whether these should be merged depends on the in-game reporting mechanic:
-- RMB-only globals (Abyss, Rift, Camera Malfunction): right-click menu
-  only, no targeted reporting.
-- Fog at Lighthouse Pier: **???** — believed to support **Hold LMB**
-  on the fog object itself (targeted reporting), which is an affordance
-  the other globals don't have. That's the reason to keep the per-room
-  entry: it represents a different reporting path, not just a different
-  location.
+Now that Lighthouse is confirmed to expose the RMB → "Steam / Smoke /
+Fog" option, both reporting paths plausibly fire on the same Pier fog
+instance: the user can either Hold-LMB the fog object (which has been
+the de-facto path for the 6 logged Pier sightings) or RMB → global SSF.
+Strongly suggests these are the same in-game event, just two ways to
+report it — duplicate counts in our data.
 
-**Open:**
-- Can Lighthouse Pier Fog *also* be reported via RMB → "Steam / Smoke /
-  Fog"? **???**
-- Can Research Station Exterior Fog (now global) *also* be reported via
-  Hold LMB on the fog object? **???**
-- Is Steam / Smoke / Fog room-locked at Research Station (Exterior only?
-  other rooms too?) or genuinely random across rooms like Abyss/Rift?
-  **???**
+Still open:
+- Confirm directly: does the same Pier fog occurrence accept BOTH
+  Hold-LMB on the object AND RMB → "Steam / Smoke / Fog"? **???**
+  (Currently inferred from "Lighthouse offers RMB SSF" but not
+  observed back-to-back on a single fog instance.)
+- Can Research Station Exterior Fog (now global) *also* be reported
+  via Hold LMB on the fog object? **???**
 
-If both reporting methods work on the same fog instance, the room-based
-and global entries are duplicate counts of one phenomenon and should be
-linked — clicking one would count as the other (probably via a
-`linked_ids` or `aliases` field on the anomaly entry, with the analyzer
-folding them at load time). If only one method works per location,
-they're genuinely separate entities and the current split is correct.
+If both methods work on the same fog instance, the room-based and
+global entries should be linked so clicking either counts as the
+other — probably a `linked_ids` / `aliases` field on the anomaly
+entry, with the analyzer folding them at load time. The current split
+otherwise inflates the sighting count whenever the user picks one
+report path over the other on different shifts. If only one method
+works per location, the split is correct as-is.
