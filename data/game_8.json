@@ -2534,7 +2534,7 @@
                     {
                         "name": "Huge Spider",
                         "type": "INTRUDER",
-                        "description": "On right bed, top of first aid cabinet, or hanging from ceiling between the beds",
+                        "description": "On left bed, on right bed, top of first aid cabinet, or hanging from ceiling between the beds",
                         "id": "521e8128-0b99-400f-8dd1-21e5324a591e"
                     },
                     {
