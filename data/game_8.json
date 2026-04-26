@@ -2566,7 +2566,7 @@
                     {
                         "name": "The Maw",
                         "type": "INTRUDER",
-                        "description": "1st report fails (glass shatters). Re-report empty room, then report him rising",
+                        "description": "1st report fails (glass shatters). Re-report when he rises",
                         "id": "57c1f09d-c23e-490c-beaf-000bcf094f70"
                     },
                     {
