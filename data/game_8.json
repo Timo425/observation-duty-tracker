@@ -31,6 +31,13 @@
             "type": "Global",
             "report": "RMB → \"Steam / Smoke / Fog\"",
             "id": "4712056f-70c8-45bb-9cee-2b2f0c14c454"
+        },
+        {
+            "name": "\"E\" anomaly",
+            "description": "Weird \"Eeee\" noise. Find infected room, report from DIFFERENT room (menu turns to \"E\" if in same room)",
+            "type": "Global",
+            "report": "RMB → report from a different room",
+            "id": "a3466a6b-2fa9-415e-be1f-fe3991908837"
         }
     ],
     "Maps": {
