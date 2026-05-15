@@ -1206,7 +1206,8 @@ class AnomalyTrackerApp:
         if map_shifts:
             min_s, max_s = min(map_shifts), max(map_shifts)
             range_str = f"Shift {min_s}" if min_s == max_s else f"Shifts {min_s}-{max_s}"
-            range_str += f": {len(map_shifts)} total"
+            diff_count = len(self.backend.get_map_shifts(map_name, difficulty=self.backend.difficulty))
+            range_str += f": {len(map_shifts)} total · {self.backend.difficulty}: {diff_count}"
         else:
             range_str = f"Shift {self.backend.session_id}: no data yet"
         self.live_frame.config(text=f"Anomalies likely excluded in this shift ({range_str})")

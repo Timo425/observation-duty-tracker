@@ -1205,19 +1205,22 @@ class Backend:
                 anoms.append(row["Anomaly_Name"])
         return anoms
 
-    def get_map_shifts(self, map_name):
-        """All session IDs for this game on this map, across difficulties.
-        Used for the shift-count display — analysis logic stays per-difficulty."""
+    def get_map_shifts(self, map_name, difficulty=None):
+        """Session IDs for this game on this map.
+        If difficulty is None, unions both difficulties (for the combined display count).
+        If difficulty is given, filters to that one (matches the analysis scope)."""
         ids = set()
         for row in self._get_csv_data(self.logs_path):
-            if row["Map"] == map_name:
-                try: ids.add(int(row["Session_ID"]))
-                except: continue
+            if row["Map"] != map_name: continue
+            if difficulty is not None and row.get("Difficulty") != difficulty: continue
+            try: ids.add(int(row["Session_ID"]))
+            except: continue
         if os.path.exists(self.failures_path):
             for row in self._get_csv_data(self.failures_path):
-                if row.get("Map") == map_name:
-                    try: ids.add(int(row["Session_ID"]))
-                    except: continue
+                if row.get("Map") != map_name: continue
+                if difficulty is not None and row.get("Difficulty") != difficulty: continue
+                try: ids.add(int(row["Session_ID"]))
+                except: continue
         return ids
 
     def get_stats(self, map_name, max_session_id=None):

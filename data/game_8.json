@@ -2633,9 +2633,9 @@
                         "id": "cae3d514-03fa-4247-be68-cc332ac02d74"
                     },
                     {
-                        "name": "Round building",
+                        "name": "Red lights",
                         "type": "Light Anomaly",
-                        "description": "Red lights flickering",
+                        "description": "Red lights flickering on the dome",
                         "id": "65998d3f-332c-48d7-8013-55adbbeebf44"
                     },
                     {
@@ -2676,9 +2676,9 @@
                         "id": "ae04edcc-3df6-430d-a24d-6c9566d33545"
                     },
                     {
-                        "name": "Dome building",
+                        "name": "Snowy dome",
                         "type": "Object Replacement",
-                        "description": "Covered in snow",
+                        "description": "The dome is covered in snow",
                         "id": "f2f86ef6-46d1-47af-ae11-ec6ad93913ac"
                     }
                 ],
@@ -2728,7 +2728,7 @@
                     {
                         "name": "Spools",
                         "type": "Missing Object",
-                        "description": "Two huge spools covered in snow disappear",
+                        "description": "Left one of the two huge snow-covered spools disappears",
                         "id": "2bd8c636-ce38-41e9-85ed-88fc2d0dc921"
                     },
                     {
