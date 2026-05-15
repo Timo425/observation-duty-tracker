@@ -23,7 +23,8 @@
             "description": "Room disappears from rotation (count your rooms!)",
             "type": "Global",
             "report": "RMB → \"Camera Malfunction\"",
-            "id": "aeead73e-3e8b-4c20-94b6-3097d141824c"
+            "id": "aeead73e-3e8b-4c20-94b6-3097d141824c",
+            "game_end_type": "Camera Malfunction"
         },
         {
             "name": "Steam / Smoke / Fog",
@@ -2290,7 +2291,8 @@
                         "name": "Post-it notes (floating)",
                         "type": "Object Movement",
                         "description": "Post-it notes levitating",
-                        "id": "2508b7c9-aaa4-4b10-8a51-239d15c034cf"
+                        "id": "2508b7c9-aaa4-4b10-8a51-239d15c034cf",
+                        "game_end_type": "Object Movement"
                     },
                     {
                         "name": "Tic Tac Toe",

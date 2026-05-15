@@ -1012,21 +1012,25 @@ class Backend:
         return [str(value)]
 
     def get_room_types(self, map_name, room_name):
-        """Returns unique types found in a specific room + Global (Supports lists or comma strings)."""
+        """Returns unique types found in a specific room + Global (Supports lists or comma strings).
+        For globals the anomaly NAME is also added as a type — on the end-game
+        screen the game labels a global by its name ('CAMERA MALFUNCTION IN
+        QUARANTINE'), not by its 'Global' type, so the player picks the name."""
         if not map_name or not room_name: return []
         types = set()
-        
+
         # Local Room
         room_anoms = self.data.get("Maps", {}).get(map_name, {}).get("Rooms", {}).get(room_name, [])
         for anom in room_anoms:
             for t in self._get_tags(anom.get("type")): types.add(t)
             for t in self._get_tags(anom.get("game_end_type")): types.add(t)
-            
+
         # Global
         for anom in self.data.get("Global", []):
             for t in self._get_tags(anom.get("type")): types.add(t)
             for t in self._get_tags(anom.get("game_end_type")): types.add(t)
-            
+            if anom.get("name"): types.add(anom["name"])
+
         return sorted([t for t in types if t])
 
     def get_all_types(self):
@@ -1034,10 +1038,12 @@ class Backend:
         Scans all anomalies in the JSON for unique types (Supports lists or comma strings).
         """
         types = set()
-        # Scan Global
+        # Scan Global (incl. names — globals appear on the end-game screen
+        # labelled by name, not by their 'Global' type — see get_room_types)
         for anom in self.data.get("Global", []):
             for t in self._get_tags(anom.get("type")): types.add(t)
             for t in self._get_tags(anom.get("game_end_type")): types.add(t)
+            if anom.get("name"): types.add(anom["name"])
             
         # Scan Maps
         for map_data in self.data.get("Maps", {}).values():

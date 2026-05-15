@@ -1381,23 +1381,27 @@ class AnomalyTrackerApp:
         if self.backend.is_current_session_locked():
             messagebox.showwarning("Locked", "This session is locked. Unlock it first to report failures.")
             return
-        FailureDialog(self.root, self.backend, self.current_map.get())
+        FailureDialog(self, self.backend, self.current_map.get())
 
 class FailureDialog:
     def __init__(self, parent, backend, current_map):
+        # `parent` is the AnomalyTrackerApp instance — we need it both as the
+        # Tk parent (via parent.root) and to call back into update_session_view
+        # so the lock icon refreshes after submit.
         self.parent = parent
         self.backend = backend
         self.current_map = current_map
-        self.dialog = tk.Toplevel(parent)
+        tk_parent = parent.root
+        self.dialog = tk.Toplevel(tk_parent)
         self.dialog.title("It's over - Report Failure")
         self.dialog.geometry("700x400")
-        self.dialog.transient(parent)
+        self.dialog.transient(tk_parent)
         self.dialog.grab_set()
 
         # Center dialog
         self.dialog.update_idletasks()
-        x = parent.winfo_rootx() + (parent.winfo_width() // 2) - 350
-        y = parent.winfo_rooty() + (parent.winfo_height() // 2) - 200
+        x = tk_parent.winfo_rootx() + (tk_parent.winfo_width() // 2) - 350
+        y = tk_parent.winfo_rooty() + (tk_parent.winfo_height() // 2) - 200
         self.dialog.geometry(f"+{x}+{y}")
 
         ttk.Label(self.dialog, text="Report the 3 anomalies seen on the end-game screen:", font=("Arial", 11, "bold")).pack(pady=10)
@@ -1475,22 +1479,19 @@ class FailureDialog:
 
     def on_type_search(self, event, combo, row_index):
         """Filters the dropdown values as the user types."""
+        # Skip navigation/special keys so cursor movement & selection still work.
+        if event.keysym in ("Up", "Down", "Left", "Right", "Return", "Tab",
+                            "Escape", "Shift_L", "Shift_R", "Control_L", "Control_R"):
+            return
+
         value = combo.get()
         room_types = self.rows[row_index]["room_types"]
-        
+
         if value == '':
             combo['values'] = room_types
         else:
             filtered = [item for item in room_types if value.lower() in item.lower()]
             combo['values'] = filtered
-        
-        # Open dropdown if there are matches
-        if combo['values']:
-            # We use try/except as some systems/versions might flicker on immediate open
-            try:
-                combo.event_generate('<Down>')
-            except:
-                pass
 
     def submit(self):
         if self.backend.is_current_session_locked():
