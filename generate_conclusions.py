@@ -58,8 +58,16 @@ def _normalize(s):
 
 def _trailing_number(desc):
     """Trailing integer in the description half of a filename, else 0.
-    Used to order `Foo`, `Foo 1`, `Foo 2`… in the user-intuitive sequence."""
-    m = re.search(r"\s+(\d+)\s*$", (desc or "").strip())
+    Used to order `Foo`, `Foo 1`, `Foo 2`… in the user-intuitive sequence.
+    Tolerates trailing parentheticals ('Foo 2 (Intruder)' → 2) so adding a
+    qualifier after the number doesn't break sort order."""
+    s = (desc or "").strip()
+    # Peel off trailing " (...)" groups so the number-before-paren reaches $.
+    while True:
+        new_s = re.sub(r"\s*\([^)]*\)\s*$", "", s).strip()
+        if new_s == s: break
+        s = new_s
+    m = re.search(r"(\d+)$", s)
     return int(m.group(1)) if m else 0
 
 
@@ -80,45 +88,51 @@ def _index_images(images_dir, map_name):
     return out
 
 
-def _index_all_images(images_dir, map_names):
-    """Like _index_images, but pre-tagged with the map name. Used for Globals
-    which can have screenshots under any map's folder."""
-    out = []
-    for m in map_names:
-        for room_part, desc_part, path in _index_images(images_dir, m):
-            out.append((m, room_part, desc_part, path))
-    return out
+def _name_match_parts(name):
+    """Split an anomaly name into (base, discriminators).
+    'Sockets (door)' → ('sockets', ['door']);  'Dead body' → ('dead body', []).
+    The discriminator must also appear in the filename for the match to count
+    — otherwise 'Sockets (glass)' and 'Sockets (door)' both share the same
+    base and would steal each other's images."""
+    base = _normalize(re.sub(r"\([^)]*\)", "", name)).strip()
+    discs = [_normalize(d).strip() for d in re.findall(r"\(([^)]+)\)", name)]
+    return base, [d for d in discs if d]
+
+
+def _desc_matches(name, file_desc):
+    """True iff the file's description half matches the anomaly name —
+    base name as substring, plus every parenthetical discriminator from the
+    name also present in the file's description."""
+    base, discs = _name_match_parts(name)
+    if not base: return False
+    n_desc = _normalize(file_desc)
+    if base not in n_desc: return False
+    return all(d in n_desc for d in discs)
 
 
 def _find_images_for_room_anomaly(name, room_name, indexed):
     """Match files where (a) filename's room half loosely matches the JSON
-    room and (b) the anomaly name appears in the description half.
-    Returns abs paths sorted by trailing-number first, then filename."""
-    name_simple = re.sub(r"\([^)]*\)", "", name)
-    n_name = _normalize(name_simple).strip()
-    if not n_name: return []
+    room and (b) the anomaly name (incl. paren discriminators) matches the
+    description half. Returns abs paths sorted by trailing-number first."""
     n_room = _normalize(room_name).strip()
-
     matches = []
     for file_room, file_desc, path in indexed:
         nfr = _normalize(file_room).strip()
         room_hit = bool(n_room) and (n_room in nfr or nfr in n_room)
         if not room_hit: continue
-        if n_name in _normalize(file_desc):
+        if _desc_matches(name, file_desc):
             matches.append((file_desc, path))
     matches.sort(key=lambda t: (_trailing_number(t[0]), t[1]))
     return [p for _, p in matches]
 
 
-def _find_images_for_global(name, indexed_all):
-    """Globals match anywhere — scan every map's index by name only.
-    indexed_all rows are (map, room, desc, abs_path)."""
-    name_simple = re.sub(r"\([^)]*\)", "", name)
-    n_name = _normalize(name_simple).strip()
-    if not n_name: return []
+def _find_images_for_global_in_map(name, indexed):
+    """Per-map global lookup: match by anomaly name only, ignoring the
+    filename's room half (a global can be photographed in any room of the
+    map). `indexed` is this map's index from _index_images."""
     matches = []
-    for _m, _room, file_desc, path in indexed_all:
-        if n_name in _normalize(file_desc):
+    for _file_room, file_desc, path in indexed:
+        if _desc_matches(name, file_desc):
             matches.append((file_desc, path))
     matches.sort(key=lambda t: (_trailing_number(t[0]), t[1]))
     return [p for _, p in matches]
@@ -214,45 +228,17 @@ def _sort_cards(cards):
 
 def build_report_data(backend, difficulties=None, images_dir=None):
     """Returns a structured dict ready for either MD or HTML rendering.
-    Layout: globals first, then per map → per room → list of card dicts."""
+
+    Per ANALYSIS.md: 'Global' anomalies aren't tied to a room but DO manifest
+    on specific maps and each map's grid is judged purely on that map's own
+    sighting history. So globals are folded into each map block as the last
+    'room' (named 'Global'), using that map's totals and image folder."""
     if difficulties is None:
         difficulties = backend.data.get("Difficulties", ["Normal", "Hard"])
 
     excl_by_diff = _build_exclusion_lookup(backend, difficulties)
     map_names = list(backend.data.get("Maps", {}).keys())
 
-    # --- Globals: combined across all maps, images can come from anywhere.
-    indexed_all = _index_all_images(images_dir, map_names) if images_dir else []
-    global_totals = {d: 0 for d in difficulties}
-    for m in map_names:
-        for d in difficulties:
-            global_totals[d] += len(backend.get_map_shifts(m, difficulty=d))
-
-    global_anom_counts = defaultdict(lambda: {d: set() for d in difficulties})
-    for m in map_names:
-        for d in difficulties:
-            backend.difficulty = d
-            stats = backend.get_stats(m)
-            for a in backend.data.get("Global", []):
-                global_anom_counts[a["name"]][d].update(stats["anomaly_sessions"].get(a["name"], set()))
-
-    global_cards = []
-    for a in backend.data.get("Global", []):
-        name = a["name"]
-        counts = {d: len(global_anom_counts[name][d]) for d in difficulties}
-        images = _find_images_for_global(name, indexed_all)
-        global_cards.append(_card(
-            name=name,
-            atype=a.get("type") or "Global",
-            image_status=(a.get("image") or "").lower(),
-            counts=counts,
-            totals=global_totals,
-            excl_by_diff=excl_by_diff,
-            images=images,
-        ))
-    _sort_cards(global_cards)
-
-    # --- Per-map / per-room cards.
     map_blocks = []
     for map_name in map_names:
         totals = {d: len(backend.get_map_shifts(map_name, difficulty=d)) for d in difficulties}
@@ -265,6 +251,7 @@ def build_report_data(backend, difficulties=None, images_dir=None):
             diff_stats[d] = backend.get_stats(map_name)
 
         indexed = _index_images(images_dir, map_name) if images_dir else []
+
         rooms = []
         for room_name, anoms in backend.data["Maps"][map_name]["Rooms"].items():
             cards = []
@@ -282,14 +269,32 @@ def build_report_data(backend, difficulties=None, images_dir=None):
                     images=images,
                 ))
             _sort_cards(cards)
-            rooms.append({"name": room_name, "cards": cards})
+            rooms.append({"name": room_name, "cards": cards, "is_global": False})
+
+        # Globals as a synthetic "room" at the end of each map.
+        global_cards = []
+        for a in backend.data.get("Global", []):
+            name = a["name"]
+            counts = {d: len(diff_stats[d]["anomaly_sessions"].get(name, set())) for d in difficulties}
+            images = _find_images_for_global_in_map(name, indexed)
+            global_cards.append(_card(
+                name=name,
+                atype=a.get("type") or "Global",
+                image_status=(a.get("image") or "").lower(),
+                counts=counts,
+                totals=totals,
+                excl_by_diff=excl_by_diff,
+                images=images,
+            ))
+        if global_cards:
+            _sort_cards(global_cards)
+            rooms.append({"name": "Global", "cards": global_cards, "is_global": True})
+
         map_blocks.append({"name": map_name, "totals": totals, "rooms": rooms})
 
     return {
         "game_id": backend.game_id,
         "difficulties": list(difficulties),
-        "global_totals": global_totals,
-        "global_cards": global_cards,
         "maps": map_blocks,
     }
 
@@ -326,48 +331,68 @@ def _meta_segments(card, difficulties):
 
 
 # ---------------------------------------------------------------------------
-# Markdown renderer.
+# Markdown renderer — compact reference table per map. No images, no card
+# layout (that's what the HTML is for). Tracked in git, diffable.
 
 
-def _md_card(card, difficulties, images_dir):
-    """One card as Markdown lines."""
-    out = []
-    meta = " — ".join(_meta_segments(card, difficulties))
-    out.append(meta)
-
-    if card["image_status"] == "n/a":
-        out.append("*[no image — N/A]*")
-    elif card["images"]:
-        for abs_path in card["images"]:
-            rel = _to_relative_src(abs_path, images_dir)
-            out.append(f"![{card['name']}]({rel})")
-    else:
-        out.append("*[image missing]*")
-    out.append("")
-    return out
+_BUCKET_SHORT = {
+    "Normal-only": "N",
+    "Normal+Hard": "N+H",
+    "Hard-only": "H",
+    "Never seen": "—",
+}
 
 
-def render_md(data, images_dir):
-    lines = [f"# {data['game_id']} — conclusions", ""]
+def _md_rate_cell(n, t):
+    if t == 0: return "—"
+    if n == 0: return f"0/{t}"
+    return f"{n}/{t} ({100 * n // t}%)"
 
-    if data["global_cards"]:
-        lines.append("## Global anomalies")
-        total_str = " · ".join(f"{d}: {data['global_totals'][d]} shifts" for d in data["difficulties"])
-        lines.append(f"_{total_str}_")
-        lines.append("")
-        for c in data["global_cards"]:
-            lines.extend(_md_card(c, data["difficulties"], images_dir))
+
+def _md_excl_cell(excl):
+    """Compact representation: 'N: A,B · H: C,D' or '—' if none."""
+    if not excl: return "—"
+    parts = []
+    for d, members in excl.items():
+        diff_short = d[0]  # 'N' / 'H'
+        parts.append(f"{diff_short}: {', '.join(members)}")
+    return " · ".join(parts)
+
+
+def render_md(data, _images_dir=None, title=None):
+    diffs = data["difficulties"]
+    lines = [f"# {title or data['game_id']}", ""]
+    lines.append("Bucket key: **N** = Normal-only · **N+H** = both · **H** = Hard-only · **—** = never seen on this map.")
+    lines.append("")
 
     for block in data["maps"]:
-        total_str = " · ".join(f"{d}: {block['totals'][d]} shifts" for d in data["difficulties"])
-        lines.append(f"# {block['name']}")
+        total_str = " · ".join(f"{d}: {block['totals'][d]} shifts" for d in diffs)
+        lines.append(f"## {block['name']}")
         lines.append(f"_{total_str}_")
         lines.append("")
+
+        # Header: Room | Type | Anomaly | Bucket | <each diff> | Excl
+        header_cells = ["Room", "Type", "Anomaly", "Bucket"]
+        for d in diffs:
+            header_cells.append(d)
+        header_cells.append("Excl")
+        lines.append("| " + " | ".join(header_cells) + " |")
+        lines.append("|" + "|".join(["---"] * len(header_cells)) + "|")
+
         for room in block["rooms"]:
-            lines.append(f"## {room['name']}")
-            lines.append("")
+            room_label = room["name"]
             for c in room["cards"]:
-                lines.extend(_md_card(c, data["difficulties"], images_dir))
+                cells = [
+                    room_label,
+                    c["type"] or "—",
+                    c["name"],
+                    _BUCKET_SHORT[c["bucket"]],
+                ]
+                for d in diffs:
+                    cells.append(_md_rate_cell(c["counts"].get(d, 0), c["totals"].get(d, 0)))
+                cells.append(_md_excl_cell(c["excl"]))
+                lines.append("| " + " | ".join(cells) + " |")
+        lines.append("")
 
     return "\n".join(lines)
 
@@ -379,15 +404,16 @@ def render_md(data, images_dir):
 
 _DARK_CSS = """
 :root { color-scheme: dark; }
+html { background: #1b1d21; }
 body {
-  margin: 0;
+  margin: 0 auto;
   padding: 2rem 3rem;
   background: #1b1d21;
   color: #d8d8d8;
   font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
   line-height: 1.55;
   font-size: 15px;
-  max-width: 1200px;
+  max-width: 1400px;
 }
 h1, h2, h3 { color: #f3f3f3; margin-top: 1.6em; }
 h1 { border-bottom: 1px solid #34373d; padding-bottom: 0.25em; }
@@ -400,13 +426,53 @@ strong { color: #f3f3f3; }
 .anomaly .rates { color: #c9c9c9; }
 .anomaly .excl { color: #c9a86a; font-size: 0.92em; display: block; margin-top: 0.1em; }
 .anomaly .images { display: flex; flex-wrap: wrap; gap: 8px; }
-.anomaly .images a { display: inline-block; line-height: 0; }
-.anomaly .images img { max-height: 260px; max-width: 380px; border-radius: 4px; }
+.anomaly .images a.thumb { display: inline-block; line-height: 0; }
+.anomaly .images a.thumb img { max-height: 260px; max-width: 380px; border-radius: 4px; cursor: zoom-in; }
 .no-image { color: #8a8e95; font-style: italic; font-size: 0.92em; }
 .bucket-normal { border-left-color: #5ea3d8; }
 .bucket-both { border-left-color: #8fb96b; }
 .bucket-hard { border-left-color: #d87a5e; }
 .bucket-never { border-left-color: #555; }
+
+/* CSS-only lightbox via :target. The whole overlay is a single <a href="#">
+   so clicking anywhere — including the dimmed backdrop — closes it. The X
+   in the corner is a visual cue, not its own button. */
+a.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.94);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  text-decoration: none;
+}
+a.lightbox:target { display: flex; }
+a.lightbox img {
+  max-width: 96vw;
+  max-height: 92vh;
+  object-fit: contain;
+  border-radius: 4px;
+}
+a.lightbox .close {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: rgba(40, 40, 40, 0.65);
+  color: #f3f3f3;
+  font-size: 1.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;  /* override the parent's zoom-out cursor over the X */
+}
+a.lightbox:hover .close { background: rgba(70, 70, 70, 0.85); }
+.anomaly .images a.thumb { scroll-margin-top: 4rem; }
 """
 
 _BUCKET_CLASS = {
@@ -421,7 +487,7 @@ def _esc(s):
     return html_lib.escape(s or "")
 
 
-def _html_card(card, difficulties, images_dir):
+def _html_card(card, difficulties, images_dir, card_idx):
     cls = _BUCKET_CLASS.get(card["bucket"], "")
     bucket = _esc(card["bucket"])
     name = _esc(card["name"])
@@ -441,11 +507,24 @@ def _html_card(card, difficulties, images_dir):
         parts.append('<div class="no-image">[no image — N/A]</div>')
     elif card["images"]:
         parts.append('<div class="images">')
-        for abs_path in card["images"]:
+        # Each image gets a thumbnail link + lightbox overlay pair. Clicking
+        # the thumb sets the URL fragment to the overlay's id, the :target
+        # CSS rule reveals it. The overlay is itself an <a href="#"> so a
+        # click anywhere on it (including the backdrop and the X) clears
+        # the fragment and hides everything.
+        for img_idx, abs_path in enumerate(card["images"]):
             rel = _esc(_to_relative_src(abs_path, images_dir))
+            lb_id = f"lb-{card_idx}-{img_idx}"
+            thumb_id = f"thumb-{card_idx}-{img_idx}"
+            # The thumb carries an id so the lightbox's close href can target
+            # it; clicking 'close' navigates the URL fragment back to the
+            # thumb's position instead of scrolling to top.
             parts.append(
-                f'<a href="{rel}" target="_blank" rel="noopener">'
+                f'<a id="{thumb_id}" href="#{lb_id}" class="thumb">'
                 f'<img src="{rel}" alt="{name}" loading="lazy"/></a>'
+                f'<a id="{lb_id}" href="#{thumb_id}" class="lightbox" aria-label="Close">'
+                f'<span class="close">×</span>'
+                f'<img src="{rel}" alt="{name}"/></a>'
             )
         parts.append("</div>")
     else:
@@ -455,31 +534,27 @@ def _html_card(card, difficulties, images_dir):
     return "\n".join(parts)
 
 
-def render_html(data, images_dir):
+def render_html(data, images_dir, title=None):
     diffs = data["difficulties"]
-    body = []
-    body.append(f"<h1>{_esc(data['game_id'])} — conclusions</h1>")
+    display_title = title or data["game_id"]
+    body = [f"<h1>{_esc(display_title)}</h1>"]
 
-    if data["global_cards"]:
-        total_str = " · ".join(f"{d}: {data['global_totals'][d]} shifts" for d in diffs)
-        body.append("<h2>Global anomalies</h2>")
-        body.append(f'<p><em class="subtotal">{_esc(total_str)}</em></p>')
-        for c in data["global_cards"]:
-            body.append(_html_card(c, diffs, images_dir))
-
+    card_idx = 0
     for block in data["maps"]:
         total_str = " · ".join(f"{d}: {block['totals'][d]} shifts" for d in diffs)
         body.append(f"<h1>{_esc(block['name'])}</h1>")
         body.append(f'<p><em class="subtotal">{_esc(total_str)}</em></p>')
         for room in block["rooms"]:
-            body.append(f"<h2>{_esc(room['name'])}</h2>")
+            label = "Global anomalies" if room.get("is_global") else room["name"]
+            body.append(f"<h2>{_esc(label)}</h2>")
             for c in room["cards"]:
-                body.append(_html_card(c, diffs, images_dir))
+                body.append(_html_card(c, diffs, images_dir, card_idx))
+                card_idx += 1
 
     return (
         "<!doctype html>\n"
         f'<html lang="en"><head><meta charset="utf-8">'
-        f"<title>{_esc(data['game_id'])} conclusions</title>"
+        f"<title>{_esc(display_title)}</title>"
         f"<style>{_DARK_CSS}</style></head><body>\n"
         + "\n".join(body)
         + "\n</body></html>\n"
@@ -579,6 +654,11 @@ def main():
     parser.add_argument("--images-dir", default=os.environ.get("OBSDUTY_IMAGES_DIR"),
                         help="Directory containing <Map>/<Room> - <Desc>.jpg screenshots. "
                              "Also read from OBSDUTY_IMAGES_DIR env var. Path stays out of the repo on purpose.")
+    parser.add_argument("--title", default=None,
+                        help="Friendly title for the H1 and HTML <title>. "
+                             "Default: derived from --images-dir's parent dir name (e.g. "
+                             "'Im on Observation Duty 8') so the heading reads as the game's "
+                             "name, not its internal ID. Falls back to the game id.")
     args = parser.parse_args()
 
     if args.md_output is None:
@@ -592,12 +672,18 @@ def main():
         else:
             args.html_output = f"conclusions_{args.game}.html"
 
+    if args.title is None:
+        if args.images_dir:
+            args.title = os.path.basename(os.path.dirname(os.path.abspath(args.images_dir)))
+        else:
+            args.title = args.game
+
     base_dir = os.path.dirname(os.path.abspath(__file__))
     backend = Backend(base_dir)
     backend.set_game(args.game)
 
     data = build_report_data(backend, images_dir=args.images_dir)
-    md_text = render_md(data, args.images_dir)
+    md_text = render_md(data, args.images_dir, title=args.title)
 
     if args.stdout:
         print(md_text)
@@ -615,7 +701,7 @@ def main():
     if args.format in ("html", "both"):
         html_path = _resolve(args.html_output)
         with open(html_path, "w", encoding="utf-8") as f:
-            f.write(render_html(data, args.images_dir))
+            f.write(render_html(data, args.images_dir, title=args.title))
         print(f"HTML written to {html_path}")
 
 

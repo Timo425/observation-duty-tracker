@@ -1106,7 +1106,7 @@ class AnomalyTrackerApp:
             btn.bind("<Button-3>", lambda e, n=name, r=room_name: self.undo_anomaly(n, r))
             # Tooltips for descriptions
             desc = a.get("description", a.get("desc", ""))
-            muted_note = ("\n[Sighted only outside this shift (different map and/or difficulty) — shown because Show All is on]"
+            muted_note = ("\n[Never sighted on this (map, difficulty) yet — shown muted because Show All is on. Logging it here will un-mute it permanently.]"
                           if name in ineligible else "")
             base = desc if desc else ""
             tip = (f"{base}{muted_note}\n\nRight-click to undo").strip()
@@ -1222,6 +1222,17 @@ class AnomalyTrackerApp:
             messagebox.showwarning("Duplicate", f"'{name}' is already logged in {room_name}.") ; return
         if self.backend.add_observation(current_map, room_name, name):
             self.status_label.config(text=f"Logged: {name}")
+            # The anomaly is now sighted on this (map, difficulty) slice, so
+            # the candidate filter no longer applies. Drop it from every
+            # room's ineligible set (globals show under each room, so we
+            # have to sweep all rooms) and bump the in-memory sighting
+            # count so update_button_states doesn't keep rendering it
+            # muted until the next full map refresh.
+            anom_id = self.backend._resolve_anomaly_id(current_map, room_name, name)
+            if anom_id and hasattr(self, "_shift_sightings"):
+                self._shift_sightings[anom_id] = self._shift_sightings.get(anom_id, 0) + 1
+            for room_set in getattr(self, "_room_buttons_ineligible", {}).values():
+                room_set.discard(name)
             self.update_session_view()
 
     def undo_anomaly(self, name, room_name):

@@ -24,7 +24,8 @@
             "type": "Global",
             "report": "RMB → \"Camera Malfunction\"",
             "id": "aeead73e-3e8b-4c20-94b6-3097d141824c",
-            "game_end_type": "Camera Malfunction"
+            "game_end_type": "Camera Malfunction",
+            "image": "n/a"
         },
         {
             "name": "Steam / Smoke / Fog",
