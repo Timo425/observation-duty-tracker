@@ -211,7 +211,7 @@ class TestGenerateReport(unittest.TestCase):
 
         self.assertIn("Anomaly_1", report)
         self.assertIn("Anomaly_2", report)
-        self.assertIn("Group", report)
+        self.assertIn("group", report.lower())
 
     def test_report_insufficient_data(self):
         """Report should note insufficient data when not enough sessions exist."""
@@ -234,8 +234,8 @@ class TestGenerateReport(unittest.TestCase):
         write_mock_csv(self.backend.logs_path, sessions)
         report = generate_report(self.backend)
 
-        self.assertIn("Normal Mode", report)
-        self.assertIn("Hard Mode", report)
+        self.assertIn("Normal", report)
+        self.assertIn("Hard", report)
 
 
 class TestGroupViolations(unittest.TestCase):

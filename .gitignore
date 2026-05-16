@@ -7,3 +7,4 @@ tests/logs/*.csv
 tests/mock_session_logs.csv
 .stfolder/
 .stversions/
+conclusions*.html
