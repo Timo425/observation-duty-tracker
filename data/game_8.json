@@ -2008,7 +2008,8 @@
                         "name": "Typewriter",
                         "type": "Missing Object",
                         "description": "Typewriter is gone",
-                        "id": "f16f6704-18ec-4dde-bd61-afc07b9835ef"
+                        "id": "f16f6704-18ec-4dde-bd61-afc07b9835ef",
+                        "note": "Only in the demo, not the full game (kept here for completeness)."
                     },
                     {
                         "name": "Gnawer",

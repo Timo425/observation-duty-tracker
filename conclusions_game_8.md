@@ -20,7 +20,6 @@ _Normal: 13 shifts · Hard: 18 shifts_
 | Pier | Object Replacement | Short piling | H | 0/13 | 8/18 (44%) | — |
 | Pier | Object Replacement | Tall piling | H | 0/13 | 3/18 (16%) | — |
 | Pier | Global | Abyss | H | 0/13 | 2/18 (11%) | — |
-| Pier | Secret Object | Rubber ducky | — | 0/13 | 0/18 | — |
 | Yard | Object Movement | Wires | N | 7/13 (53%) | 0/18 | — |
 | Yard | Light Anomaly | Flares | N | 6/13 (46%) | 0/18 | — |
 | Yard | Global | Abyss | N | 1/13 (7%) | 0/18 | — |
@@ -144,7 +143,6 @@ _Normal: 12 shifts · Hard: 14 shifts_
 | Rec Room | Dead Body | Dead body (couch) | N+H | 1/12 (8%) | 5/14 (35%) | — |
 | Rec Room | Door Anomaly | Fridge | N+H | 1/12 (8%) | 4/14 (28%) | — |
 | Rec Room | Missing Object | Books | H | 0/12 | 6/14 (42%) | — |
-| Rec Room | Secret Object | Business card | — | 0/12 | 0/14 | — |
 | Quarters | INTRUDER | Huge Spider | N | 7/12 (58%) | 0/14 | — |
 | Quarters | Global | Rift | N | 3/12 (25%) | 0/14 | — |
 | Quarters | Global | Abyss | N | 1/12 (8%) | 0/14 | — |

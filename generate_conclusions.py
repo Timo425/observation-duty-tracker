@@ -111,7 +111,7 @@ def _type_str(value):
     return str(value)
 
 
-def _card(name, atype, image_status, counts, totals, excl_by_diff, images):
+def _card(name, atype, image_status, counts, totals, excl_by_diff, images, note=""):
     """Assemble the per-anomaly dict used by both renderers."""
     bucket = _bucket_for(counts)
     combined_n = sum(counts.values())
@@ -130,6 +130,7 @@ def _card(name, atype, image_status, counts, totals, excl_by_diff, images):
         "combined_pct": combined_pct,
         "excl": excl,                         # {difficulty: [other members]}
         "images": list(images),               # list of abs paths
+        "note": note or "",                   # free-form "Demo only — …" style note
     }
 
 
@@ -187,8 +188,13 @@ def build_report_data(backend, difficulties=None, images_dir=None):
         for room_name, anoms in backend.data["Maps"][map_name]["Rooms"].items():
             cards = []
 
-            # Per-room JSON anomalies.
+            # Per-room JSON anomalies. Skip collectibles — they're not
+            # anomalies (rubber ducky, ring, etc., tracked separately by
+            # the GUI and irrelevant to a "what anomaly might appear"
+            # reference).
             for a in anoms:
+                if backend.is_collectible(a):
+                    continue
                 name = a["name"]
                 counts = {d: len(diff_stats[d]["anomaly_sessions"].get(name, set())) for d in difficulties}
                 images = _find_images_for_room_anomaly(name, room_name, indexed)
@@ -200,6 +206,7 @@ def build_report_data(backend, difficulties=None, images_dir=None):
                     totals=totals,
                     excl_by_diff=excl_by_diff,
                     images=images,
+                    note=a.get("note", ""),
                 ))
 
             # Globals that have been sighted in THIS specific room on
@@ -222,6 +229,7 @@ def build_report_data(backend, difficulties=None, images_dir=None):
                     totals=totals,
                     excl_by_diff=excl_by_diff,
                     images=images,
+                    note=g.get("note", ""),
                 ))
 
             _sort_cards(cards)
@@ -382,6 +390,8 @@ def _bbcode_room_section(block, room, diffs, image_urls=None):
         # Uniform middot — the line previously mixed em-dash (around
         # bucket) and middot (between rates) which read inconsistently.
         lines.append(" · ".join(meta_parts))
+        if c.get("note"):
+            lines.append(f"[i]{c['note']}[/i]")
         lines.append("")
 
         # Image(s) on their own lines (one per line — Steam stacks them
@@ -621,7 +631,7 @@ def render_steam_sections(data, title, codeberg_url="https://codeberg.org/Comtie
     overview_bb = (
         f"[h1]{title}[/h1]\n"
         "\n"
-        "Per-room anomaly stats and screenshots from my own playthroughs. "
+        "Per-room anomaly stats and screenshots from my own shifts. "
         "Each card says whether the anomaly has shown up on Normal, on Hard, "
         "on both, or hasn't been seen yet — plus how often.\n"
         "\n"
