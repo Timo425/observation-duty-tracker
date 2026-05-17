@@ -621,13 +621,9 @@ def render_steam_sections(data, title, codeberg_url="https://codeberg.org/Comtie
     overview_bb = (
         f"[h1]{title}[/h1]\n"
         "\n"
-        "Each anomaly carries a bucket showing where it's been observed:\n"
-        "[list]\n"
-        "[*][b]N[/b]: Normal-only\n"
-        "[*][b]N+H[/b]: both difficulties\n"
-        "[*][b]H[/b]: Hard-only\n"
-        "[*][b]—[/b]: never seen on this map yet\n"
-        "[/list]\n"
+        "Per-room anomaly stats and screenshots from my own playthroughs. "
+        "Each card says whether the anomaly has shown up on Normal, on Hard, "
+        "on both, or hasn't been seen yet — plus how often.\n"
         "\n"
         f"Tracker: {codeberg_url}\n"
     )
