@@ -43,99 +43,11 @@ from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from backend import Backend
-
-IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".webp", ".gif")
-
-
-# ---------------------------------------------------------------------------
-# Image discovery
-
-
-def _normalize(s):
-    """Lowercase + strip non-alphanumerics so 'Keeper’s Cabin' matches 'Keepers Cabin'."""
-    return re.sub(r"[^a-z0-9 ]+", " ", (s or "").lower())
-
-
-def _trailing_number(desc):
-    """Trailing integer in the description half of a filename, else 0.
-    Used to order `Foo`, `Foo 1`, `Foo 2`… in the user-intuitive sequence.
-    Tolerates trailing parentheticals ('Foo 2 (Intruder)' → 2) so adding a
-    qualifier after the number doesn't break sort order."""
-    s = (desc or "").strip()
-    # Peel off trailing " (...)" groups so the number-before-paren reaches $.
-    while True:
-        new_s = re.sub(r"\s*\([^)]*\)\s*$", "", s).strip()
-        if new_s == s: break
-        s = new_s
-    m = re.search(r"(\d+)$", s)
-    return int(m.group(1)) if m else 0
-
-
-def _index_images(images_dir, map_name):
-    """List images under <images_dir>/<map_name>/, parsed as (room_part, desc_part, abs_path)."""
-    if not images_dir: return []
-    map_dir = os.path.join(images_dir, map_name)
-    if not os.path.isdir(map_dir): return []
-    out = []
-    for fname in sorted(os.listdir(map_dir)):
-        if not fname.lower().endswith(IMAGE_EXTS): continue
-        stem = os.path.splitext(fname)[0]
-        if " - " in stem:
-            room_part, desc_part = stem.split(" - ", 1)
-        else:
-            room_part, desc_part = "", stem
-        out.append((room_part, desc_part, os.path.join(map_dir, fname)))
-    return out
-
-
-def _name_match_parts(name):
-    """Split an anomaly name into (base, discriminators).
-    'Sockets (door)' → ('sockets', ['door']);  'Dead body' → ('dead body', []).
-    The discriminator must also appear in the filename for the match to count
-    — otherwise 'Sockets (glass)' and 'Sockets (door)' both share the same
-    base and would steal each other's images."""
-    base = _normalize(re.sub(r"\([^)]*\)", "", name)).strip()
-    discs = [_normalize(d).strip() for d in re.findall(r"\(([^)]+)\)", name)]
-    return base, [d for d in discs if d]
-
-
-def _desc_matches(name, file_desc):
-    """True iff the file's description half matches the anomaly name —
-    base name as substring, plus every parenthetical discriminator from the
-    name also present in the file's description."""
-    base, discs = _name_match_parts(name)
-    if not base: return False
-    n_desc = _normalize(file_desc)
-    if base not in n_desc: return False
-    return all(d in n_desc for d in discs)
-
-
-def _find_images_for_room_anomaly(name, room_name, indexed):
-    """Match files where (a) filename's room half loosely matches the JSON
-    room and (b) the anomaly name (incl. paren discriminators) matches the
-    description half. Returns abs paths sorted by trailing-number first."""
-    n_room = _normalize(room_name).strip()
-    matches = []
-    for file_room, file_desc, path in indexed:
-        nfr = _normalize(file_room).strip()
-        room_hit = bool(n_room) and (n_room in nfr or nfr in n_room)
-        if not room_hit: continue
-        if _desc_matches(name, file_desc):
-            matches.append((file_desc, path))
-    matches.sort(key=lambda t: (_trailing_number(t[0]), t[1]))
-    return [p for _, p in matches]
-
-
-def _find_images_for_global_in_map(name, indexed):
-    """Per-map global lookup: match by anomaly name only, ignoring the
-    filename's room half (a global can be photographed in any room of the
-    map). `indexed` is this map's index from _index_images."""
-    matches = []
-    for _file_room, file_desc, path in indexed:
-        if _desc_matches(name, file_desc):
-            matches.append((file_desc, path))
-    matches.sort(key=lambda t: (_trailing_number(t[0]), t[1]))
-    return [p for _, p in matches]
+from image_matcher import (
+    index_images as _index_images,
+    find_images_for_room_anomaly as _find_images_for_room_anomaly,
+    find_images_for_global_in_map as _find_images_for_global_in_map,
+)
 
 
 def _to_relative_src(abs_path, images_dir):
@@ -359,41 +271,93 @@ def _md_excl_cell(excl):
     return " · ".join(parts)
 
 
+_BUCKET_KEY_LINE = "Bucket key: **N** = Normal-only · **N+H** = both · **H** = Hard-only · **—** = never seen on this map."
+
+
+def _safe_cell(text):
+    r"""Sanitize a cell value so it survives both Markdown table parsing and
+    Steam's BBCode renderer. Specifically:
+    - bare `"` → curly `“ ”` (Steam mishandles literal double quotes inside
+      [td]content[/td] — its parser can treat them as attribute delimiters
+      and cascade-corrupt subsequent rows)
+    - `|` → `\|` so markdown's table parser doesn't see a cell break
+    - leading/trailing whitespace stripped."""
+    if text is None: return ""
+    s = str(text).strip()
+    # Replace pairs of double quotes with typographic open/close, then any leftover singletons with the open quote.
+    out = []
+    open_q = True
+    for ch in s:
+        if ch == '"':
+            out.append("“" if open_q else "”")  # “ or ”
+            open_q = not open_q
+        elif ch == "|":
+            out.append(r"\|")
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+def _md_map_section(block, diffs, heading_level=2):
+    """Render one map's data as a Markdown chunk: heading + shifts subtitle +
+    table covering all rooms. Used by the all-in-one MD renderer (diffable
+    compact text in the repo)."""
+    h = "#" * heading_level
+    total_str = " · ".join(f"{d}: {block['totals'][d]} shifts" for d in diffs)
+    lines = [f"{h} {block['name']}", f"_{total_str}_", ""]
+
+    # Header: Room | Type | Anomaly | Bucket | <each diff> | Excl
+    header_cells = ["Room", "Type", "Anomaly", "Bucket"] + list(diffs) + ["Excl"]
+    lines.append("| " + " | ".join(header_cells) + " |")
+    lines.append("|" + "|".join(["---"] * len(header_cells)) + "|")
+
+    for room in block["rooms"]:
+        for c in room["cards"]:
+            cells = [
+                _safe_cell(room["name"]),
+                _safe_cell(c["type"] or "—"),
+                _safe_cell(c["name"]),
+                _safe_cell(_BUCKET_SHORT[c["bucket"]]),
+            ]
+            for d in diffs:
+                cells.append(_safe_cell(_md_rate_cell(c["counts"].get(d, 0), c["totals"].get(d, 0))))
+            cells.append(_safe_cell(_md_excl_cell(c["excl"])))
+            lines.append("| " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
+def _md_room_section(block, room, diffs):
+    """Render one (map, room) tuple as a Markdown chunk — used by the Steam
+    BBCode pipeline so each Steam section stays well under Steam's
+    per-section character cap. Drops the Room column (redundant inside a
+    room-specific section)."""
+    map_total = " · ".join(f"{d}: {block['totals'][d]} shifts" for d in diffs)
+    label = "Global anomalies" if room.get("is_global") else room["name"]
+    lines = [f"# {block['name']} — {label}", f"_Map totals: {map_total}_", ""]
+
+    header_cells = ["Type", "Anomaly", "Bucket"] + list(diffs) + ["Excl"]
+    lines.append("| " + " | ".join(header_cells) + " |")
+    lines.append("|" + "|".join(["---"] * len(header_cells)) + "|")
+
+    for c in room["cards"]:
+        cells = [
+            _safe_cell(c["type"] or "—"),
+            _safe_cell(c["name"]),
+            _safe_cell(_BUCKET_SHORT[c["bucket"]]),
+        ]
+        for d in diffs:
+            cells.append(_safe_cell(_md_rate_cell(c["counts"].get(d, 0), c["totals"].get(d, 0))))
+        cells.append(_safe_cell(_md_excl_cell(c["excl"])))
+        lines.append("| " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
 def render_md(data, _images_dir=None, title=None):
     diffs = data["difficulties"]
-    lines = [f"# {title or data['game_id']}", ""]
-    lines.append("Bucket key: **N** = Normal-only · **N+H** = both · **H** = Hard-only · **—** = never seen on this map.")
-    lines.append("")
-
+    lines = [f"# {title or data['game_id']}", "", _BUCKET_KEY_LINE, ""]
     for block in data["maps"]:
-        total_str = " · ".join(f"{d}: {block['totals'][d]} shifts" for d in diffs)
-        lines.append(f"## {block['name']}")
-        lines.append(f"_{total_str}_")
+        lines.append(_md_map_section(block, diffs, heading_level=2))
         lines.append("")
-
-        # Header: Room | Type | Anomaly | Bucket | <each diff> | Excl
-        header_cells = ["Room", "Type", "Anomaly", "Bucket"]
-        for d in diffs:
-            header_cells.append(d)
-        header_cells.append("Excl")
-        lines.append("| " + " | ".join(header_cells) + " |")
-        lines.append("|" + "|".join(["---"] * len(header_cells)) + "|")
-
-        for room in block["rooms"]:
-            room_label = room["name"]
-            for c in room["cards"]:
-                cells = [
-                    room_label,
-                    c["type"] or "—",
-                    c["name"],
-                    _BUCKET_SHORT[c["bucket"]],
-                ]
-                for d in diffs:
-                    cells.append(_md_rate_cell(c["counts"].get(d, 0), c["totals"].get(d, 0)))
-                cells.append(_md_excl_cell(c["excl"]))
-                lines.append("| " + " | ".join(cells) + " |")
-        lines.append("")
-
     return "\n".join(lines)
 
 
@@ -562,6 +526,81 @@ def render_html(data, images_dir, title=None):
 
 
 # ---------------------------------------------------------------------------
+# Steam BBCode pipeline — one file per guide section. Drives the
+# steam-editor-tools library (PyPI), which parses Markdown via markdown-it
+# and renders Steam's specific BBCode dialect. Optional dependency: only
+# loaded when --format includes 'steam'.
+
+
+_FS_SAFE = re.compile(r"[^A-Za-z0-9._-]+")
+
+
+def _fs_safe(name):
+    """Filename-safe rendering of a section name. 'Research Station' →
+    'Research_Station'. Keeps the section name readable in the output dir."""
+    return _FS_SAFE.sub("_", name).strip("_") or "section"
+
+
+def _md_to_bbcode(md_text, parser, renderer):
+    """Round-trip a Markdown string through steam-editor-tools via a temp
+    file (the library's public parser entry point takes a path)."""
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False, encoding="utf-8") as f:
+        f.write(md_text)
+        tmp_path = f.name
+    try:
+        return renderer.render(parser.parse_file(tmp_path))
+    finally:
+        try: os.unlink(tmp_path)
+        except OSError: pass
+
+
+def render_steam_sections(data, title, codeberg_url="https://codeberg.org/Comtief/observation-duty-tracker"):
+    """Yields (section_name, bbcode_text) pairs — one per Steam guide section.
+    First yield is the overview (legend + tool link); then one per map.
+
+    Raises ImportError with a clear install hint if steam-editor-tools isn't
+    available — it's an optional dep, only required when this is called."""
+    try:
+        import steam_editor_tools as stet
+    except ImportError as e:
+        raise ImportError(
+            "steam-editor-tools is required for --format steam.\n"
+            "Install with:  pip install --user steam-editor-tools\n"
+            "Or run the script via:  uv run --with steam-editor-tools python generate_conclusions.py …"
+        ) from e
+
+    parser = stet.DocumentParser()
+    renderer = stet.BBCodeRenderer()
+
+    diffs = data["difficulties"]
+
+    # Overview / legend section.
+    overview_md = (
+        f"# {title}\n\n"
+        "## Difficulty bucket key\n"
+        "- **N** — Normal-only (seen on Normal, never on Hard)\n"
+        "- **N+H** — both difficulties\n"
+        "- **H** — Hard-only\n"
+        "- **—** — never seen on this map yet\n\n"
+        f"Data and tool: {codeberg_url}\n"
+    )
+    yield ("overview", _md_to_bbcode(overview_md, parser, renderer))
+
+    # One section per (map, room). Per-map sections were too big for
+    # Steam's section character cap (~8K chars truncated mid-tag); per-room
+    # sections are 1-3 KB each, well under any cap, and the left-side nav
+    # in Steam still organizes them cleanly. Each map's Globals come in as
+    # the synthetic "Global" room — labelled "<Map> — Global anomalies".
+    for block in data["maps"]:
+        for room in block["rooms"]:
+            label = "Global anomalies" if room.get("is_global") else room["name"]
+            section_name = f"{block['name']} - {label}"
+            section_md = _md_room_section(block, room, diffs)
+            yield (section_name, _md_to_bbcode(section_md, parser, renderer))
+
+
+# ---------------------------------------------------------------------------
 # Exclusivity report — kept for test compat and as the `generate_report` alias
 # the GUI/CLI used historically. Not included in the per-game files anymore
 # (group info is now inline on each card).
@@ -640,15 +679,21 @@ generate_report = generate_exclusivity_report
 def main():
     parser = argparse.ArgumentParser(description="Generate per-game statistical conclusions from session logs")
     parser.add_argument("--game", default="game_8", help="Game ID (default: game_8)")
-    parser.add_argument("--format", choices=("md", "html", "both"), default="both",
-                        help="Output format. 'md' = committed markdown only, "
-                             "'html' = local self-contained HTML only, 'both' = both (default).")
+    parser.add_argument("--format", choices=("md", "html", "both", "steam", "all"), default="both",
+                        help="Output format. 'md' = markdown only (committed to repo), "
+                             "'html' = local self-contained HTML, 'both' = md + html (default, what cron runs), "
+                             "'steam' = per-section Steam BBCode files (requires steam-editor-tools), "
+                             "'all' = md + html + steam.")
     parser.add_argument("--md-output", default=None,
                         help="Markdown output path. Default: conclusions_<game>.md in the repo.")
     parser.add_argument("--html-output", default=None,
                         help="HTML output path. Default: <parent-of-images-dir>/conclusions_<game>.html "
                              "so the HTML lands next to your screenshots in Obsidian. Falls back to "
                              "./conclusions_<game>.html if --images-dir is not set.")
+    parser.add_argument("--steam-output-dir", default=None,
+                        help="Directory for per-section Steam BBCode files (one file per guide section). "
+                             "Default: <parent-of-images-dir>/steam-guide-<game>/ next to Obsidian, "
+                             "or ./steam-guide-<game>/ if --images-dir is not set.")
     parser.add_argument("--stdout", action="store_true",
                         help="Print markdown to stdout and skip writing files.")
     parser.add_argument("--images-dir", default=os.environ.get("OBSDUTY_IMAGES_DIR"),
@@ -671,6 +716,14 @@ def main():
             )
         else:
             args.html_output = f"conclusions_{args.game}.html"
+    if args.steam_output_dir is None:
+        if args.images_dir:
+            args.steam_output_dir = os.path.join(
+                os.path.dirname(os.path.abspath(args.images_dir)),
+                f"steam-guide-{args.game}",
+            )
+        else:
+            args.steam_output_dir = f"steam-guide-{args.game}"
 
     if args.title is None:
         if args.images_dir:
@@ -692,17 +745,26 @@ def main():
     def _resolve(p):
         return p if os.path.isabs(p) else os.path.join(base_dir, p)
 
-    if args.format in ("md", "both"):
+    if args.format in ("md", "both", "all"):
         md_path = _resolve(args.md_output)
         with open(md_path, "w", encoding="utf-8") as f:
             f.write(md_text)
         print(f"Markdown written to {md_path}")
 
-    if args.format in ("html", "both"):
+    if args.format in ("html", "both", "all"):
         html_path = _resolve(args.html_output)
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(render_html(data, args.images_dir, title=args.title))
         print(f"HTML written to {html_path}")
+
+    if args.format in ("steam", "all"):
+        steam_dir = _resolve(args.steam_output_dir)
+        os.makedirs(steam_dir, exist_ok=True)
+        for section_name, bbcode in render_steam_sections(data, args.title):
+            path = os.path.join(steam_dir, f"{_fs_safe(section_name)}.bbcode")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(bbcode)
+            print(f"Steam BBCode section '{section_name}' written to {path}")
 
 
 if __name__ == "__main__":
