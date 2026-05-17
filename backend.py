@@ -39,6 +39,11 @@ class Backend:
         self.manually_locked_sessions = set()
         self.window_size = "1200x800"
         self.show_all_candidates = False
+        # Local screenshots root (per-user, not committed to the repo). Drives
+        # the GUI's 📷 indicator and the conclusions HTML/BBCode image paths.
+        # Loaded from app_config.json["Image_Dir"]; OBSDUTY_IMAGES_DIR env var
+        # takes precedence at read time. Empty for users who haven't set one.
+        self.image_dir = None
 
         # Per-game persisted state: {game_id: {Session_ID, Max_Session_ID, Session_Configs, ...}}
         self.games_state = {}
@@ -146,13 +151,16 @@ class Backend:
 
     def save_config(self):
         self._sync_active_to_games_state()
+        payload = {
+            "Game_ID": self.game_id,
+            "Window_Size": self.window_size,
+            "Show_All_Candidates": self.show_all_candidates,
+            "Games": self.games_state,
+        }
+        if self.image_dir:
+            payload["Image_Dir"] = self.image_dir
         with open(self.config_path, 'w') as f:
-            json.dump({
-                "Game_ID": self.game_id,
-                "Window_Size": self.window_size,
-                "Show_All_Candidates": self.show_all_candidates,
-                "Games": self.games_state,
-            }, f)
+            json.dump(payload, f)
 
     def load_config(self):
         config = {}
@@ -171,6 +179,7 @@ class Backend:
         # Never-seen anomalies (zero sightings anywhere) are always shown
         # regardless, so a first sighting is always reachable.
         self.show_all_candidates = bool(config.get("Show_All_Candidates", False))
+        self.image_dir = config.get("Image_Dir") or None
 
         if "Games" in config:
             self.games_state = config.get("Games", {}) or {}

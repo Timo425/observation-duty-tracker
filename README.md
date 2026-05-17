@@ -41,6 +41,20 @@ Run the main tracker application:
 python3 observation_duty_tracker.py
 ```
 
+### Optional: local screenshots indicator
+If you keep your own per-anomaly screenshots in a folder shaped like
+`<dir>/<Map>/<Room> - <Anomaly>.jpg`, the GUI can render a small `📷`
+suffix on room buttons whose anomalies have at least one matching
+image. Point the app at the folder one of two ways:
+
+- Set `OBSDUTY_IMAGES_DIR` in your environment (also picked up by
+  `generate_conclusions.py` for the HTML/Steam guide pipeline), OR
+- Add `"Image_Dir": "/path/to/screenshots"` at the top level of
+  `app_config.json` (per-installation, no shell-profile dance).
+
+Without either, the indicator stays silent — it's strictly opt-in
+local-only state.
+
 ## Exclusivity Analysis
 As you play and log anomalies, the tool collects data to determine which anomalies form exclusion groups.
 

@@ -8,6 +8,13 @@ import colorsys
 from backend import Backend
 
 
+def _norm_text(s):
+    """Lowercase + strip non-alphanumerics — same normalization used by the
+    conclusions generator's image matcher so 'Keeper's Cabin' matches
+    'Keepers Cabin' etc."""
+    return re.sub(r"[^a-z0-9 ]+", " ", (s or "").lower())
+
+
 def _parse_sort_key(value):
     """Extract a numeric sort key from display values like '45%', '#12', '3.2 / 5', '1/10 shifts'."""
     s = str(value).strip()
@@ -498,8 +505,50 @@ class AnomalyTrackerApp:
             self.backend.set_map(map_name)
             self.refresh_map_ui()
 
+    def _refresh_image_availability(self):
+        """Scan OBSDUTY_IMAGES_DIR (env) or backend.image_dir (app_config.json)
+        and cache which anomalies have a matching screenshot. Drives the 📷
+        suffix in update_button_states.
+
+        Tracked precisely per (room, name) for per-room anomalies and per
+        name for globals — so a Lighthouse Cabin Mousetrap screenshot
+        doesn't falsely flag the Research Station Rec Room Mousetrap.
+        Same matcher used by the conclusions HTML/BBCode pipeline, so any
+        rule change (slash-split alternates, paren discriminators) is
+        reflected in both surfaces.
+
+        Silent no-op when no images dir is resolvable."""
+        self._has_image_per_room = set()   # {(room_name, anom_name)}
+        self._has_image_global = set()     # {anom_name}
+
+        images_dir = os.environ.get("OBSDUTY_IMAGES_DIR") or getattr(self.backend, "image_dir", None)
+        if not images_dir or not os.path.isdir(images_dir):
+            return
+
+        map_name = self.current_map.get()
+        if not map_name: return
+
+        import image_matcher
+        indexed = image_matcher.index_images(images_dir, map_name)
+        if not indexed: return
+
+        # Per-room: room halves of filenames distinguish same-named
+        # anomalies across different rooms.
+        rooms = self.backend.data.get("Maps", {}).get(map_name, {}).get("Rooms", {})
+        for room_name, anoms in rooms.items():
+            for a in anoms:
+                if image_matcher.find_images_for_room_anomaly(a["name"], room_name, indexed):
+                    self._has_image_per_room.add((room_name, a["name"]))
+
+        # Globals: shown in every room's Global section, indicator applies
+        # uniformly. Image can be filed under any room of this map.
+        for a in self.backend.data.get("Global", []):
+            if image_matcher.find_images_for_global_in_map(a["name"], indexed):
+                self._has_image_global.add(a["name"])
+
     def refresh_map_ui(self):
         """Updates the room buttons and live analysis. Uses recycling to stay fast."""
+        self._refresh_image_availability()
         map_name = self.current_map.get()
         if not map_name: return
 
@@ -596,8 +645,16 @@ class AnomalyTrackerApp:
                 count = counts.get(anom_name, 0)
                 excl_info = exclusions_map.get(anom_name)
                 
-                # Update text with count
-                btn.config(text=f"{anom_name} ({count})")
+                # Update text with count + optional 📷 indicator when a
+                # local screenshot exists for this specific (room, name) or
+                # global name. Per-room scoping prevents an image from
+                # one map's room from flagging a same-named anomaly in
+                # another map. Silent if no images dir configured.
+                has_image = (
+                    (room_name, anom_name) in getattr(self, "_has_image_per_room", set())
+                    or anom_name in getattr(self, "_has_image_global", set())
+                )
+                btn.config(text=f"{anom_name} ({count})" + (" 📷" if has_image else ""))
                 
                 # Probabilistic Color Logic
                 bg_color = "lightgray"
