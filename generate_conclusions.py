@@ -330,10 +330,11 @@ def _md_room_section(block, room, diffs):
     """Render one (map, room) tuple as a Markdown chunk — used by the Steam
     BBCode pipeline so each Steam section stays well under Steam's
     per-section character cap. Drops the Room column (redundant inside a
-    room-specific section)."""
+    room-specific section) AND skips the body H1 — Steam's section nav
+    already shows the section name above the body, so an H1 inside the
+    body is just visual repetition."""
     map_total = " · ".join(f"{d}: {block['totals'][d]} shifts" for d in diffs)
-    label = "Global anomalies" if room.get("is_global") else room["name"]
-    lines = [f"# {block['name']} — {label}", f"_Map totals: {map_total}_", ""]
+    lines = [f"_Map totals: {map_total}_", ""]
 
     header_cells = ["Type", "Anomaly", "Bucket"] + list(diffs) + ["Excl"]
     lines.append("| " + " | ".join(header_cells) + " |")
@@ -578,12 +579,10 @@ def render_steam_sections(data, title, codeberg_url="https://codeberg.org/Comtie
     # Overview / legend section.
     overview_md = (
         f"# {title}\n\n"
-        "## Difficulty bucket key\n"
-        "- **N** — Normal-only (seen on Normal, never on Hard)\n"
-        "- **N+H** — both difficulties\n"
-        "- **H** — Hard-only\n"
-        "- **—** — never seen on this map yet\n\n"
-        f"Data and tool: {codeberg_url}\n"
+        "Each anomaly carries a bucket showing how it's been observed: "
+        "**N** = Normal-only · **N+H** = both · **H** = Hard-only · "
+        "**—** = never seen on this map yet.\n\n"
+        f"Tracker: {codeberg_url}\n"
     )
     yield ("Overview", _md_to_bbcode(overview_md, parser, renderer))
 
