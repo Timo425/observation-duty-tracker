@@ -351,62 +351,43 @@ def _md_map_section(block, diffs, heading_level=2):
     return "\n".join(lines)
 
 
-def _md_room_section(block, room, diffs, image_urls=None):
-    """Render one (map, room) tuple as a Markdown chunk — used by the Steam
-    BBCode pipeline so each Steam section stays well under Steam's
-    per-section character cap. Drops the Room column (redundant inside a
-    room-specific section) AND skips the body H1 — Steam's section nav
-    already shows the section name above the body, so an H1 inside the
-    body is just visual repetition.
+def _bbcode_room_section(block, room, diffs, image_urls=None):
+    """Render one (map, room) tuple directly as Steam BBCode. Each anomaly
+    is a one-line card with its stats followed by its image(s) on the
+    next line — keeps the screenshot visually tied to the data.
 
-    If `image_urls` is provided ({local_filename: steam_url}), each anomaly
-    with at least one matched local screenshot AND a corresponding Steam
-    URL gets a screenshot block emitted below the table. Anomalies whose
-    local files haven't been uploaded yet are silently skipped — they'll
-    appear once the image sync runs."""
+    Emitted as raw BBCode rather than via markdown→steam-editor-tools
+    because the library silently drops markdown image syntax (`![](url)`
+    becomes nothing) and mangles literal `[img]` tags. The room layout is
+    simple enough that direct emission is cleaner than fighting the
+    converter."""
     map_total = " · ".join(f"{d}: {block['totals'][d]} shifts" for d in diffs)
-    lines = [f"_Map totals: {map_total}_", ""]
-
-    header_cells = ["Type", "Anomaly", "Bucket"] + list(diffs) + ["Excl"]
-    lines.append("| " + " | ".join(header_cells) + " |")
-    lines.append("|" + "|".join(["---"] * len(header_cells)) + "|")
+    lines = [f"[i]Map totals: {map_total}[/i]", ""]
 
     for c in room["cards"]:
-        cells = [
-            _safe_cell(c["type"] or "—"),
-            _safe_cell(c["name"]),
-            _safe_cell(_BUCKET_SHORT[c["bucket"]]),
-        ]
-        for d in diffs:
-            cells.append(_safe_cell(_md_rate_cell(c["counts"].get(d, 0), c["totals"].get(d, 0))))
-        cells.append(_safe_cell(_md_excl_cell(c["excl"])))
-        lines.append("| " + " | ".join(cells) + " |")
+        type_str = c["type"] or "—"
+        name = c["name"]
+        bucket = c["bucket"]
+        rates = " · ".join(
+            f"{d}: {_md_rate_cell(c['counts'].get(d, 0), c['totals'].get(d, 0))}"
+            for d in diffs
+        )
+        parts = [f"[b]{type_str}: {name}[/b]", bucket, rates]
+        if c["excl"]:
+            for d, members in c["excl"].items():
+                parts.append(f"Excl ({d}): {', '.join(members)}")
+        lines.append(" — ".join(parts))
 
-    # Image gallery below the table — only the anomalies whose local
-    # screenshots have a known Steam URL.
-    if image_urls:
-        image_blocks = []
-        for c in room["cards"]:
-            if not c.get("images"): continue
+        # Image(s) on the next line, if we have Steam URLs for this
+        # anomaly's matched local files.
+        if image_urls and c.get("images"):
             urls = []
             for abs_path in c["images"]:
-                fname = os.path.basename(abs_path)
-                url = image_urls.get(fname)
+                url = image_urls.get(os.path.basename(abs_path))
                 if url: urls.append(url)
             if urls:
-                image_blocks.append((c, urls))
-        if image_blocks:
-            lines.append("")
-            lines.append("---")
-            lines.append("## Screenshots")
-            for c, urls in image_blocks:
-                type_str = c["type"] or "—"
-                lines.append("")
-                lines.append(f"### {type_str}: {c['name']}")
-                for url in urls:
-                    # Markdown image syntax; steam-editor-tools renders this
-                    # as [img]URL[/img] in the BBCode output.
-                    lines.append(f"![{c['name']}]({url})")
+                lines.append(" ".join(f"[img]{url}[/img]" for url in urls))
+        lines.append("")
     return "\n".join(lines)
 
 
@@ -650,11 +631,17 @@ def render_steam_sections(data, title, codeberg_url="https://codeberg.org/Comtie
     # 1-3 KB each, well under any cap. Globals appear inline within
     # whichever room they've been sighted in (see ANALYSIS.md — "Global"
     # is a JSON-data-model label, not a separate room or pseudo-section).
+    #
+    # Room sections are emitted as raw BBCode directly. The markdown
+    # detour we use for the Overview can't carry `[img]` through (the
+    # steam-editor-tools renderer drops markdown image syntax). Cards
+    # are simple lines, easier to emit directly than to fight the
+    # converter.
     for block in data["maps"]:
         for room in block["rooms"]:
             section_name = f"{block['name']} - {room['name']}"
-            section_md = _md_room_section(block, room, diffs, image_urls=image_urls)
-            yield (section_name, _md_to_bbcode(section_md, parser, renderer))
+            section_bb = _bbcode_room_section(block, room, diffs, image_urls=image_urls)
+            yield (section_name, section_bb)
 
 
 # ---------------------------------------------------------------------------
