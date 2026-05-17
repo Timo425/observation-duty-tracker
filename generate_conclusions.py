@@ -379,7 +379,9 @@ def _bbcode_room_section(block, room, diffs, image_urls=None):
         if c["excl"]:
             for d, members in c["excl"].items():
                 meta_parts.append(f"Excl ({d}): {', '.join(members)}")
-        lines.append(" — ".join(meta_parts))
+        # Uniform middot — the line previously mixed em-dash (around
+        # bucket) and middot (between rates) which read inconsistently.
+        lines.append(" · ".join(meta_parts))
         lines.append("")
 
         # Image(s) on their own lines (one per line — Steam stacks them
@@ -621,10 +623,10 @@ def render_steam_sections(data, title, codeberg_url="https://codeberg.org/Comtie
         "\n"
         "Each anomaly carries a bucket showing where it's been observed:\n"
         "[list]\n"
-        "[*][b]N[/b] — Normal-only\n"
-        "[*][b]N+H[/b] — both difficulties\n"
-        "[*][b]H[/b] — Hard-only\n"
-        "[*][b]—[/b] — never seen on this map yet\n"
+        "[*][b]N[/b]: Normal-only\n"
+        "[*][b]N+H[/b]: both difficulties\n"
+        "[*][b]H[/b]: Hard-only\n"
+        "[*][b]—[/b]: never seen on this map yet\n"
         "[/list]\n"
         "\n"
         f"Tracker: {codeberg_url}\n"
