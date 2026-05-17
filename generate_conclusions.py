@@ -378,15 +378,26 @@ def _bbcode_room_section(block, room, diffs, image_urls=None):
                 parts.append(f"Excl ({d}): {', '.join(members)}")
         lines.append(" — ".join(parts))
 
-        # Image(s) on the next line, if we have Steam URLs for this
-        # anomaly's matched local files.
+        # Image(s) on the next line. Steam guide BBCode uses
+        # [previewimg=<previewid>;<size>,<layout>;<filename>][/previewimg]
+        # for guide-uploaded images — NOT [img]URL[/img] (that one only
+        # works in forum posts). Source: Steam's own InsertSelected()
+        # JS function in the guide editor. We pick 'sizeFull,inline' so
+        # the image displays at uploaded resolution flowing in line with
+        # the card text.
         if image_urls and c.get("images"):
-            urls = []
+            tags = []
             for abs_path in c["images"]:
-                url = image_urls.get(os.path.basename(abs_path))
-                if url: urls.append(url)
-            if urls:
-                lines.append(" ".join(f"[img]{url}[/img]" for url in urls))
+                fname = os.path.basename(abs_path)
+                entry = image_urls.get(fname)
+                if not entry: continue
+                # Backward-compat: old shape was {filename: url_string}.
+                if isinstance(entry, str): continue  # no previewid available
+                previewid = entry.get("previewid")
+                if not previewid: continue
+                tags.append(f"[previewimg={previewid};sizeFull,inline;{fname}][/previewimg]")
+            if tags:
+                lines.append(" ".join(tags))
         lines.append("")
     return "\n".join(lines)
 
