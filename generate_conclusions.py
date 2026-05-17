@@ -141,15 +141,19 @@ def _sort_cards(cards):
 def build_report_data(backend, difficulties=None, images_dir=None):
     """Returns a structured dict ready for either MD or HTML rendering.
 
-    Per ANALYSIS.md: 'Global' anomalies aren't tied to a room but DO manifest
-    on specific maps and each map's grid is judged purely on that map's own
-    sighting history. So globals are folded into each map block as the last
-    'room' (named 'Global'), using that map's totals and image folder."""
+    Per ANALYSIS.md ("What Global means" — read it): globals are NOT
+    treated as a separate room or bucket. Every sighting is in a specific
+    room (CSV's Room column); globals are listed under the actual rooms
+    they've been sighted in, with that room's per-room sighting count.
+    Cards from globals are indistinguishable from cards from per-room
+    JSON entries at the render layer — both flow through the same
+    {name, type, counts, ...} card dict."""
     if difficulties is None:
         difficulties = backend.data.get("Difficulties", ["Normal", "Hard"])
 
     excl_by_diff = _build_exclusion_lookup(backend, difficulties)
     map_names = list(backend.data.get("Maps", {}).keys())
+    global_lookup = {a["name"]: a for a in backend.data.get("Global", [])}
 
     map_blocks = []
     for map_name in map_names:
@@ -164,9 +168,26 @@ def build_report_data(backend, difficulties=None, images_dir=None):
 
         indexed = _index_images(images_dir, map_name) if images_dir else []
 
+        # Walk the main CSV ourselves to bucket global sightings per
+        # (room, name, difficulty). Steam's "Global" is data-model
+        # shorthand for "definition shared across maps", not "roomless"
+        # — each sighting still has a Room and we use it.
+        global_sightings = defaultdict(lambda: {d: set() for d in difficulties})
+        for row in backend._get_csv_data(backend.logs_path):
+            if row.get("Map") != map_name: continue
+            d = row.get("Difficulty")
+            if d not in difficulties: continue
+            name = row.get("Anomaly_Name")
+            if name not in global_lookup: continue
+            try: s_id = int(row.get("Session_ID"))
+            except (TypeError, ValueError): continue
+            global_sightings[(row.get("Room"), name)][d].add(s_id)
+
         rooms = []
         for room_name, anoms in backend.data["Maps"][map_name]["Rooms"].items():
             cards = []
+
+            # Per-room JSON anomalies.
             for a in anoms:
                 name = a["name"]
                 counts = {d: len(diff_stats[d]["anomaly_sessions"].get(name, set())) for d in difficulties}
@@ -180,27 +201,31 @@ def build_report_data(backend, difficulties=None, images_dir=None):
                     excl_by_diff=excl_by_diff,
                     images=images,
                 ))
-            _sort_cards(cards)
-            rooms.append({"name": room_name, "cards": cards, "is_global": False})
 
-        # Globals as a synthetic "room" at the end of each map.
-        global_cards = []
-        for a in backend.data.get("Global", []):
-            name = a["name"]
-            counts = {d: len(diff_stats[d]["anomaly_sessions"].get(name, set())) for d in difficulties}
-            images = _find_images_for_global_in_map(name, indexed)
-            global_cards.append(_card(
-                name=name,
-                atype=a.get("type") or "Global",
-                image_status=(a.get("image") or "").lower(),
-                counts=counts,
-                totals=totals,
-                excl_by_diff=excl_by_diff,
-                images=images,
-            ))
-        if global_cards:
-            _sort_cards(global_cards)
-            rooms.append({"name": "Global", "cards": global_cards, "is_global": True})
+            # Globals that have been sighted in THIS specific room on
+            # THIS map. Each card's counts reflect this room's
+            # per-sighting numbers, not the map-wide total.
+            for (sight_room, gname), diff_sessions in global_sightings.items():
+                if sight_room != room_name: continue
+                g = global_lookup.get(gname)
+                if not g: continue
+                counts = {d: len(diff_sessions[d]) for d in difficulties}
+                # Image match still uses the global helper (no room
+                # filter), since the user may file the screenshot
+                # without a room prefix or under any room.
+                images = _find_images_for_global_in_map(gname, indexed)
+                cards.append(_card(
+                    name=gname,
+                    atype=g.get("type") or "Global",
+                    image_status=(g.get("image") or "").lower(),
+                    counts=counts,
+                    totals=totals,
+                    excl_by_diff=excl_by_diff,
+                    images=images,
+                ))
+
+            _sort_cards(cards)
+            rooms.append({"name": room_name, "cards": cards})
 
         map_blocks.append({"name": map_name, "totals": totals, "rooms": rooms})
 
@@ -326,13 +351,19 @@ def _md_map_section(block, diffs, heading_level=2):
     return "\n".join(lines)
 
 
-def _md_room_section(block, room, diffs):
+def _md_room_section(block, room, diffs, image_urls=None):
     """Render one (map, room) tuple as a Markdown chunk — used by the Steam
     BBCode pipeline so each Steam section stays well under Steam's
     per-section character cap. Drops the Room column (redundant inside a
     room-specific section) AND skips the body H1 — Steam's section nav
     already shows the section name above the body, so an H1 inside the
-    body is just visual repetition."""
+    body is just visual repetition.
+
+    If `image_urls` is provided ({local_filename: steam_url}), each anomaly
+    with at least one matched local screenshot AND a corresponding Steam
+    URL gets a screenshot block emitted below the table. Anomalies whose
+    local files haven't been uploaded yet are silently skipped — they'll
+    appear once the image sync runs."""
     map_total = " · ".join(f"{d}: {block['totals'][d]} shifts" for d in diffs)
     lines = [f"_Map totals: {map_total}_", ""]
 
@@ -350,6 +381,32 @@ def _md_room_section(block, room, diffs):
             cells.append(_safe_cell(_md_rate_cell(c["counts"].get(d, 0), c["totals"].get(d, 0))))
         cells.append(_safe_cell(_md_excl_cell(c["excl"])))
         lines.append("| " + " | ".join(cells) + " |")
+
+    # Image gallery below the table — only the anomalies whose local
+    # screenshots have a known Steam URL.
+    if image_urls:
+        image_blocks = []
+        for c in room["cards"]:
+            if not c.get("images"): continue
+            urls = []
+            for abs_path in c["images"]:
+                fname = os.path.basename(abs_path)
+                url = image_urls.get(fname)
+                if url: urls.append(url)
+            if urls:
+                image_blocks.append((c, urls))
+        if image_blocks:
+            lines.append("")
+            lines.append("---")
+            lines.append("## Screenshots")
+            for c, urls in image_blocks:
+                type_str = c["type"] or "—"
+                lines.append("")
+                lines.append(f"### {type_str}: {c['name']}")
+                for url in urls:
+                    # Markdown image syntax; steam-editor-tools renders this
+                    # as [img]URL[/img] in the BBCode output.
+                    lines.append(f"![{c['name']}]({url})")
     return "\n".join(lines)
 
 
@@ -510,8 +567,7 @@ def render_html(data, images_dir, title=None):
         body.append(f"<h1>{_esc(block['name'])}</h1>")
         body.append(f'<p><em class="subtotal">{_esc(total_str)}</em></p>')
         for room in block["rooms"]:
-            label = "Global anomalies" if room.get("is_global") else room["name"]
-            body.append(f"<h2>{_esc(label)}</h2>")
+            body.append(f"<h2>{_esc(room['name'])}</h2>")
             for c in room["cards"]:
                 body.append(_html_card(c, diffs, images_dir, card_idx))
                 card_idx += 1
@@ -556,9 +612,12 @@ def _md_to_bbcode(md_text, parser, renderer):
         except OSError: pass
 
 
-def render_steam_sections(data, title, codeberg_url="https://codeberg.org/Comtief/observation-duty-tracker"):
+def render_steam_sections(data, title, codeberg_url="https://codeberg.org/Comtief/observation-duty-tracker", image_urls=None):
     """Yields (section_name, bbcode_text) pairs — one per Steam guide section.
-    First yield is the overview (legend + tool link); then one per map.
+    First yield is the overview (legend + tool link); then one per (map, room).
+
+    `image_urls`, if provided, is a {filename: steam_url} dict used to
+    embed [img]URL[/img] per anomaly in each room section.
 
     Raises ImportError with a clear install hint if steam-editor-tools isn't
     available — it's an optional dep, only required when this is called."""
@@ -586,16 +645,15 @@ def render_steam_sections(data, title, codeberg_url="https://codeberg.org/Comtie
     )
     yield ("Overview", _md_to_bbcode(overview_md, parser, renderer))
 
-    # One section per (map, room). Per-map sections were too big for
-    # Steam's section character cap (~8K chars truncated mid-tag); per-room
-    # sections are 1-3 KB each, well under any cap, and the left-side nav
-    # in Steam still organizes them cleanly. Each map's Globals come in as
-    # the synthetic "Global" room — labelled "<Map> — Global anomalies".
+    # One section per (map, room). Per-map sections hit Steam's per-section
+    # character cap (~8K chars, truncates mid-tag); per-room sections are
+    # 1-3 KB each, well under any cap. Globals appear inline within
+    # whichever room they've been sighted in (see ANALYSIS.md — "Global"
+    # is a JSON-data-model label, not a separate room or pseudo-section).
     for block in data["maps"]:
         for room in block["rooms"]:
-            label = "Global anomalies" if room.get("is_global") else room["name"]
-            section_name = f"{block['name']} - {label}"
-            section_md = _md_room_section(block, room, diffs)
+            section_name = f"{block['name']} - {room['name']}"
+            section_md = _md_room_section(block, room, diffs, image_urls=image_urls)
             yield (section_name, _md_to_bbcode(section_md, parser, renderer))
 
 
@@ -693,6 +751,11 @@ def main():
                         help="Directory for per-section Steam BBCode files (one file per guide section). "
                              "Default: <parent-of-images-dir>/steam-guide-<game>/ next to Obsidian, "
                              "or ./steam-guide-<game>/ if --images-dir is not set.")
+    parser.add_argument("--image-urls", default=None,
+                        help="Path to a {local_filename: steam_url} JSON produced by the Steam "
+                             "guide playwright sync. When provided, each room section's BBCode "
+                             "includes a screenshots block with [img]URL[/img] per matched anomaly. "
+                             "Default: <parent-of-images-dir>/image_urls.json if it exists.")
     parser.add_argument("--stdout", action="store_true",
                         help="Print markdown to stdout and skip writing files.")
     parser.add_argument("--images-dir", default=os.environ.get("OBSDUTY_IMAGES_DIR"),
@@ -759,13 +822,32 @@ def main():
     if args.format in ("steam", "all"):
         steam_dir = _resolve(args.steam_output_dir)
         os.makedirs(steam_dir, exist_ok=True)
+        # Wipe stale .bbcode files before writing — otherwise sections
+        # that no longer exist in the current report (e.g. an old "Global
+        # anomalies" pseudo-section) would linger and trick the
+        # downstream sync into reapplying them.
+        for stale in os.listdir(steam_dir):
+            if stale.endswith(".bbcode"):
+                os.unlink(os.path.join(steam_dir, stale))
+        # Resolve image-urls JSON: explicit flag → default next to images dir → none.
+        image_urls = None
+        urls_path = args.image_urls
+        if urls_path is None and args.images_dir:
+            candidate = os.path.join(os.path.dirname(os.path.abspath(args.images_dir)), "image_urls.json")
+            if os.path.exists(candidate):
+                urls_path = candidate
+        if urls_path and os.path.exists(urls_path):
+            import json as _json
+            with open(urls_path, "r", encoding="utf-8") as f:
+                image_urls = _json.load(f)
+            print(f"Using image URLs from {urls_path} ({len(image_urls)} entries)")
         # Emit a manifest listing section names in the desired order
         # (Overview first, then maps in JSON / game order, rooms in JSON
         # order, Globals last per map). Sync tooling reads this to create
         # Steam guide sections in the correct order — Steam preserves
         # creation order in the sidebar nav.
         section_manifest = []
-        for section_name, bbcode in render_steam_sections(data, args.title):
+        for section_name, bbcode in render_steam_sections(data, args.title, image_urls=image_urls):
             path = os.path.join(steam_dir, f"{_fs_safe(section_name)}.bbcode")
             with open(path, "w", encoding="utf-8") as f:
                 f.write(bbcode)

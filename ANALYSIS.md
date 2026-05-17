@@ -9,6 +9,52 @@
 
 **Terminology:** we say **shift** (not session) throughout.
 
+## What "Global" means (read this first)
+
+The JSON has two kinds of anomaly entries:
+
+- **Per-room anomalies** — defined inside a specific map's specific room.
+  Can only manifest in that room.
+
+- **"Global" anomalies** — defined at the top level of the JSON. The
+  same conceptual anomaly reoccurs across multiple maps (and often
+  across multiple games in the series — Abyss, Rift, Camera
+  Malfunction, etc.). The "global" label means the **definition** is
+  shared across the game's maps; it does NOT mean the anomaly is
+  roomless.
+
+**Every sighting of a global is still in a specific room.** The CSV log
+records `(Map, Room, Anomaly_Name)` for every sighting, including
+globals. When a player reports a global in-game via the right-click
+menu, they're observing a specific room and that room is the
+sighting's location for analytical purposes.
+
+**Globals do not appear in every room.** Which rooms a given global
+can manifest in depends on the global — Abyss might appear in some
+Lighthouse rooms but not others. Empirically, the rooms where a
+global has been sighted are the rooms where it actually appears; the
+data has the answer and we should let it speak.
+
+**Globals do not appear on every map.** Some globals only show up on
+some maps. Same caveat: data tells us.
+
+**What this means for any report / table / view that lists anomalies
+per room:** globals are listed under the actual rooms they've been
+sighted in, with that room's specific occurrence count — **never as a
+separate "Global" pseudo-room or catch-all bucket.** The display model
+mirrors the data model: per-room. The only thing that distinguishes a
+sighting of a global from a sighting of a per-room anomaly is which
+JSON entry it links back to (top-level Global array vs nested under a
+room) — and that's a data-model detail, not a presentation one.
+
+The live GUI's room buttons render the per-room anomalies for the
+current tab plus the globals that the tracker UI lets you log
+*from* that room (an input-side convenience — the in-game RMB menu is
+room-agnostic). The analysis output is the read-side and there
+globals belong inline with the rooms they're observed in.
+
+
+
 ## Anomalies Likely Excluded (main window, lower pane)
 
 **Purpose:** Gameplay aid — "what's excluded from THIS shift right now?"

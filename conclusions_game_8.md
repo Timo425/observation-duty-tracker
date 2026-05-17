@@ -19,9 +19,11 @@ _Normal: 13 shifts · Hard: 18 shifts_
 | Pier | Object Movement | Bottle | H | 0/13 | 15/18 (83%) | — |
 | Pier | Object Replacement | Short piling | H | 0/13 | 8/18 (44%) | — |
 | Pier | Object Replacement | Tall piling | H | 0/13 | 3/18 (16%) | — |
+| Pier | Global | Abyss | H | 0/13 | 2/18 (11%) | — |
 | Pier | Secret Object | Rubber ducky | — | 0/13 | 0/18 | — |
 | Yard | Object Movement | Wires | N | 7/13 (53%) | 0/18 | — |
 | Yard | Light Anomaly | Flares | N | 6/13 (46%) | 0/18 | — |
+| Yard | Global | Abyss | N | 1/13 (7%) | 0/18 | — |
 | Yard | Water Anomaly | Flooded yard | N+H | 6/13 (46%) | 9/18 (50%) | — |
 | Yard | INTRUDER | Deflated man | N+H | 6/13 (46%) | 8/18 (44%) | — |
 | Yard | Smoke | Chimney smoke | N+H | 3/13 (23%) | 8/18 (44%) | — |
@@ -32,6 +34,8 @@ _Normal: 13 shifts · Hard: 18 shifts_
 | Yard | Missing Object | Outhouse | H | 0/13 | 10/18 (55%) | — |
 | Yard | Object Replacement | Yellow/blue buoy | H | 0/13 | 4/18 (22%) | — |
 | Yard | Object Replacement | Yellow/gray buoy | H | 0/13 | 2/18 (11%) | — |
+| Yard | Global | Camera Malfunction | H | 0/13 | 1/18 (5%) | — |
+| Cabin | Global | Abyss | N | 2/13 (15%) | 0/18 | — |
 | Cabin | Image Anomaly | TV screen | N | 1/13 (7%) | 0/18 | — |
 | Cabin | Object Movement / Object Manipulation | Gramophone | N+H | 8/13 (61%) | 10/18 (55%) | — |
 | Cabin | INTRUDER | Man outside | N+H | 6/13 (46%) | 9/18 (50%) | — |
@@ -44,6 +48,7 @@ _Normal: 13 shifts · Hard: 18 shifts_
 | Cabin | Object Replacement | Brick walls | H | 0/13 | 12/18 (66%) | — |
 | Interior | Strange Broadcast | Radio | N | 5/13 (38%) | 0/18 | — |
 | Interior | Missing Object | Cloth | N | 4/13 (30%) | 0/18 | — |
+| Interior | Global | Camera Malfunction | N | 1/13 (7%) | 0/18 | — |
 | Interior | Image Anomaly | Map | N+H | 8/13 (61%) | 8/18 (44%) | — |
 | Interior | Object Manipulation | Ropes | N+H | 6/13 (46%) | 10/18 (55%) | — |
 | Interior | INTRUDER | Trapdoor man | N+H | 8/13 (61%) | 8/18 (44%) | — |
@@ -52,6 +57,7 @@ _Normal: 13 shifts · Hard: 18 shifts_
 | Interior | Missing Object | Light switch | N+H | 4/13 (30%) | 10/18 (55%) | — |
 | Interior | Object Replacement | Rope | N+H | 8/13 (61%) | 6/18 (33%) | — |
 | Interior | INTRUDER | Gnawer | N+H | 5/13 (38%) | 5/18 (27%) | — |
+| Interior | Global | Abyss | N+H | 1/13 (7%) | 1/18 (5%) | — |
 | Interior | Extra Object | Bottle | H | 0/13 | 15/18 (83%) | — |
 | Interior | Object Movement | Mousetrap | H | 0/13 | 12/18 (66%) | — |
 | Interior | Missing Object | Typewriter | — | 0/13 | 0/18 | — |
@@ -66,6 +72,7 @@ _Normal: 13 shifts · Hard: 18 shifts_
 | Stairwell | Extra Object | Thing under stairs | H | 0/13 | 9/18 (50%) | — |
 | Lantern | Missing Object | Oilcan | N | 5/13 (38%) | 0/18 | — |
 | Lantern | Object Replacement | Purple scarf | N | 4/13 (30%) | 0/18 | — |
+| Lantern | Global | Camera Malfunction | N | 1/13 (7%) | 0/18 | — |
 | Lantern | Dead Body | Dead body | N+H | 8/13 (61%) | 14/18 (77%) | — |
 | Lantern | Object Movement | Ladder | N+H | 6/13 (46%) | 9/18 (50%) | — |
 | Lantern | Object Movement | Lantern | N+H | 2/13 (15%) | 12/18 (66%) | — |
@@ -73,6 +80,7 @@ _Normal: 13 shifts · Hard: 18 shifts_
 | Lantern | Extra Object | Green mug | N+H | 3/13 (23%) | 8/18 (44%) | — |
 | Lantern | Hold LMB | Seagulls | N+H | 5/13 (38%) | 5/18 (27%) | — |
 | Lantern | Object Movement | Stool | H | 0/13 | 12/18 (66%) | — |
+| Lantern | Global | Abyss | H | 0/13 | 1/18 (5%) | — |
 | Basement | Missing Object | Sack: Top middle | N | 5/13 (38%) | 0/18 | — |
 | Basement | Object Movement | Drum: Front left | N | 2/13 (15%) | 0/18 | — |
 | Basement | Dead Body | Dead body | N+H | 8/13 (61%) | 14/18 (77%) | — |
@@ -86,11 +94,6 @@ _Normal: 13 shifts · Hard: 18 shifts_
 | Basement | Missing Object | Sack: Top left | H | 0/13 | 3/18 (16%) | — |
 | Basement | Missing Object | Mousetrap: Left of right pair | H | 0/13 | 2/18 (11%) | — |
 | Basement | Missing Object | Mousetrap: Right of right pair | H | 0/13 | 2/18 (11%) | — |
-| Global | Global | Abyss | N+H | 5/13 (38%) | 4/18 (22%) | — |
-| Global | Global | Camera Malfunction | N+H | 2/13 (15%) | 2/18 (11%) | — |
-| Global | Global | “E” anomaly | — | 0/13 | 0/18 | — |
-| Global | Global | Rift | — | 0/13 | 0/18 | — |
-| Global | Global | Steam / Smoke / Fog | — | 0/13 | 0/18 | — |
 
 ## Research Station
 _Normal: 12 shifts · Hard: 14 shifts_
@@ -106,22 +109,28 @@ _Normal: 12 shifts · Hard: 14 shifts_
 | Monitoring Room | Extra Object | Post-it notes (extra) | N+H | 5/12 (41%) | 2/14 (14%) | — |
 | Monitoring Room | Image Anomaly | Tic Tac Toe | N+H | 4/12 (33%) | 3/14 (21%) | — |
 | Monitoring Room | Object Movement | Post-it notes (floating) | N+H | 4/12 (33%) | 1/14 (7%) | — |
+| Monitoring Room | Global | Abyss | N+H | 2/12 (16%) | 2/14 (14%) | — |
+| Monitoring Room | Global | Camera Malfunction | N+H | 1/12 (8%) | 1/14 (7%) | — |
 | Monitoring Room | Missing Object | Cable clips | H | 0/12 | 8/14 (57%) | — |
 | Monitoring Room | Object Replacement | Floor | H | 0/12 | 6/14 (42%) | — |
 | Laboratory | Object Movement | Bottles | N | 3/12 (25%) | 0/14 | — |
 | Laboratory | Object Replacement | Scale | N | 3/12 (25%) | 0/14 | — |
+| Laboratory | Global | “E” anomaly | N | 1/12 (8%) | 0/14 | — |
 | Laboratory | Extra Object | Microscope | N+H | 9/12 (75%) | 8/14 (57%) | — |
 | Laboratory | Object Manipulation | Clock | N+H | 2/12 (16%) | 7/14 (50%) | — |
 | Laboratory | Light Anomaly | Light | N+H | 1/12 (8%) | 6/14 (42%) | — |
 | Laboratory | Object Movement | Test tubes | N+H | 4/12 (33%) | 3/14 (21%) | — |
 | Laboratory | Missing Object | Cupboard | N+H | 2/12 (16%) | 4/14 (28%) | — |
 | Laboratory | INTRUDER | Giant | N+H | 3/12 (25%) | 3/14 (21%) | — |
+| Laboratory | Global | Abyss | N+H | 2/12 (16%) | 3/14 (21%) | — |
 | Laboratory | INTRUDER | Creature | N+H | 2/12 (16%) | 2/14 (14%) | — |
 | Laboratory | INTRUDER | Tall creature | N+H | 1/12 (8%) | 2/14 (14%) | — |
 | Laboratory | Missing Object | Sockets (door) | H | 0/12 | 3/14 (21%) | — |
 | Laboratory | Missing Object | Sockets (glass) | H | 0/12 | 3/14 (21%) | — |
+| Laboratory | Global | Rift | H | 0/12 | 1/14 (7%) | — |
 | Laboratory | Missing Object | Vertical beam | — | 0/12 | 0/14 | — |
 | Rec Room | Object Movement | Couches | N | 5/12 (41%) | 0/14 | — |
+| Rec Room | Global | Rift | N | 1/12 (8%) | 0/14 | — |
 | Rec Room | Object Movement | Dartboard | N+H | 7/12 (58%) | 8/14 (57%) | — |
 | Rec Room | Missing Object | Chair | N+H | 6/12 (50%) | 8/14 (57%) | — |
 | Rec Room | INTRUDER | Nested intruder | N+H | 4/12 (33%) | 7/14 (50%) | — |
@@ -137,6 +146,8 @@ _Normal: 12 shifts · Hard: 14 shifts_
 | Rec Room | Missing Object | Books | H | 0/12 | 6/14 (42%) | — |
 | Rec Room | Secret Object | Business card | — | 0/12 | 0/14 | — |
 | Quarters | INTRUDER | Huge Spider | N | 7/12 (58%) | 0/14 | — |
+| Quarters | Global | Rift | N | 3/12 (25%) | 0/14 | — |
+| Quarters | Global | Abyss | N | 1/12 (8%) | 0/14 | — |
 | Quarters | Missing Object | Shoes | N+H | 5/12 (41%) | 6/14 (42%) | — |
 | Quarters | Room Manipulation | Room length | N+H | 3/12 (25%) | 7/14 (50%) | — |
 | Quarters | Image Anomaly | First aid | N+H | 2/12 (16%) | 5/14 (35%) | — |
@@ -160,6 +171,7 @@ _Normal: 12 shifts · Hard: 14 shifts_
 | Exterior | Object Movement | Yellow snowcat | N+H | 9/12 (75%) | 10/14 (71%) | — |
 | Exterior | Light Anomaly | Red lights | N+H | 4/12 (33%) | 8/14 (57%) | — |
 | Exterior | INTRUDER | Naked man | N+H | 4/12 (33%) | 6/14 (42%) | — |
+| Exterior | Global | Steam / Smoke / Fog | N+H | 3/12 (25%) | 7/14 (50%) | — |
 | Exterior | INTRUDER | Penguin creature | N+H | 5/12 (41%) | 3/14 (21%) | — |
 | Exterior | Weather Anomaly | Snow | N+H | 4/12 (33%) | 4/14 (28%) | — |
 | Exterior | Dead Body | Dead body | N+H | 2/12 (16%) | 2/14 (14%) | — |
@@ -175,13 +187,10 @@ _Normal: 12 shifts · Hard: 14 shifts_
 | The Site | Light Anomaly | Device | N+H | 7/12 (58%) | 2/14 (14%) | — |
 | The Site | Dead body | Dead body (railing) | N+H | 5/12 (41%) | 3/14 (21%) | — |
 | The Site | Dead Body | Dead body (crane) | N+H | 1/12 (8%) | 2/14 (14%) | — |
+| The Site | Global | Rift | N+H | 1/12 (8%) | 1/14 (7%) | — |
 | The Site | Missing Object | Shovel | H | 0/12 | 3/14 (21%) | — |
 | The Site | Object Replacement | Snowcat | H | 0/12 | 3/14 (21%) | — |
 | The Site | Missing Object | Spools | H | 0/12 | 3/14 (21%) | — |
+| The Site | Global | Abyss | H | 0/12 | 1/14 (7%) | — |
 | Underwater | Extra Object | School of fish | N+H | 8/12 (66%) | 6/14 (42%) | — |
 | Underwater | INTRUDER | Squid creature | N+H | 4/12 (33%) | 8/14 (57%) | — |
-| Global | Global | “E” anomaly | N | 1/12 (8%) | 0/14 | — |
-| Global | Global | Abyss | N+H | 5/12 (41%) | 6/14 (42%) | — |
-| Global | Global | Steam / Smoke / Fog | N+H | 3/12 (25%) | 7/14 (50%) | — |
-| Global | Global | Rift | N+H | 5/12 (41%) | 2/14 (14%) | — |
-| Global | Global | Camera Malfunction | N+H | 1/12 (8%) | 2/14 (14%) | — |
