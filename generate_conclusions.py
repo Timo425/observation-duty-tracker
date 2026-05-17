@@ -585,7 +585,7 @@ def render_steam_sections(data, title, codeberg_url="https://codeberg.org/Comtie
         "- **—** — never seen on this map yet\n\n"
         f"Data and tool: {codeberg_url}\n"
     )
-    yield ("overview", _md_to_bbcode(overview_md, parser, renderer))
+    yield ("Overview", _md_to_bbcode(overview_md, parser, renderer))
 
     # One section per (map, room). Per-map sections were too big for
     # Steam's section character cap (~8K chars truncated mid-tag); per-room
@@ -760,11 +760,23 @@ def main():
     if args.format in ("steam", "all"):
         steam_dir = _resolve(args.steam_output_dir)
         os.makedirs(steam_dir, exist_ok=True)
+        # Emit a manifest listing section names in the desired order
+        # (Overview first, then maps in JSON / game order, rooms in JSON
+        # order, Globals last per map). Sync tooling reads this to create
+        # Steam guide sections in the correct order — Steam preserves
+        # creation order in the sidebar nav.
+        section_manifest = []
         for section_name, bbcode in render_steam_sections(data, args.title):
             path = os.path.join(steam_dir, f"{_fs_safe(section_name)}.bbcode")
             with open(path, "w", encoding="utf-8") as f:
                 f.write(bbcode)
+            section_manifest.append(section_name)
             print(f"Steam BBCode section '{section_name}' written to {path}")
+        import json as _json
+        manifest_path = os.path.join(steam_dir, "_sections.json")
+        with open(manifest_path, "w", encoding="utf-8") as f:
+            _json.dump(section_manifest, f, indent=2)
+        print(f"Section order manifest written to {manifest_path}")
 
 
 if __name__ == "__main__":
