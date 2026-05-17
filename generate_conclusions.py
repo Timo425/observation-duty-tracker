@@ -372,32 +372,33 @@ def _bbcode_room_section(block, room, diffs, image_urls=None):
             f"{d}: {_md_rate_cell(c['counts'].get(d, 0), c['totals'].get(d, 0))}"
             for d in diffs
         )
-        parts = [f"[b]{type_str}: {name}[/b]", bucket, rates]
+        # Card structure: title (h3) → meta line → blank → image(s) →
+        # blank → blank (extra breathing room before the next card).
+        lines.append(f"[h3]{type_str}: {name}[/h3]")
+        meta_parts = [bucket, rates]
         if c["excl"]:
             for d, members in c["excl"].items():
-                parts.append(f"Excl ({d}): {', '.join(members)}")
-        lines.append(" — ".join(parts))
+                meta_parts.append(f"Excl ({d}): {', '.join(members)}")
+        lines.append(" — ".join(meta_parts))
+        lines.append("")
 
-        # Image(s) on the next line. Steam guide BBCode uses
-        # [previewimg=<previewid>;<size>,<layout>;<filename>][/previewimg]
-        # for guide-uploaded images — NOT [img]URL[/img] (that one only
-        # works in forum posts). Source: Steam's own InsertSelected()
-        # JS function in the guide editor. We pick 'sizeFull,inline' so
-        # the image displays at uploaded resolution flowing in line with
-        # the card text.
+        # Image(s) on their own lines (one per line — Steam stacks them
+        # vertically at sizeFull anyway, but explicit line breaks make
+        # the source readable). Steam guide BBCode uses [previewimg=
+        # PREVIEWID;size,layout;filename][/previewimg] referencing the
+        # upload by preview id; source: Steam's own InsertSelected() JS.
         if image_urls and c.get("images"):
-            tags = []
             for abs_path in c["images"]:
                 fname = os.path.basename(abs_path)
                 entry = image_urls.get(fname)
                 if not entry: continue
-                # Backward-compat: old shape was {filename: url_string}.
-                if isinstance(entry, str): continue  # no previewid available
+                if isinstance(entry, str): continue  # legacy {filename: url} shape, no previewid
                 previewid = entry.get("previewid")
                 if not previewid: continue
-                tags.append(f"[previewimg={previewid};sizeFull,inline;{fname}][/previewimg]")
-            if tags:
-                lines.append(" ".join(tags))
+                lines.append(f"[previewimg={previewid};sizeFull,inline;{fname}][/previewimg]")
+
+        # Extra blank to give visual gap before the next [h3].
+        lines.append("")
         lines.append("")
     return "\n".join(lines)
 
@@ -608,34 +609,27 @@ def render_steam_sections(data, title, codeberg_url="https://codeberg.org/Comtie
     """Yields (section_name, bbcode_text) pairs — one per Steam guide section.
     First yield is the overview (legend + tool link); then one per (map, room).
 
-    `image_urls`, if provided, is a {filename: steam_url} dict used to
-    embed [img]URL[/img] per anomaly in each room section.
-
-    Raises ImportError with a clear install hint if steam-editor-tools isn't
-    available — it's an optional dep, only required when this is called."""
-    try:
-        import steam_editor_tools as stet
-    except ImportError as e:
-        raise ImportError(
-            "steam-editor-tools is required for --format steam.\n"
-            "Install with:  pip install --user steam-editor-tools\n"
-            "Or run the script via:  uv run --with steam-editor-tools python generate_conclusions.py …"
-        ) from e
-
-    parser = stet.DocumentParser()
-    renderer = stet.BBCodeRenderer()
-
+    `image_urls`, if provided, is a {filename: {url, previewid}} dict used
+    to embed [previewimg=ID;...] per anomaly in each room section."""
     diffs = data["difficulties"]
 
-    # Overview / legend section.
-    overview_md = (
-        f"# {title}\n\n"
-        "Each anomaly carries a bucket showing how it's been observed: "
-        "**N** = Normal-only · **N+H** = both · **H** = Hard-only · "
-        "**—** = never seen on this map yet.\n\n"
+    # Overview / legend section. Raw BBCode, no markdown detour — keeps
+    # the multi-line list intact (Steam collapsed the prose legend to
+    # one dense line otherwise).
+    overview_bb = (
+        f"[h1]{title}[/h1]\n"
+        "\n"
+        "Each anomaly carries a bucket showing where it's been observed:\n"
+        "[list]\n"
+        "[*][b]N[/b] — Normal-only\n"
+        "[*][b]N+H[/b] — both difficulties\n"
+        "[*][b]H[/b] — Hard-only\n"
+        "[*][b]—[/b] — never seen on this map yet\n"
+        "[/list]\n"
+        "\n"
         f"Tracker: {codeberg_url}\n"
     )
-    yield ("Overview", _md_to_bbcode(overview_md, parser, renderer))
+    yield ("Overview", overview_bb)
 
     # One section per (map, room). Per-map sections hit Steam's per-section
     # character cap (~8K chars, truncates mid-tag); per-room sections are
