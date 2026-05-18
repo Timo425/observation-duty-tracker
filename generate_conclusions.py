@@ -847,17 +847,45 @@ def main():
         # Steam guide sections in the correct order — Steam preserves
         # creation order in the sidebar nav.
         section_manifest = []
+        used_image_filenames = set()
         for section_name, bbcode in render_steam_sections(data, args.title, image_urls=image_urls):
             path = os.path.join(steam_dir, f"{_fs_safe(section_name)}.bbcode")
             with open(path, "w", encoding="utf-8") as f:
                 f.write(bbcode)
             section_manifest.append(section_name)
+            # Track which filenames were referenced — [previewimg=ID;opts;FILENAME].
+            for m in re.finditer(r"\[previewimg=[^;]+;[^;]+;([^\]]+)\]", bbcode):
+                used_image_filenames.add(m.group(1))
             print(f"Steam BBCode section '{section_name}' written to {path}")
         import json as _json
         manifest_path = os.path.join(steam_dir, "_sections.json")
         with open(manifest_path, "w", encoding="utf-8") as f:
             _json.dump(section_manifest, f, indent=2)
         print(f"Section order manifest written to {manifest_path}")
+
+        # Orphan check: uploaded images that no anomaly references. Most
+        # often these are misnamed local files (e.g. saved an Alien
+        # screenshot as "Laboratory - Typewriter.jpg" — Typewriter lives
+        # in Lighthouse Interior, not Research Station Laboratory, so the
+        # matcher skipped it). Print them so the user can rename + re-
+        # upload, or run a delete pass.
+        if image_urls:
+            uploaded = set(image_urls.keys())
+            orphans = sorted(uploaded - used_image_filenames)
+            orphans_path = os.path.join(steam_dir, "_orphan_images.json")
+            with open(orphans_path, "w", encoding="utf-8") as f:
+                _json.dump(orphans, f, indent=2)
+            if orphans:
+                print(
+                    f"\n[orphans] {len(orphans)} uploaded image(s) on Steam not referenced "
+                    f"by any anomaly — likely misnamed or stale. Full list in {orphans_path}:"
+                )
+                for o in orphans[:20]:
+                    print(f"  - {o}")
+                if len(orphans) > 20:
+                    print(f"  … and {len(orphans) - 20} more (see _orphan_images.json)")
+            else:
+                print(f"[orphans] none — every uploaded image is referenced by at least one anomaly.")
 
 
 if __name__ == "__main__":
