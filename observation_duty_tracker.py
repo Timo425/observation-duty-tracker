@@ -506,7 +506,7 @@ class AnomalyTrackerApp:
             self.refresh_map_ui()
 
     def _refresh_image_availability(self):
-        """Scan OBSDUTY_IMAGES_DIR (env) or backend.image_dir (app_config.json)
+        """Scan OBSDUTY_IMAGES_DIR (env) or backend.image_dir (app_config.local.json)
         and cache which anomalies have a matching screenshot. Drives the 📷
         suffix in update_button_states.
 

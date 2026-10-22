@@ -28,6 +28,10 @@ class Backend:
             self.base_dir = base_dir
 
         self.config_path = os.path.join(self.base_dir, "app_config.json")
+        # Per-host overrides (paths that differ between desktop and laptop).
+        # Gitignored AND stignored so Syncthing doesn't drag the desktop path
+        # onto the laptop. Currently only holds Image_Dir.
+        self.local_config_path = os.path.join(self.base_dir, "app_config.local.json")
         self.game_id = None  # Populated by load_config
         self.session_id = 1
         self.max_session_id = 1
@@ -39,10 +43,12 @@ class Backend:
         self.manually_locked_sessions = set()
         self.window_size = "1200x800"
         self.show_all_candidates = False
-        # Local screenshots root (per-user, not committed to the repo). Drives
+        # Local screenshots root (per-host, not committed, not synced). Drives
         # the GUI's 📷 indicator and the conclusions HTML/BBCode image paths.
-        # Loaded from app_config.json["Image_Dir"]; OBSDUTY_IMAGES_DIR env var
-        # takes precedence at read time. Empty for users who haven't set one.
+        # Loaded from app_config.local.json["Image_Dir"]; OBSDUTY_IMAGES_DIR
+        # env var takes precedence at read time. Resolved to a single existing
+        # path — the raw config value may be a string or a list of candidates
+        # (first existing wins, lets one local file work across mount points).
         self.image_dir = None
 
         # Per-game persisted state: {game_id: {Session_ID, Max_Session_ID, Session_Configs, ...}}
@@ -149,6 +155,43 @@ class Backend:
                 for aid, info in list(orphans.items())[:5]:
                     print(f"  - {info['name'] or '(blank name)'}: {info['main_rows']} main row(s), {info['failure_rows']} failure row(s)")
 
+    def _load_image_dir(self, shared_config):
+        """Resolve Image_Dir from per-host app_config.local.json. Accepts a
+        string or a list of candidate paths; returns the first existing one
+        (or the raw string unchanged if it doesn't exist — lets the GUI's
+        isdir check silently no-op without surprising the user).
+
+        One-shot migration: if the legacy synced app_config.json still has
+        Image_Dir, move it into the local file and strip it from the shared
+        payload (saved on the next save_config call).
+        """
+        local = {}
+        if os.path.exists(self.local_config_path):
+            try:
+                with open(self.local_config_path, 'r', encoding='utf-8') as f:
+                    local = json.load(f)
+            except: pass
+
+        raw = local.get("Image_Dir")
+        if raw is None and "Image_Dir" in shared_config:
+            # Migrate: the synced file used to hold this. Move it locally so
+            # the laptop's Syncthing copy doesn't keep getting the desktop path.
+            raw = shared_config.pop("Image_Dir")
+            try:
+                with open(self.local_config_path, 'w', encoding='utf-8') as f:
+                    json.dump({"Image_Dir": raw}, f)
+            except: pass
+
+        if not raw:
+            return None
+        candidates = raw if isinstance(raw, list) else [raw]
+        for path in candidates:
+            if path and os.path.isdir(path):
+                return path
+        # No candidate exists on this host — return the first non-empty entry
+        # so downstream isdir checks fail cleanly without raising.
+        return next((p for p in candidates if p), None)
+
     def save_config(self):
         self._sync_active_to_games_state()
         payload = {
@@ -157,16 +200,16 @@ class Backend:
             "Show_All_Candidates": self.show_all_candidates,
             "Games": self.games_state,
         }
-        if self.image_dir:
-            payload["Image_Dir"] = self.image_dir
-        with open(self.config_path, 'w') as f:
+        # Image_Dir intentionally NOT written here — it lives in the per-host
+        # app_config.local.json so each machine resolves its own path.
+        with open(self.config_path, 'w', encoding='utf-8') as f:
             json.dump(payload, f)
 
     def load_config(self):
         config = {}
         if os.path.exists(self.config_path):
             try:
-                with open(self.config_path, 'r') as f:
+                with open(self.config_path, 'r', encoding='utf-8') as f:
                     config = json.load(f)
             except: pass
 
@@ -179,7 +222,7 @@ class Backend:
         # Never-seen anomalies (zero sightings anywhere) are always shown
         # regardless, so a first sighting is always reachable.
         self.show_all_candidates = bool(config.get("Show_All_Candidates", False))
-        self.image_dir = config.get("Image_Dir") or None
+        self.image_dir = self._load_image_dir(config)
 
         if "Games" in config:
             self.games_state = config.get("Games", {}) or {}

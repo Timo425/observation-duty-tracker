@@ -1,0 +1,12 @@
+// Per-host config — Image_Dir differs between desktop (Linux mount) and
+// laptop (Windows path). Each machine maintains its own copy.
+app_config.local.json
+
+// Syncthing's conflict markers — let them stay local rather than syncing
+// the conflict back to the other side and compounding it.
+*.sync-conflict-*
+
+// Python bytecode and editor cruft don't need to travel either.
+__pycache__/
+*.pyc
+.DS_Store

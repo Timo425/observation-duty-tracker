@@ -1,6 +1,8 @@
 __pycache__/
 *.pyc
 app_config.json
+app_config.local.json
+*.sync-conflict-*
 .DS_Store
 logs/*.csv
 tests/logs/*.csv
