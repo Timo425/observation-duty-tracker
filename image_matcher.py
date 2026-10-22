@@ -33,8 +33,11 @@ IMAGE_EXTS = (".jpg", ".jpeg", ".png", ".webp", ".gif")
 
 def normalize(s):
     """Lowercase + strip non-alphanumerics so apostrophes / em-dashes /
-    case differences don't cause a near-miss."""
-    return re.sub(r"[^a-z0-9 ]+", " ", (s or "").lower())
+    case differences don't cause a near-miss. Whitespace is collapsed so
+    a stripped colon (e.g. 'Drum: Rear left' → 'drum  rear left') doesn't
+    produce a double-space that breaks substring matching against a
+    naturally-spaced filename ('Drum rear left' → 'drum rear left')."""
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9 ]+", " ", (s or "").lower())).strip()
 
 
 def trailing_number(desc):
